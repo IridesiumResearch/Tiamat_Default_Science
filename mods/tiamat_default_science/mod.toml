@@ -2,11 +2,12 @@
 # Progress's Fork, and everything behind it (docs/brief.md).
 #
 # Built so far: the Tinker's Bench, five shared nodes a child can reach long
-# before the Fork (brief §4). The door, the tree and the machines behind it
-# follow in the brief's build order (§17).
+# before the Fork (brief §4); the Antikythera Mechanism, the science door;
+# and tier 3, Mechanica — frames, turning networks, water wheels and
+# windmills, the furnace and the iron ladder (§17, steps 1 to 4).
 id = "tiamat_default_science"
 name = "Tiamat Default Science"
-version = "0.1.0"
+version = "0.2.0"
 description = "Natural philosophy: machines, steam, electricity, Tesla — and past the aether, gravity and the Fold."
 license = "GPL-3.0-only"
 # Without any of these there is nothing to build with: the world's rock and
@@ -27,3 +28,10 @@ optional_depends = ["tiamat_default_ui", "tiamat_weather"]
 
 # NO `[theme]` HERE, ON PURPOSE. The engine wears the LAST theme in load
 # order, and the interface mod owns the look.
+
+# Options that shape a world, chosen when it is made and never changed.
+[[world_option]]
+id = "blasting"
+name = "Blasting charges"
+description = "May mining charges loosen rock? Off: black powder is for study only."
+default = 1

@@ -18,6 +18,10 @@
 --   t count              how many science nodes Progress validated
 --   t effects <prefix>   the speaker's summed effects, "key=value" sorted
 --   t branch <node>      the branch Progress holds for a node
+--   t ours               how many Craft recipes carry this mod's id
+--   t net <x> <y> <z>    this mod's network there: supply/demand/size
+--   t ignite <x> <y> <z> Craft lights the station there, for the speaker
+--   t progress <ticks> <container>  Craft's add_progress on a container
 
 local p = game.exports("tiamat_default_progress")
 local c = game.exports("tiamat_default_craft")
@@ -79,6 +83,25 @@ game.register_on_chat(function(e)
         for _, node in ipairs(p.nodes()) do
             if node.id == rest then say = tostring(node.branch) .. "/" .. tostring(node.reveal) end
         end
+    elseif word == "ours" then
+        local n = 0
+        for _, r in ipairs(c.recipes()) do
+            if string.sub(r.id, 1, 23) == "tiamat_default_science:" then n = n + 1 end
+        end
+        say = tostring(n)
+    elseif word == "net" then
+        local x, y, z = string.match(rest, "^(-?%d+) (-?%d+) (-?%d+)$")
+        local n = s.network_at({ x = math.tointeger(tonumber(x)), y = math.tointeger(tonumber(y)),
+            z = math.tointeger(tonumber(z)) })
+        say = n and string.format("%d/%d/%d", n.supply, n.demand, n.size) or "none"
+    elseif word == "ignite" then
+        local x, y, z = string.match(rest, "^(-?%d+) (-?%d+) (-?%d+)$")
+        local ok, why = c.ignite({ x = math.tointeger(tonumber(x)), y = math.tointeger(tonumber(y)),
+            z = math.tointeger(tonumber(z)) }, e.player)
+        say = tostring(ok) .. (why and (" " .. why) or "")
+    elseif word == "progress" then
+        local ticks, name = string.match(rest, "^(%d+) (.+)$")
+        say = tostring(c.add_progress(name, math.tointeger(tonumber(ticks))))
     elseif word == "glyph_of" then
         say = tostring(c.glyph_of(math.tointeger(tonumber(rest))))
     end

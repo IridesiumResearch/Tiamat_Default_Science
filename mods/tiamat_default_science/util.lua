@@ -102,6 +102,109 @@ function U.plain(value)
     return out
 end
 
+-- Recipes into Craft -------------------------------------------------------------
+
+-- Stations this mod registers: a recipe's `station = "frame"` is ours and is
+-- qualified; Craft's own (`hand`, `workbench`, `kiln`, ...) are bare.
+U.OWN_STATIONS = { frame = true, furnace = true }
+
+--- One entry of `config.lua`'s recipe lists, in Craft's form: a short id
+--- (`"C:glass"`, `"kite"`), `{ "id", count = n }`, `{ "id", units = n }`,
+--- `{ "id", wear = n }`, or a glyph, `{ glyph = "gear", material = "#plank",
+--- count = n }` — the glyph this mod's.
+function U.entry(e)
+    if type(e) == "string" then return U.id(e) end
+    if e.glyph then
+        return { glyph = U.id(e.glyph), material = U.id(e.material), count = e.count, units = e.units, wear = e.wear }
+    end
+    return { U.id(e[1]), count = e.count, units = e.units, wear = e.wear }
+end
+
+local function entries(list)
+    if not list then return nil end
+    local out = {}
+    for i, e in ipairs(list) do out[i] = U.entry(e) end
+    return out
+end
+
+--- A recipe from `config.lua`, as Craft's `register` takes it.
+function U.recipe(r)
+    local key = nil
+    if r.key then
+        key = {}
+        for letter, e in pairs(r.key) do key[letter] = U.entry(e) end
+    end
+    return {
+        id = U.id(r.id),
+        station = U.OWN_STATIONS[r.station] and U.id(r.station) or r.station,
+        inputs = entries(r.inputs),
+        pattern = r.pattern,
+        key = key,
+        outputs = entries(r.outputs),
+        tools = entries(r.tools),
+        heat = r.heat,
+        ticks = r.ticks,
+        requires = r.node,
+    }
+end
+
+--- Registers `list` with Craft, logging any it refuses, and files each by
+--- its node into `by_node` (node id -> list of recipes, in order) for the
+--- Theatrum. Answers how many were registered.
+function U.register_recipes(craft, list, by_node)
+    local n = 0
+    for _, r in ipairs(list) do
+        local ok, why = craft.register(U.recipe(r))
+        if ok then
+            n = n + 1
+            if r.node and by_node then
+                by_node[r.node] = by_node[r.node] or {}
+                table.insert(by_node[r.node], r)
+            end
+        else
+            game.log("tiamat_default_science: Craft refused the recipe " .. r.id .. ": " .. tostring(why))
+        end
+    end
+    return n
+end
+
+--- The block position a Craft container of one of this mod's stations names:
+--- `tiamat_default_craft:tiamat_default_science:<station>:[domain@]x,y,z`.
+function U.station_pos(name, station)
+    local prefix = "tiamat_default_craft:" .. game.mod_id .. ":" .. station .. ":"
+    if string.sub(name, 1, #prefix) ~= prefix then return nil end
+    local rest = string.sub(name, #prefix + 1)
+    local domain, xyz = string.match(rest, "^(.+)@(.+)$")
+    xyz = xyz or rest
+    local x, y, z = string.match(xyz, "^(-?%d+),(-?%d+),(-?%d+)$")
+    if not x then return nil end
+    return { x = math.tointeger(tonumber(x)), y = math.tointeger(tonumber(y)), z = math.tointeger(tonumber(z)),
+        domain = U.place(domain) }
+end
+
+--- The Craft container of one of this mod's stations at `pos`.
+function U.station_name(station, pos)
+    local at = pos.domain and (pos.domain .. "@") or ""
+    return string.format("tiamat_default_craft:%s:%s:%s%d,%d,%d", game.mod_id, station, at, pos.x, pos.y, pos.z)
+end
+
+--- A position as a key: `x,y,z` and the domain when it is not the overworld.
+function U.key(pos)
+    return string.format("%d,%d,%d,%s", pos.x, pos.y, pos.z, pos.domain or "")
+end
+
+--- The six blocks beside `pos`.
+function U.neighbours(pos)
+    return {
+        { x = pos.x + 1, y = pos.y, z = pos.z, domain = pos.domain },
+        { x = pos.x - 1, y = pos.y, z = pos.z, domain = pos.domain },
+        { x = pos.x, y = pos.y + 1, z = pos.z, domain = pos.domain },
+        { x = pos.x, y = pos.y - 1, z = pos.z, domain = pos.domain },
+        { x = pos.x, y = pos.y, z = pos.z + 1, domain = pos.domain },
+        { x = pos.x, y = pos.y, z = pos.z - 1, domain = pos.domain },
+    }
+end
+
 --- A sorted copy of a table's keys.
 function U.sorted_keys(t)
     local keys = {}

@@ -35,7 +35,13 @@ tds.items = load("items")               -- every item, from config's tables
 tds.blocks = load("blocks")             -- the blocks the path must have (the door, so far)
 tds.glyphs = load("glyphs")             -- carved shapes that mean something, into Craft
 tds.apprentice = load("apprentice")     -- the Tinker's Bench: shared nodes, recipes, discoveries
-tds.instruments = load("instruments")   -- the sundial, the glass, the compass, the kite
+tds.networks = load("networks")         -- turning: shafts, gears, wheels, and what turns them
+tds.frame = load("frame")               -- the machine frame, run by Craft at its network's speed
+tds.furnace = load("furnace")           -- the furnace, blasted by a turning shaft
+tds.mechanica = load("mechanica")       -- tier 3's recipes, studies and inventions
+tds.instruments = load("instruments")   -- the sundial, the glass, the compass, the kite, the staff, the needle
+load("charges")                         -- mining charges
+load("printing")                        -- treatises, printed and read
 tds.primer = load("primer")             -- the Theatrum Machinarum
 tds.tree = load("tree")                 -- the science tree, tiers 3 to 7, as data
 tds.path = load("path")                 -- the Antikythera Mechanism's path, and the tree, into Progress

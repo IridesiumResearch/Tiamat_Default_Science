@@ -16,7 +16,22 @@ for _, glyph in ipairs(G.table) do
     glyphs[glyph.id] = { mask = glyph.mask, variants = G.variants(glyph.mask) }
 end
 
+local N = tds.networks
+
+--- The turning network at a block: `{ kind = "turning", supply, demand,
+--- size }`, or nil where no network is. Answers nil for anything malformed.
+local function network_at(pos)
+    if type(pos) ~= "table" or math.type(pos.x) ~= "integer" or math.type(pos.y) ~= "integer"
+        or math.type(pos.z) ~= "integer" then
+        return nil
+    end
+    local net = N.at({ x = pos.x, y = pos.y, z = pos.z, domain = tds.util.place(pos.domain) })
+    if not net then return nil end
+    return { kind = "turning", supply = N.supply(net), demand = N.demand(net), size = net.size }
+end
+
 return {
     version = 1,
     glyphs = glyphs,
+    network_at = network_at,
 }

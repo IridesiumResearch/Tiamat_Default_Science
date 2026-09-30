@@ -3,7 +3,7 @@
 
 # Tiamat Default Science — the brief
 
-*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
+*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3; where the build of tier 3 departs from the text is §2.4. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
 
 *Not "tech": the id is `tiamat_default_science`, the path id `science`. Schism's `schism_tech` is superseded by this brief.*
 
@@ -213,6 +213,27 @@ Every sibling ask is answered (`docs/sibling-asks.md` has each shape and commit)
 | E-S2 | A generator's `pos.domain` names its instance (engine `61b4c3e`) | The slot grid and its 1,125-body cap are gone; each body generates from its own key (§6.8) |
 | E-S3 | Actions fire: the stub was stale | The Theatrum is on N — built, in 0.1.0; the automata will be on U |
 
+
+
+### 2.4 Built for 0.2.0 — where tier 3 departs from this text
+
+Tier 3 is built (steps 3 and 4 of §17). Where building it found the text wrong or unbuildable, the build took the course below; the sections it touches are otherwise as written.
+
+| The text | What was built | Why |
+|---|---|---|
+| Networks stored (`net:`, `netrec:`) and reloaded, never recomputed (§6.2, §15 rule 2) | Found by a bounded flood fill when asked, kept in memory, and forgotten whenever a frame, a furnace or any plank is placed or dug | The world is already the record: one flood per network after a restart, and no second copy to drift |
+| A plank network carries 16 turns over a run of 16 blocks | 16 turns at most, and a network of more than 16 carved parts carries nothing | A run needs a path through the graph; a count is the same limit a player can see |
+| The crank is a movement | A held crank handle, used on any frame, turns it: 4 turns for two seconds | A frame with a crank in it would be a source, not a machine; a child cranks the machine they want to run |
+| Millstones (flour) | Not built | Flour needs a Life item nobody asked for; the stamps are the tier's crusher |
+| The pump is a frame recipe | A frame with the pump movement lifts a block of water from under it to over it every two seconds at full speed, by this mod's own loop, conserved | Craft refuses a recipe with no inputs |
+| The trip hammer makes Craft's anvil products | Plates only | A frame chooses by its movement; one movement's recipes must not tie on the same input |
+| Glass blanks at the kiln, with a blowpipe | At the workbench, with the blowpipe as a tool | A heat station makes the first recipe by id its slots allow, and four blanks from one glass would always make the first |
+| Sand-mould casting | Four sand moulds, each a workbench pattern, used up by one casting | The mould chooses the casting at the furnace, as the movement chooses at a frame |
+| Movements wear | Movements and the press's notebook are tools that never wear (`wear = 0`) | A tool that is not Craft's registered tool is used up by wear |
+| The windmill: height from `depth_under`, doubled in storms | A plank wheel with two plank slab sails beside it, 8 or more blocks above the ground under it (`surface_at`), turning (2 + 1 per 16 blocks, at most 8) × twice Weather's wind strength | The ground as it is now, not as generated; the wind's strength already carries the storm |
+| The reading stone and the surveyor's staff | The staff; the Bench's burning glass is the reading stone | One magnifier is enough |
+| A treatise's topic | Signed by its printer (`a=<eight hex>`), no topic; `read:<mark>` pays once per author, twenty at most | A topic would be a choice the press cannot be told |
+| Crushed ore smelts "as ore" | Kiln recipes (crucible, heat 2) for copper, tin, silver, gold and lead, a bloomery recipe for iron, and the group `#smeltable_iron` the blast furnace takes | Craft's ore recipes name the ore |
 
 ---
 

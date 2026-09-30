@@ -22,10 +22,11 @@ one in `depends` or `optional_depends`. Source:
 |---|---|---|
 | `version` | integer, `1` | Bumped only when a change would break a reader. |
 | `glyphs` | `{ [id] = { mask, variants } }`, read-only | This mod's glyphs: the canonical mask of each (`x + 3y + 9z`) and every orientation registered with Craft, smallest first. The twelve of `glyph_table.lua`: `rod`, `plate`, `gear`, `wheel`, `pipe`, `coil`, `ring`, `gnomon`, `cairn`, `bracket`, `nozzle`, `rail`. |
+| `network_at(pos)` | `{ x, y, z, domain? }`, whole blocks | The turning network at a block: `{ kind = "turning", supply, demand, size }` (turns supplied, turns its frames need, blocks in it), or nil where none is. |
 
-That is all, for now. The brief's other fields (§12: `network_at`,
-`charge_of`, `add_charge`, `register_movement`, `register_source`,
-`bodies`, `on_fold`) are added as the machines they read are built.
+That is all, for now. The brief's other fields (§12: `charge_of`,
+`add_charge`, `register_movement`, `register_source`, `bodies`, `on_fold`)
+are added as the machines they read are built.
 
 ## Identifiers it registers
 
@@ -33,7 +34,23 @@ All are namespaced `tiamat_default_science:` by the engine.
 
 - **Items:** `theatrum` (the Theatrum Machinarum), `lens` (the burning
   glass), `kite`, `compass`, `notebook`.
-- **Blocks:** `antikythera` (the door; hardness 1.8, tag `metal`).
+- **Blocks:** `antikythera` (the door; hardness 1.8, tag `metal`),
+  `frame` (the machine frame), `furnace` and `furnace_lit` (light 13, 7, 2),
+  `copper_stock` (one copper ingot's worth, to carve into wire).
+- **Tier 3 items:** the movements `stamps`, `trip_hammer`, `pump`,
+  `leaching_vat`, `press` and `blowing_engine`; `crank_handle`; `crushed_copper`,
+  `_tin`, `_iron`, `_silver`, `_gold`, `_lead`; `pig_iron`, `slag`,
+  `blister_steel`; `sand_mould_pipe`, `_cylinder`, `_wheel`, `_plate` and
+  `cast_pipe`, `cast_cylinder`, `cast_wheel`, `frame_plate`; `clockwork`;
+  `saltpeter`, `black_powder`, `mining_charge`; `treatise`; `blowpipe`,
+  `glass_tube`, `glass_jar`, `glass_bulb`, `lens_blank`, `surveyors_staff`,
+  `dip_needle`, `drawplate`; and the tool `crowbar` (Craft's `maul`, tier 1;
+  an engine tool quick on `#cracked` rock).
+- **Stations, into Craft:** `tiamat_default_science:frame` (tool 1, in 2–5,
+  out 6–9; run by `runs`, its speed its network's turning) and
+  `tiamat_default_science:furnace` (fuel 1, in 2–4, tool 5, out 6–8; heat,
+  long, charcoal and coal; the blowing engine boosts it to heat 5 while its
+  network turns 8); the group `#smeltable_iron`.
 - **Into Progress:** the path `science`, "Natural Philosophy", whose door is
   `antikythera` (Progress registers its recipe as
   `tiamat_default_progress:door_science`: the Keystone, eight bronze gears,
@@ -47,8 +64,17 @@ All are namespaced `tiamat_default_science:` by the engine.
   `tiamat_default_science.kite`, `tiamat_default_science.home` and
   `tiamat_default_science.sunfire`, in the group `toybox`.
 - **Into Craft:** the recipes `theatrum`, `lens`, `kite`, `compass` (by
+  hand) and tier 3's forty-nine (`config.lua`'s `tier3_recipes`: at the
+  workbench, the frame, the furnace, Craft's kiln and bloomery, and by
   hand), each qualified `tiamat_default_science:<id>`; the twelve glyphs,
   each in every orientation (81 masks).
+- **Into Progress, tier 3:** the studies `study_pig_iron`, `study_lens`,
+  `study_clockwork` and `study_steel`; the discovery families
+  `tiamat_default_science.invention:*` (group `inventions`) and
+  `tiamat_default_science.read:*` (group `reading`), and the toy
+  `tiamat_default_science.water`.
+- **World option:** `blasting` (default on): whether mining charges loosen
+  rock.
 - **Into the interface:** the shape-crafter presets `gnomon`, `cairn`,
   `gear`, `wheel`, `pipe`, `coil` and `ring`, each shown to a player who
   holds its node.
@@ -67,13 +93,16 @@ the word is chat.
 
 - `cairn:<player UUID>` — the block of the last stone cairn that player
   placed, as `x,y,z,domain`. Forgotten when a compass finds it gone.
+- `placer:<x,y,z,domain>` — who placed the frame there, for its speed.
+- `read:<player UUID>` — how many treatises that player has learned from.
 - Particles: a compass's needle, to its holder alone; a kite over whoever
   flies it, to everyone within 64 blocks.
 
 ## What it reads from other mods
 
 Not exports, listed so the direction is clear: Progress's `register_node`,
-`register_discovery`, `discover` and `has`; Craft's `register`,
+`register_discovery`, `discover`, `register_study`, `effects_of` and `has`; Craft's `register`,
+`register_station`, `register_group`, `register_tool`, `on_crafted`, `on_first`, `in_group`,
 `register_glyph`, `glyph_of` and `ignite` (the burning glass, which listens
 for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`
 by name, so it is asked before a fire's box opens); the interface's `add_preset` and

@@ -440,6 +440,8 @@ pub struct World {
     pub names: Mutex<HashMap<String, MaterialId>>,
     /// Under a roof: no sky light anywhere.
     pub roofed: Mutex<bool>,
+    /// Every registered fluid's number, as the server numbers them.
+    pub fluid_ids: Mutex<HashMap<String, FluidId>>,
 }
 
 impl World {
@@ -514,14 +516,10 @@ impl fluid::Access for World {
         }
         true
     }
-    /// The world's water is fluid 1 and Weather's rainwater fluid 2: the two
-    /// the siblings name. Volumes are kept, kinds are not.
+    /// Every registered fluid, numbered as the server numbers them: the
+    /// world's water first. Volumes are kept, kinds are not.
     fn fluid_id(&self, name: &str) -> Option<FluidId> {
-        match name {
-            "tiamat_default_world:water" => Some(FluidId(1)),
-            "tiamat_weather:rainwater" => Some(FluidId(2)),
-            _ => None,
-        }
+        self.fluid_ids.lock().unwrap().get(name).copied()
     }
 }
 
@@ -741,6 +739,14 @@ impl Rig {
         vm.load_mod("probe", PROBE, &dir).unwrap_or_else(|err| panic!("the probe failed to load: {err:?}"));
         vm.freeze().unwrap();
         assert!(vm.faulted_mods().is_empty(), "faulted at load: {:?}", vm.faulted_mods());
+        // The fluids are numbered, as the server numbers them once the
+        // registry is built, and the VM told: the world's water first.
+        let mut names: Vec<String> = vm.registered_fluids().into_iter().map(|f| f.fluid).collect();
+        names.sort_by_key(|n| (n != "tiamat_default_world:water", n.clone()));
+        let fluid_ids: Vec<(String, FluidId)> =
+            names.into_iter().enumerate().map(|(i, n)| (n, FluidId(i as u8 + 1))).collect();
+        vm.set_fluid_ids(&fluid_ids);
+        *world.fluid_ids.lock().unwrap() = fluid_ids.into_iter().collect();
 
         let materials: HashMap<String, MaterialId> = vm.registered_blocks().into_iter().collect();
         *world.names.lock().unwrap() = materials.clone();
@@ -938,6 +944,42 @@ impl Rig {
     pub fn stand_at(&self, x: f64, y: f64, z: f64) {
         let mut map = self.entities.0.lock().unwrap();
         map.get_mut(&1).expect("the player's body").transform = Transform::from_world(x, y, z);
+    }
+
+    /// Puts `units` of `id` straight into a container's slot (one-based).
+    pub fn put_in(&self, name: &str, slot: usize, id: &str, units: u32) {
+        self.boxes.set(name, slot, Some(Stack::new(self.material(id), units).unwrap()));
+    }
+
+    /// What a container's slot holds: `(qualified id, units, detail)`.
+    pub fn slot_of(&self, name: &str, slot: usize) -> Option<(String, u32, Option<String>)> {
+        let stack = self.boxes.get(name, slot)?;
+        let id = self.materials.iter().find(|(_, m)| **m == stack.material).map(|(k, _)| k.clone())?;
+        Some((id, stack.units, stack.detail.clone()))
+    }
+
+    /// Units of `id` across a container's slots `from..=to`.
+    pub fn units_in(&self, name: &str, from: usize, to: usize, id: &str) -> u32 {
+        (from..=to).filter_map(|s| self.slot_of(name, s)).filter(|(i, _, _)| i == id).map(|(_, u, _)| u).sum()
+    }
+
+    /// A block of fluid (the world's water) at `(x, y, z)`, `volume` cells.
+    pub fn water(&self, x: i32, y: i32, z: i32, volume: u32) {
+        self.world.fluids.lock().unwrap().insert((x, y, z), volume);
+    }
+
+    /// The fluid volume at `(x, y, z)`.
+    pub fn water_at(&self, x: i32, y: i32, z: i32) -> u32 {
+        self.world.fluids.lock().unwrap().get(&(x, y, z)).copied().unwrap_or(0)
+    }
+
+    /// A stack of `id` with a `detail`, put in a player's pack and held.
+    pub fn hold_detailed(&self, player: [u8; 32], id: &str, detail: &str) {
+        let material = self.material(id);
+        let mut stack = Stack::new(material, 27).unwrap();
+        stack.detail = Some(detail.to_owned());
+        self.inventory.put(player, stack);
+        self.inventory.held.lock().unwrap().insert(player, (material, Some(detail.to_owned())));
     }
 
     /// One of this mod's stored values, as debug text.

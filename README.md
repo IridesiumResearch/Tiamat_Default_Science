@@ -30,6 +30,17 @@ which `tools/check_tree.py` proves sound and writes into `docs/history.md`;
 the tiers whose content is built are registered, tier 3 first. The twelve
 glyphs are `glyph_table.lua`, which `tools/glyphs.py` checks against magic's.
 
+Step 4: **tier 3, Mechanica** (0.2.0). A machine frame takes a movement —
+stamps that crush ore for a third more metal, a trip hammer, a screw pump, a
+leaching vat for saltpetre, a printing press — and turns at the speed its
+network supplies: a crank handle, a carved plank water wheel in water, or a
+windmill high in the wind, joined by carved rods and gears. A brick furnace
+with a blowing engine and a turning shaft makes pig iron, then wrought iron,
+sand-cast parts and, over a day and a night, blister steel. Black powder and
+mining charges, glass blown and ground, the surveyor's staff and the dip
+needle, clockwork from carved gears, and copper drawn into stock. Where the
+build departs from the brief is its §2.4.
+
 ## What is here
 
 | File | What |

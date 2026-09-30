@@ -137,8 +137,89 @@ def antikythera():
     return c
 
 
+def flat(colour):
+    """A block: one flat colour."""
+    def draw():
+        c = Canvas()
+        c.rect(0, 0, SIZE - 1, SIZE - 1, colour)
+        return c
+    return draw
+
+
+def heap(colour):
+    """Loose stuff: crushed ore, powder, saltpetre, slag."""
+    def draw():
+        c = Canvas()
+        for y in range(8, 15):
+            half = min(y - 7, 6)
+            c.rect(8 - half, y, 7 + half, y, colour)
+        c.rect(6, 7, 9, 7, colour)
+        return c
+    return draw
+
+
+def bar(colour):
+    """Metal: pig iron, blister steel, a plate."""
+    def draw():
+        c = Canvas()
+        c.rect(2, 6, 13, 10, colour)
+        c.rect(3, 5, 12, 5, tuple(min(255, v + 30) for v in colour))
+        return c
+    return draw
+
+
+def part(colour):
+    """A made part or movement: a squared frame of the colour."""
+    def draw():
+        c = Canvas()
+        c.rect(2, 2, 13, 13, colour)
+        c.rect(4, 4, 11, 11, (0, 0, 0))
+        c.rect(5, 5, 10, 10, colour)
+        return c
+    return draw
+
+
+def glassware():
+    c = Canvas()
+    c.rect(6, 2, 9, 13, GLASS_EDGE)
+    c.rect(7, 3, 8, 12, GLASS)
+    return c
+
+
+def staff():
+    c = Canvas()
+    for i in range(12):
+        c.dot(2 + i, 13 - i, WOOD)
+    c.disc(25, 7, 12, BRASS)
+    return c
+
+
+IRON_GREY = (110, 110, 118)
+STEEL = (150, 160, 175)
+COPPER_C = (196, 116, 70)
+
 DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass, "notebook": notebook,
-        "antikythera": antikythera}
+        "antikythera": antikythera,
+        # tier 3 blocks
+        "frame": flat((88, 80, 72)), "furnace": flat((150, 72, 56)), "furnace_lit": flat((210, 120, 60)),
+        "copper_stock": flat(COPPER_C),
+        # movements and tools
+        "crank_handle": part(WOOD), "stamps": part(IRON_GREY), "trip_hammer": part((90, 90, 96)),
+        "pump": part(WOOD), "leaching_vat": part((130, 100, 70)), "press": part((80, 80, 88)),
+        "blowing_engine": part(LEATHER), "blowpipe": bar(IRON_GREY), "drawplate": bar(IRON_GREY),
+        "crowbar": bar((70, 70, 76)), "surveyors_staff": staff, "dip_needle": part(BRASS),
+        # materials
+        "crushed_copper": heap(COPPER_C), "crushed_tin": heap((200, 200, 205)), "crushed_iron": heap((150, 100, 80)),
+        "crushed_silver": heap((215, 215, 225)), "crushed_gold": heap((230, 190, 60)),
+        "crushed_lead": heap((90, 95, 110)), "pig_iron": bar((95, 90, 90)), "slag": heap((60, 55, 60)),
+        "blister_steel": bar(STEEL), "saltpeter": heap((240, 240, 235)), "black_powder": heap((40, 40, 40)),
+        "mining_charge": part((150, 40, 30)), "treatise": notebook, "clockwork": part(BRASS),
+        "sand_mould_pipe": part((220, 200, 150)), "sand_mould_cylinder": part((220, 200, 150)),
+        "sand_mould_wheel": part((220, 200, 150)), "sand_mould_plate": part((220, 200, 150)),
+        "cast_pipe": bar((100, 100, 108)), "cast_cylinder": part((100, 100, 108)),
+        "cast_wheel": part((100, 100, 108)), "frame_plate": bar((100, 100, 108)),
+        "glass_tube": glassware, "glass_jar": glassware, "glass_bulb": glassware, "lens_blank": lens,
+        }
 
 
 def main():

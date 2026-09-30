@@ -22,15 +22,6 @@ local A = {}
 local progress = U.exports("tiamat_default_progress")
 local craft = U.exports("tiamat_default_craft")
 
-local function qualify_list(list)
-    if not list then return nil end
-    local out = {}
-    for i, entry in ipairs(list) do
-        out[i] = { U.id(entry[1]), count = entry.count, units = entry.units, wear = entry.wear }
-    end
-    return out
-end
-
 -- The nodes -----------------------------------------------------------------------
 
 A.nodes = {}        -- node id -> its config entry, for the book
@@ -50,24 +41,7 @@ end
 A.recipes = {}      -- node id -> list of its recipes, in config order, for the book
 
 if craft then
-    for _, r in ipairs(C.bench_recipes) do
-        local ok, why = craft.register{
-            id = U.id(r.id),
-            station = r.station,
-            inputs = qualify_list(r.inputs),
-            outputs = qualify_list(r.outputs),
-            tools = qualify_list(r.tools),
-            heat = r.heat,
-            ticks = r.ticks,
-            requires = r.node,
-        }
-        if ok then
-            A.recipes[r.node] = A.recipes[r.node] or {}
-            table.insert(A.recipes[r.node], r)
-        else
-            game.log("tiamat_default_science: Craft refused the recipe " .. r.id .. ": " .. tostring(why))
-        end
-    end
+    U.register_recipes(craft, C.bench_recipes, A.recipes)
 end
 
 -- Discoveries: play itself pays a little ---------------------------------------------
@@ -78,6 +52,9 @@ A.HOUR = game.mod_id .. ".hour"
 A.KITE = game.mod_id .. ".kite"
 A.HOME = game.mod_id .. ".home"
 A.SUNFIRE = game.mod_id .. ".sunfire"
+A.WATER = game.mod_id .. ".water"
+A.INVENTION = game.mod_id .. ".invention"
+A.READ = game.mod_id .. ".read"
 
 if progress then
     progress.register_discovery{ id = A.HOUR, insight = C.toybox.hour, label = "The hour, told by the sun",
@@ -87,6 +64,8 @@ if progress then
     progress.register_discovery{ id = A.HOME, insight = C.toybox.home, label = "A needle that finds home",
         group = "toybox" }
     progress.register_discovery{ id = A.SUNFIRE, insight = C.toybox.sunfire, label = "A fire lit by sunshine",
+        group = "toybox" }
+    progress.register_discovery{ id = A.WATER, insight = C.toybox.water, label = "Water that climbs",
         group = "toybox" }
 end
 

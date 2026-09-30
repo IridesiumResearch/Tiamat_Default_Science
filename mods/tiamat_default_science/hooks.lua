@@ -16,6 +16,7 @@ local uses = {}
 local listed = {}
 local listed_materials = {}
 local places = {}
+local digs = {}
 local ticks = {}
 local dialogs = {}
 local actions = {}
@@ -31,6 +32,10 @@ tds.online = {}
 --- say, and a placement does not either, so this is how a cairn knows where
 --- it stands.
 tds.domain_of = {}
+
+--- The ticks this mod has seen since the server started: a clock for things
+--- that last a few seconds (a crank turned, a fuse lit). Not saved.
+tds.now = function() return 0 end
 
 --- Runs `fn(player, rest)` when a player says `word` (case-insensitive),
 --- alone or followed by more words. A string `fn` answers is its reply, said
@@ -63,6 +68,13 @@ end
 --- no placement, so what `fn` answers is ignored.
 function tds.on_place(fn)
     places[#places + 1] = fn
+end
+
+--- Runs `fn(event)` when a dig is about to remove a block. It watches:
+--- this mod refuses no dig, so what `fn` answers is ignored. The block is
+--- still there when it runs, and a later mod may yet refuse the dig.
+function tds.on_dig(fn)
+    digs[#digs + 1] = fn
 end
 
 --- Runs `fn(tick)` every `period` ticks.
@@ -126,7 +138,13 @@ function H.install()
         return nil
     end)
 
+    game.register_on_dig_complete(function(event)
+        for _, fn in ipairs(digs) do fn(event) end
+        return nil
+    end)
+
     local now = 0
+    tds.now = function() return now end
     game.register_on_tick(function(dt)
         for _ = 1, dt do
             now = now + 1
