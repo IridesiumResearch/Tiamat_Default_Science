@@ -345,8 +345,14 @@ fn the_book() {
     let mut r = Rig::new(Setup::default());
     ready(&mut r, 15);
     assert_eq!(r.ask("science book"), "You have no Theatrum. Make one by hand: leather, two bark strips, charcoal.");
+    r.action(PLAYER, &format!("{MOD}:theatrum"));
+    assert!(r.last_dialog().is_none(), "the key opens no book for a player without one");
     learn(&mut r, "shared.theatrum");
     r.give(PLAYER, "theatrum", 27);
+
+    r.action(PLAYER, &format!("{MOD}:theatrum"));
+    let (form, _) = r.last_dialog().expect("the key opens it");
+    assert_eq!(form, format!("{MOD}:theatrum"));
 
     assert_eq!(r.ask("science book"), "", "opened, and nothing said");
     let (form, tree) = r.last_dialog().expect("the book");

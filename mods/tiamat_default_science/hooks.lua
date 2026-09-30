@@ -18,6 +18,7 @@ local listed_materials = {}
 local places = {}
 local ticks = {}
 local dialogs = {}
+local actions = {}
 local joins = {}
 local leaves = {}
 
@@ -67,6 +68,15 @@ end
 --- Runs `fn(tick)` every `period` ticks.
 function tds.on_tick(period, fn)
     ticks[#ticks + 1] = { period = period, fn = fn }
+end
+
+--- Registers the action `id` (this mod's, unqualified) with a suggested
+--- key, and runs `fn(player)` when a player presses whatever key they bound
+--- to it. The engine owns the keys (charter rule 11): this mod never reads
+--- one.
+function tds.on_action(id, default_key, description, fn)
+    game.register_action{ id = id, default_key = default_key, description = description }
+    actions[game.mod_id .. ":" .. id] = fn
 end
 
 --- Runs `fn(event)` for events from the dialog this mod showed as `form`.
@@ -124,6 +134,12 @@ function H.install()
                 if now % t.period == 0 then t.fn(now) end
             end
         end
+    end)
+
+    -- A press, not the release: an action here is a thing done once.
+    game.register_on_action(function(event)
+        local fn = actions[event.id]
+        if fn and event.pressed then fn(event.player) end
     end)
 
     game.register_on_dialog_event(function(event)

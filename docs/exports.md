@@ -44,6 +44,8 @@ All are namespaced `tiamat_default_science:` by the engine.
 - **Into the interface:** the shape-crafter presets `gnomon` and `cairn`,
   each shown to a player who holds its node.
 - **Dialog:** `theatrum`, the Theatrum Machinarum.
+- **Action:** `theatrum` (default key N), which opens the Theatrum for a
+  player who carries one.
 
 ## Commands it accepts
 

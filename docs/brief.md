@@ -3,7 +3,7 @@
 
 # Tiamat Default Science — the brief
 
-*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — are §2.3. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
+*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
 
 *Not "tech": the id is `tiamat_default_science`, the path id `science`. Schism's `schism_tech` is superseded by this brief.*
 
@@ -111,15 +111,15 @@ Everything in Craft's and Progress's briefs §2 still applies. The ones that sha
 | Node effects on Craft | Craft sums `craft.*` effects over every node a player holds (Progress `effects_of`) | Science nodes carry `craft.smelt_ore_units`, `craft.sluice_gold_period`, `craft.anvil_strikes`… (§5.6). |
 | Reading what a player looks at | `game.looking_at(uuid)` → block `{x,y,z,material,face}` in **cell** coordinates (three per block; divide by 3) or an entity; `game.star_in_view(uuid)` → `{ id, alignment }`; `game.stars()` → `{ id, x, y, z, magnitude, warmth }` (stubs) | Instruments are held items that read these; no new blocks. |
 | Damage | Life exports none; exports `set_alight` (Life exports) | The Tesla coil's arc sets hostile creatures alight. Pushing and stasis on Life's creatures: Life's `push` and `freeze` (L-S2, answered). |
-| Movement and gravity | `set_player_abilities` (fly, speed — last writer wins, client-predicted, and Life writes it); `push_player(uuid, impulse)` — "added, not set", **not** documented as predicted; **no per-player or per-domain gravity** (stubs) | Flight is a source of ours in Life's `set_ability` (L-S3, answered), never `set_player_abilities`. Low gravity is an upward impulse per tick until **E-S1**, tried in a real window for rubber-banding before it ships. |
+| Movement and gravity | `set_player_abilities` (fly, speed — last writer wins, client-predicted, and Life writes it); `gravity` on `set_player_abilities`: a multiplier on the gravity acting on a player's body, 0 to 4, **predicted by the client with the same number** (E-S1, engine `b0996cb`) | Flight and low gravity are sources of ours in Life's `set_ability`, never `set_player_abilities` — Life writes that call, and the last writer wins. Life's spec carries `speed_mul` and `fly`; `gravity` is sibling ask **L-S7**. No `push_player` anywhere. |
 | The sky | `set_sky_modifier` is one per player, last writer wins, and **Weather writes it for everyone**, whenever its value changes (Weather `fx.lua`) | The Core's darkening and the atmosphere processor go through Weather's `add_overlay(player, source, spec)` (Wx-S2, answered), laid over the weather's own. This mod never calls `set_sky_modifier`. |
 | Long recipes | Craft refuses any recipe over **72,000 ticks** (`max_ticks`) | Blister steel is one in-game day (24,000 ticks at the core sky's day), one recipe (§2.2). Stations pause while their chunk is unloaded (Craft `furnace.lua`) — except a heat station registered `long = true`, which works the ticks it missed when next loaded, fuel permitting (Craft 0.5.0). The furnace is one; a frame is not. |
 | Detailed stacks | a stack with a `detail` is never a Craft ingredient | Charged jars and cells (detail `e=`) are never ingredients; recipes take **empty** jars and cells, which carry no detail until first charged. |
 | Shared reagents | magic also makes saltpeter, oil of vitriol and quicksilver | Each mod registers its own item and adds it to the Craft groups `#saltpeter`, `#oil_of_vitriol`, `#quicksilver`; every recipe names the group, so reagents trade across the Fork. |
-| Worlds at stars | `create_domain(template, key, { position })` makes a body AT a star, which then has that star's sky; generator told `{x,y,z,seed}` only (stubs; engine `core_space` proves the mechanism) | Star bodies use the **slot trick** (§6.8): every coordinate in every domain lies in −60,000..59,999 (engine `coords.rs`), so bodies are tiled inside that; **E-S2** would retire it. |
+| Worlds at stars | `create_domain(template, key, { position })` makes a body AT a star, which then has that star's sky; a generator's `pos` carries `domain` — `"template/key"` for an instance — in every VM that generates (E-S2, engine `61b4c3e`) | Each body is its own world: its generator seeds its streams from the instance key and reads its kind and size from this mod's record of that key (§6.8). No slot grid, no cap from coordinates. |
 | Plans | `plans.capture/stamp/info/list/forget`, 64 per side, paced by the engine (stubs, `core_plans`) | The daguerreotype captures; the blueprint stamps — paying blocks first (§6.6). |
 | Lightning | Weather `on_lightning(fn(x,y,z))` after every bolt (Weather exports) | Franklin's rod. |
-| Actions | `register_action` is stored and inert until the engine's Task 13 (stubs) | Every screen also opens by using its item and by chat until then. |
+| Actions | `register_action` with a `default_key`; presses and releases reach `register_on_action` as `{ player, id, pressed }` (E-S3: the stub's "inert until Task 13" was stale) | Each screen has its key, and also opens by using its item and by chat. |
 | Using a station | Craft's unlisted `on_use` opens a station's box, asked in load order ahead of this mod (Craft `stations.lua`, `hooks.lua`) | The crank is heard through `register_on_use(fn, { materials = { frame } })`, asked first, and answers `nil` unless a `crank_handle` is held. |
 | Pictures | ≤ 512 per server | The *Theatrum* uses ≤ 120. |
 | Models | ≤ 64 per server | Three (§10.1). |
@@ -130,7 +130,7 @@ Every claim in §2 and below was re-checked against `stubs/game.lua`, the engine
 
 | Draft 1 said | What is so (source) | What changes |
 |---|---|---|
-| Star bodies at `x0 = (slot × 2 + 1) × 2^20` | Every block coordinate in every domain lies in −60,000..59,999 (engine `crates/core/src/coords.rs`); `move_player` refuses outside it. Slot 0 was already past it | The slot trick: 15 × 15 slots of 8,000 blocks per kind, 225 bodies a kind; §6.8 |
+| Star bodies at `x0 = (slot × 2 + 1) × 2^20` | Every block coordinate in every domain lies in −60,000..59,999 (engine `crates/core/src/coords.rs`); `move_player` refuses outside it. Slot 0 was already past it | The slot trick: 15 × 15 slots of 8,000 blocks per kind, 225 bodies a kind — **superseded 2026-09-30** by E-S2 (§2.3) |
 | The burning glass lights a laid campfire or kiln | Craft exports no way to light anything: a campfire lights only to a held `fire_striker`, a furnace only through its own striker path (Craft `fire.lua`, `furnace.lua`) | A magnifier until ask **C-S6**; §4, §6.4 |
 | The Difference Engine makes studies pay 20 % more | `register_study` pays a fixed `insight`; Progress reads no effect when it pays (Progress `research.lua`) | Ask **P-S2**; the effect is carried and inert until then |
 | A star pays 2 with the spectroscope (`science.star_insight`) | A discovery family has one value for every member (Progress `insight.lua`) | A second family, `spectrum:*`; §6.9 |
@@ -163,7 +163,7 @@ Every claim in §2 and below was re-checked against `stubs/game.lua`, the engine
 | Cavorite soles need L-S5 | Life's worn view is an inventory: `game.inventory(uuid, "tiamat_default_life:worn")` | L-S5 withdrawn |
 | L-S4 asks permission to move Life's drops | The engine does not check who owns an entity (engine `mlua_vm.rs`) | A courtesy to agree, not a permission |
 | `on_repath` as an ordinary event | It fires only with Progress's `repath` world option, which revokes every `science.` node without refund and halves insight (Progress `fork.lua`) | Stated; restoring anything is this mod's |
-| The *Theatrum* on N, automata on U | `register_action` is "stored now, inert until Task 13" (stubs) | Also by using the item and by chat until then |
+| The *Theatrum* on N, automata on U | `register_action` is "stored now, inert until Task 13" (stubs) | Also by using the item and by chat until then — **superseded 2026-09-30**: the stub was stale, and actions fire (§2.3) |
 | Node `label` ≤ 32, text ≤ 90 | Progress keeps 48 and 200 (`nodes.lua`); ours are tighter by choice | Unchanged: ours |
 
 **Held**, and not repeated above: every other Craft, Progress, World, Life, Weather, interface and engine call and id the text names; the UI's Pillar (74752) and Slab (1838599) masks; all twelve glyph masks against their drawings, their variant counts under the 48 symmetries, and no collision with magic's fifteen or the UI's Stairs; any mod may register `shared.*` nodes; and the tree's own arithmetic — 107 nodes, 66,870 insight, 40,050 on the spine, ≈ 58 h — recomputed from the tables.
@@ -184,7 +184,7 @@ Also departing from draft 0, and to be said to the sibling concerned: Craft expe
 
 ### 2.3 Answered 2026-09-30 — what the siblings built, and what it changes
 
-Every sibling ask is answered (`docs/sibling-asks.md` has each shape and commit), and the text below is changed where each appears. What still stands in is for the engine's asks alone: E-S1 (gravity), E-S2 (the instance in a generator) and E-S3 (actions).
+Every sibling ask is answered (`docs/sibling-asks.md` has each shape and commit), and the text below is changed where each appears. The engine's three asks landed or were answered the same day (below), so nothing in this brief stands in for anybody — except gravity's route through Life (L-S7, asked 2026-09-30).
 
 | Ask | Now so | What changes here |
 |---|---|---|
@@ -196,7 +196,7 @@ Every sibling ask is answered (`docs/sibling-asks.md` has each shape and commit)
 | C-S7 | `perform(..., { unattended = true })` | A frame's tools are its own |
 | Craft 0.5.0, unasked | `long = true`: a heat station works the time it missed while unloaded | The furnace is `long`, so blister steel's day passes whether or not anybody stands by it |
 | L-S2 | `push(entity, velocity)`, `freeze(entity, ticks)` | Wells, repulsors and stasis reach Life's creatures |
-| L-S3 | `set_ability(uuid, source, { speed_mul, fly })` | The levitator flies through it; plating's low gravity still waits on E-S1 |
+| L-S3 | `set_ability(uuid, source, { speed_mul, fly })` | The levitator flies through it; low gravity joins it with L-S7 |
 | L-S4 | Yes, and `pull_drops(pos, radius, strength)` | The electromagnet calls `pull_drops` |
 | L-S6 | A lead used at a fence post ties what its holder leads | The Magdeburg hemispheres get their two horses |
 | W-S2 | `cave_earth` (tags `soil`, `nitrous`) | The saltpetre men leach cave earth; `dirt` retired |
@@ -208,6 +208,9 @@ Every sibling ask is answered (`docs/sibling-asks.md` has each shape and commit)
 | Wx-S2 | `add_overlay(player, source, spec)` | The Core's darkening and the atmosphere processor's sky (§6.8) |
 | Wx-S3 | Weather is the overworld's: a player in another domain is in no square | A body's sky and clouds are this mod's (§6.8) |
 | Wx-S4 | `fires_near(x, y, z, r)` | The lightning rod puts out every fire within 16 (§6.5) |
+| E-S1 | `set_player_abilities{ gravity }`, client-predicted (engine `b0996cb`, protocol 83) | Plating, soles and light bodies set a gravity multiplier; the `push_player` stand-in is gone before it was built. It goes through Life's `set_ability`, which wants a `gravity` field: sibling ask **L-S7** |
+| E-S2 | A generator's `pos.domain` names its instance (engine `61b4c3e`) | The slot grid and its 1,125-body cap are gone; each body generates from its own key (§6.8) |
+| E-S3 | Actions fire: the stub was stale | The Theatrum is on N — built, in 0.1.0; the automata will be on U |
 
 
 ---
@@ -555,7 +558,7 @@ The **aether** is the period's own physics: Maxwell's waves needed a medium, and
 
 - **Aetherium** (item): orichalcum "rung" in a frame with a Tesla coil within 8 → aetherium ingot. World's orichalcum finally has its science reading.
 - **Cavorite** (block): 1 aetherium + 1 lead ingot + 1 `helium` + 1 steel ingot → 27 units (Wells: an alloy with helium). Class `reinforced`. Carvable like any block.
-- **Gravity plating**: a `plate` glyph of cavorite under your feet → an upward impulse each tick that cancels 5/6 of gravity (moon gravity) while you stand within 3 blocks above it. **Cavorite soles** (worn; read from `game.inventory(uuid, "tiamat_default_life:worn")`): the same anywhere, halved. Until **E-S1** (engine gravity scale) this is `push_player` per tick — test that it does not rubber-band.
+- **Gravity plating**: a `plate` glyph of cavorite under your feet → gravity 0.17 (the Moon's) while you stand within 3 blocks above it, and 1 again when you step off. **Cavorite soles** (worn; read from `game.inventory(uuid, "tiamat_default_life:worn")`): 0.5 anywhere. Set as this mod's source in Life's `set_ability` (L-S7), so Life composes it with its own; the client predicts it, so nobody rubber-bands. Checked on the player's move, not on the tick.
 - **Gravity well**: a frame with `attractor` / `repulsor` movement; 16 charge/s; radius 8; item entities pushed toward/away, and Life's creatures through Life's `push` (L-S2).
 - **Levitator** (worn harness + carried cell): flight, 4 charge/s, as a source of ours in Life's `set_ability` (L-S3).
 - **Stasis field**: frame movement; entities in radius 6 hang still: our own by velocity zeroed each tick, Life's by Life's `freeze` (L-S2).
@@ -567,8 +570,8 @@ The **aether** is the period's own physics: Maxwell's waves needed a medium, and
 
 - **The Core** (construct §7.3): anchor = a **throat** block (`wormhole`, the one block the Fold adds) at the centre of three orthogonal 5×5 rings of cavorite `ring` glyph blocks; a gravity engine within 16; four Tesla coils at the corners of its base. Checked on use of the throat with a `fold_key` (relic §7.5). While spinning: three entities with the `core_ring` model spawned at the centre, each yawing/pitching at a different rate (`set_entity yaw/pitch` every tick — three entities, cheap); the sky darkens for everyone within 64 (Weather's `add_overlay`, source `tiamat_default_science:core`, taken off when it stops); `play_loop` of `core_hum`.
 - **Wormholes** (`wormhole_gates`): two gate constructs (3×3 upright ring of 8 cavorite ring blocks, air at the centre) linked by using each with your `fold_key` (the pairing is kept in storage against you, so the key carries no detail). Powered (32 charge/s each while open), the centre becomes a `wormhole` block (passable, transparent, light {6,4,12}); `register_on_player_move` into it → `move_player` to the twin (same domain). Items thrown in follow. Cap 8 pairs per player.
-- **The Fold to the stars** (`fold_to_stars`): at a Core, the player looks at a star (`star_in_view`, alignment ≥ 0.9998, about a degree — the nearest star is always answered, so the threshold is the aim) and chooses *Fold to the star* in the Core dialog. A body is made for that star: `create_domain("tiamat_default_science:body_<kind>", tostring(star.id), { position = star })`. `kind` from the star's `warmth`: < 0.2 **ice**, < 0.4 **rust** (red desert), < 0.6 **regolith** (grey, cratered), < 0.8 **basalt** (volcanic), else **glass** (obsidian and sand, scorched). Magnitude → size of the body's habitable disc and its gravity (low-g bodies push you up, as plating does). Every body is **barren**: no plants, no water on the surface (ice below, on ice bodies), no life. Science reaches worlds; it does not make them (magic weaves; science travels and changes). The first visit to each star's body is a discovery (`body:*`, 100).
-- **The slot trick** (because a generator is not told its instance — **E-S2**): five templates (one per kind) registered at load. Every block coordinate in every domain lies in −60,000..59,999 (engine `coords.rs`), so each kind's template is a 15 × 15 grid of 8,000-block slots; a body takes the next free slot of its kind and is a disc of at most 3,000 blocks radius at that slot's centre, air beyond. Each body is its own slice of noise, and its size and gravity band are readable from the slot in the generator (a pure function of position) and in this mod. That is 225 bodies of each kind, 1,125 in a world — the cap, in `config.lua`; the Fold refuses a star whose kind is full and says so. A return gate is built for you on arrival (a single wormhole block on a cavorite plate); stepping into it `transfer_entity`s you back to the Core's domain — the one cross-domain gate, since wormhole pairs are same-domain `move_player`.
+- **The Fold to the stars** (`fold_to_stars`): at a Core, the player looks at a star (`star_in_view`, alignment ≥ 0.9998, about a degree — the nearest star is always answered, so the threshold is the aim) and chooses *Fold to the star* in the Core dialog. A body is made for that star: `create_domain("tiamat_default_science:body_<kind>", tostring(star.id), { position = star })`. `kind` from the star's `warmth`: < 0.2 **ice**, < 0.4 **rust** (red desert), < 0.6 **regolith** (grey, cratered), < 0.8 **basalt** (volcanic), else **glass** (obsidian and sand, scorched). Magnitude → size of the body's habitable disc and its gravity (a light body sets your gravity on arrival and puts it back when you leave, as plating does). Every body is **barren**: no plants, no water on the surface (ice below, on ice bodies), no life. Science reaches worlds; it does not make them (magic weaves; science travels and changes). The first visit to each star's body is a discovery (`body:*`, 100).
+- **Each body is its own world.** Five templates (one per kind) registered at load; a body is `create_domain(template, tostring(star.id), { position = star })`. Its generator reads `pos.domain` (`"template/key"`, E-S2), seeds its streams from the key, and takes the body's size and gravity from the star: this mod keeps no record the generator needs, since the star catalog is the seed's on every VM. A body is a disc of at most 3,000 blocks radius, air beyond, well inside the world's −60,000..59,999. There is no cap but the per-player one in `config.lua`. A return gate is built for you on arrival (a single wormhole block on a cavorite plate); stepping into it `transfer_entity`s you back to the Core's domain — the one cross-domain gate, since wormhole pairs are same-domain `move_player`.
 - **Terraforming**: a frame with the `terraformer` movement on a body converts its 16×16 footprint around it, one column per 10 ticks at 128 charge/s: regolith/rust/ash → World `dirt` → `grass`; places World's plants (`tall_grass`, `fern`, … by `set_block`; World exports no cover call) from a palette; on ice bodies, melts ice to water (`set_fluid` from ice units: conserved). When 60 % of a 64×64 region is green, the body is *living* (discovery 500) and the `atmosphere_processor` may change its sky (per player on arrival, through `add_overlay`; Weather stands aside off the overworld, so a body's sky and clouds are this mod's own).
 - **The Deep** (`the_deep`, world option): a Core folded *blind* — the Core dialog's second choice, offered only in a world with the option — misfolds. A registered (not instanced) domain `tiamat_default_science:deep`: floating fragments of World's `dark_basalt`, `obsidian` and `morphic_rock` in a black void, no stars, a dim red grade, a slow wind loop and far-off voices that are almost your own chat played backwards (sound design, not text). **Strange matter**: digging `morphic_rock` in the Deep drops `strange_matter` units instead (a `register_on_dig_complete` drops override; a dig event names no domain, so this mod keeps each player's domain from `register_on_player_move` and answers only in the Deep — and a drops override is last-answer-wins, so agree with World that it does not answer for `morphic_rock`). **The shades** (model `shade`): tall, still silhouettes that are always a little further away than they were; if one reaches you, you are pushed toward the nearest edge and your lamp-light flickers. **Falling off a fragment** (below y = −64) returns you through your throat to the Core — alive, but the strange matter you carried stays behind. That is the whole danger, and it is enough.
 - **Recall beacon**: a carried pocket fold home to your nearest gate, once an hour.
@@ -706,10 +709,10 @@ From a table in `items.lua` (≈ 130). Groups: `#movement`, `#instrument`, `#cel
 
 ### 10.3 Screens
 
-- ***Theatrum Machinarum*** (action `theatrum`, default key **N** once actions work; until then by using the book and by chat `science book`; UI tab): machine pictures, one page per node held or next learnable.
+- ***Theatrum Machinarum*** (action `theatrum`, default key **N**; also by using the book and by chat `science book`): machine pictures, one page per node held or next learnable.
 - **Frame tab**: movement, network supply/demand, job progress, the card's choice.
 - **Network tab**: sources, loads, stores, losses for the network under the cursor (`looking_at`).
-- **Automata tab**; action `automaton` (default key **U**, and meanwhile by using the automaton key) calls the first home.
+- **Automata tab**; action `automaton` (default key **U**, and by using the automaton key) calls the first home.
 - **Core dialog**: spin up, the star in view, the destinations known.
 - **HUD** (one script): the held instrument's reading, and the held cell's charge.
 
@@ -788,6 +791,7 @@ Every time in this section is time with a player near: stations pause in unloade
 - ~~**L-S4, moving drop entities**~~ — answered: `pull_drops(pos, radius, strength)`.
 - ~~**L-S5, reading the worn view**~~ — not needed: `game.inventory(uuid, "tiamat_default_life:worn")` reads it.
 - ~~**L-S6, a tether**~~ — answered: a lead used at a fence post.
+- **L-S7, gravity in `set_ability`.** A `gravity` multiplier in the spec, composed across sources by multiplying, so plating and soles never fight Life's own write. Asked 2026-09-30.
 
 **World**
 - ~~**W-S1, pitchblende**~~ — landed: World generates it from 1,200 down.
@@ -809,9 +813,9 @@ Every time in this section is time with a player near: stations pause in unloade
 
 ### `docs/engine-asks.md`
 
-- **E-S1, a gravity scale per player** (`set_player_abilities{ gravity = 0.17 }` or per domain). Retires the per-tick impulse of plating, soles, low-g bodies.
-- **E-S2, the instance in the generator** — shared with magic's E-M1. Retires the slot trick and its cap of 225 bodies a kind (§6.8).
-- **E-S3, actions that fire** — shared with magic's E-M3: `register_action` is inert until the engine's Task 13, so every screen also opens by its item and by chat (§10.3).
+- ~~**E-S1, a gravity scale per player**~~ — landed (engine `b0996cb`): `set_player_abilities{ gravity }`, client-predicted.
+- ~~**E-S2, the instance in the generator**~~ — landed (engine `61b4c3e`), with magic's E-M1: `pos.domain`.
+- ~~**E-S3, actions that fire**~~ — answered, with magic's E-M3: they always did; the stub was stale.
 
 ---
 
@@ -838,8 +842,8 @@ Craft's and Progress's code rules verbatim. Additions:
 - **Instruments:** each reading against stubbed World/Weather/stars; discoveries once each.
 - **Lightning:** a stubbed `on_lightning` near a rod fills jars and extinguishes a stubbed fire.
 - **Automata:** a deck runs its cards; hold never duplicates or loses a stack; path budget respected.
-- **Gravity:** plating applies impulses only above it; flight only through Life's `set_ability`, never `set_player_abilities`; the sky only through Weather's `add_overlay`, never `set_sky_modifier`.
-- **Fold:** a star body is created at the star's position with the kind from warmth; two bodies generate different terrain (slots); no coordinate leaves −60,000..59,999; the Fold refuses a full kind; terraforming converts a footprint; the Deep's morphic rock drops strange matter only in the Deep; falling off returns the player and keeps the strange matter behind.
+- **Gravity:** plating sets 0.17 only above it and puts 1 back off it, through Life's `set_ability`; flight only through Life's `set_ability`, never `set_player_abilities`; the sky only through Weather's `add_overlay`, never `set_sky_modifier`.
+- **Fold:** a star body is created at the star's position with the kind from warmth; two bodies of one kind generate different terrain (their keys, `pos.domain`); terraforming converts a footprint; the Deep's morphic rock drops strange matter only in the Deep; falling off returns the player and keeps the strange matter behind.
 - **Repath:** automata dormant, bodies sealed not destroyed; back again → restored.
 - **Determinism:** full suite twice → identical storage dump.
 
@@ -861,7 +865,7 @@ Craft's and Progress's code rules verbatim. Additions:
 
 ## 18. Numbers a designer will turn (`config.lua`)
 
-Every node cost; every recipe; every movement's need; every source's output; shaft caps and runs; wire loss and its effects; store sizes; instrument radii and costs; discovery values; study yields; automaton rates and card table; gravity impulse fractions; Core power and check sizes; body slot layout and kind thresholds; terraform rates; Deep fall height; tick budget; per-player caps (networks, gates, automata, bodies).
+Every node cost; every recipe; every movement's need; every source's output; shaft caps and runs; wire loss and its effects; store sizes; instrument radii and costs; discovery values; study yields; automaton rates and card table; gravity multipliers; Core power and check sizes; body sizes and kind thresholds; terraform rates; Deep fall height; tick budget; per-player caps (networks, gates, automata, bodies).
 
 ---
 

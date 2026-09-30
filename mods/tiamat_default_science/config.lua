@@ -56,6 +56,9 @@ C.bench_items = {
         description = "A needle floating in a bowl. Use it to find north, or your cairn." },
 }
 
+-- The Theatrum's key, a suggestion the player may move (brief §10.3).
+C.theatrum_key = "KeyN"
+
 -- The Bench's recipes, into Craft. `node` is the shared node that opens
 -- each. Three ingredients at most, one station, nothing that fails.
 C.bench_recipes = {

@@ -16,7 +16,7 @@ the answer is under each.
 | Mod | Answered | Open |
 |---|---|---|
 | Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | — |
-| Life (`87a95f6`) | L-S2, L-S3, L-S4, L-S5, L-S6 | — |
+| Life (`87a95f6`) | L-S2, L-S3, L-S4, L-S5, L-S6 | L-S7 |
 | World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
 | The interface (`ae8954a`) | U-S1 | — |
 | Progress (`ef6014b`) | P-S1, P-S2 | — |
@@ -73,6 +73,16 @@ calls `craft.perform` when a frame's job reaches the recipe's ticks (brief
 *Answered (Craft `1d22935`):* `register_station{ runs = fn(container) → percent }`, asked once a second for each placed, loaded station; Craft keeps the job and makes the recipe as the placer, unattended. The frame writes no job loop (brief §6.1).
 
 ## Tiamat Default Life
+
+**L-S7, gravity in `set_ability`.** *Wanted:* a `gravity` field in
+`set_ability(uuid, source, spec)`, a multiplier 0..4 (default 1), composed
+across sources by multiplying and handed to `set_player_abilities` with
+Life's own speed and flight. *Why:* the engine now takes a per-player
+gravity (E-S1, engine `b0996cb`, client-predicted), but it rides on
+`set_player_abilities`, which Life writes and the last writer wins. Gravity
+plating (0.17 above it), cavorite soles (0.5) and light star bodies would
+each set one. *Stands in:* nothing yet; gravity is tier 7. Asked
+2026-09-30.
 
 ~~**L-S6, a tether.**~~ *Wanted:* a creature on a `lead` tied to a block, or
 one player leading two. *Why:* the Magdeburg hemispheres are pulled by two

@@ -9,9 +9,9 @@
 -- one line of what goes in and where.
 --
 -- A dialog, not a tab on the interface's screen: a tab is drawn for every
--- player, and the book is only for whoever has one. It opens when the book
--- is used, anywhere, and on `science book` in chat: the engine's actions,
--- which would give it a key, are inert until its Task 13 (engine ask E-S3).
+-- player, and the book is only for whoever has one. It opens on the
+-- `theatrum` action (N unless the player moved it), when the book is used,
+-- anywhere, and on `science book` in chat.
 
 local C = tds.config
 local U = tds.util
@@ -146,6 +146,12 @@ function P.carries(uuid)
     end
     return false
 end
+
+-- Its key opens it for a player who carries one; for anyone else the key
+-- does nothing, as a key for a book you do not have should.
+tds.on_action("theatrum", C.theatrum_key, "Open the Theatrum Machinarum", function(player)
+    if P.carries(player) then P.open(player) end
+end)
 
 -- Using the book, at a block or at nothing, opens it.
 tds.on_use(function(e)
