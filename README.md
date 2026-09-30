@@ -3,50 +3,55 @@
 
 # Tiamat Default Science
 
-One of the two doors at the Fork of the default game: the science tree (the
-design's "tech"), tiers 3 to 7. A player who has climbed the shared tree in
-Craft and Progress chooses this mod or `tiamat_default_magic`, and the other
-door closes. Nothing of the tree is built yet: the mod is the engine's
-template as it came, and `docs/brief.md` is what has been decided so far and
-what is still the designer's to say. The mod itself is
-`mods/tiamat_default_science/`; this repository sits beside the engine
-(`Tiamat`) and its siblings, and the engine's `bundle.toml` pins the commit
-a release carries.
+Natural philosophy: one of the two doors at the Fork of the default game,
+and everything behind it — the real history of technology in order, from
+Hero's simple machines to Tesla's tower, and past the aether into gravity
+engines and the Fold. `docs/brief.md` is the design, checked against the
+engine and the siblings; the mod itself is `mods/tiamat_default_science/`.
+This repository sits beside the engine (`Tiamat`) and its siblings, and the
+engine's `bundle.toml` pins the commit a release carries.
 
-A Tiamat mod, started from the engine's template. It registers one of each
-kind of thing the API offers — a block, a tool, a sound, an action, a dialog,
-an entity — so every part has a worked example beside it. Keep what you need.
+## What is built
+
+Step 2 of the brief's build order (§17): **the Tinker's Bench**, five
+shared nodes a child can reach long before the Fork. A picture book of
+recipes (the Theatrum Machinarum); a sundial carved from stone that tells
+the hour in sunshine; a burning glass that says what anything is and how
+hard; a kite that flies over whoever holds it under the open sky, higher in
+a storm; and a wet compass whose needle points north, or home to the stone
+cairn its owner placed. The gnomon and the cairn are glyphs, registered with
+Craft in every orientation and offered as one-click shapes in the
+interface's shape crafter.
+
+The door, the tree and the machines behind it come next (§17, step 3 on).
 
 ## What is here
 
 | File | What |
 |---|---|
-| `mod.toml` | The manifest: id, name, version, licence, and what this mod depends on or conflicts with. |
-| `init.lua` | Runs once at load. Everything is registered here; the hooks it installs run for ever after. |
-| `textures/block.png` | The beacon's face, 16 by 16. |
-| `sounds/ping.wav` | The beacon's sound. WAV or Ogg Vorbis. |
-| `../../stubs/game.lua` | The whole mod API as editor annotations, vendored from the engine. Documentation and completion in one file. |
-| `../../AGENTS.md` | How to write a mod, for an AI coding assistant and the person supervising it. |
-| `../../.luarc.json` | Points a Lua language server at `stubs/`. |
+| `mods/tiamat_default_science/` | The mod. `init.lua` decides load order; `config.lua` holds every number; the rest is one file a system. |
+| `tools/make_textures.py` | Draws the placeholder textures. Standard library only; the same bytes on every machine. |
+| `tests/native/` | The mod run in the engine's real script VM, beside the REAL sibling mods, with a fake server around it. |
+| `docs/brief.md` | The design, and §2.1: what was checked and what changed. |
+| `docs/exports.md` | What other mods may call, and every id this mod registers. |
+| `docs/sibling-asks.md`, `docs/engine-asks.md` | What this mod needs from others, with what stands in until then. |
+| `stubs/game.lua`, `AGENTS.md` | The engine's API, vendored (MIT). Re-copy when the engine moves. |
 
-## Try it
+## Check it
 
-Check it without starting a server — a second, no world left behind:
+Without starting a server, from the engine repository, over a directory
+holding the engine's `core` mods, every sibling and this mod:
 
 ```sh
-cargo run -p server -- --check-mods <a directory holding this mod and its siblings>
+cargo run -p server -- --check-mods <that directory>
 ```
 
-The manifest depends on the engine's `core`, so the directory must hold that
-too: the engine's `game/` does, once this mod is linked into it.
+The native check loads the real siblings from their repositories, so the
+engine and each sibling must be checked out beside this one:
 
-It prints the mods it found in load order and every block they registered;
-a mod with a mistake in it is named, with the line.
-
-Then put this directory in the server's mods directory (`mods_path` in the
-server's config; `game/` in the engine repository) and start the server. In
-the world: dig anything with the hand, place a beacon, use it, and press the
-wave key (J unless you moved it) for the dialog.
+```sh
+cargo run --manifest-path tests/native/Cargo.toml
+```
 
 ## Your editor
 

@@ -1,21 +1,29 @@
-# Tiamat Default Science: a Tiamat mod, started from the engine's template.
+# Tiamat Default Science — Natural Philosophy: the science door of
+# Progress's Fork, and everything behind it (docs/brief.md).
 #
-# `id` is the namespace of everything this mod registers: `beacon` in init.lua
-# is `tiamat_default_science:beacon` to every other mod. Lowercase letters, digits and
-# underscores, starting with a letter.
+# Built so far: the Tinker's Bench, five shared nodes a child can reach long
+# before the Fork (brief §4). The door, the tree and the machines behind it
+# follow in the brief's build order (§17).
 id = "tiamat_default_science"
 name = "Tiamat Default Science"
 version = "0.1.0"
-description = "A tour of the mod API: a block, a tool, a sound, an action, a dialog, an entity."
-# An SPDX licence identifier, yours to choose. The engine's scripting API is
-# MIT and its licence exception says a mod is not a derivative work of the
-# engine, so any terms are open to you.
+description = "Natural philosophy: machines, steam, electricity, Tesla — and past the aether, gravity and the Fold."
 license = "GPL-3.0-only"
-# Mods this one needs loaded first, with version bounds if you want them:
-#     depends = ["some_world >=0.2, <1"]
-depends = ["core >=0.1"]
-# The siblings this mod reaches through their exports when they are loaded,
-# and loads after. None is required: the mod loads on a bare engine.
-optional_depends = ["tiamat_default_progress", "tiamat_default_craft", "tiamat_default_life", "tiamat_default_world", "tiamat_default_ui"]
-# Mods this one cannot run beside:
-#     conflicts = ["another_mod"]
+# Without any of these there is nothing to build with: the world's rock and
+# ore, Life's wool and bodies, Craft's recipes and stations, Progress's nodes
+# and door. Hard, so a server missing one says so instead of loading a mod
+# that can do nothing (brief §2.2).
+depends = [
+  "core >=0.1",
+  "tiamat_default_world >=0.1",
+  "tiamat_default_life >=0.1",
+  "tiamat_default_craft >=0.4",
+  "tiamat_default_progress >=0.1",
+]
+# Loaded after these when they are here, so `game.exports` finds them from
+# init.lua's first line. Without the interface the Theatrum is a plain
+# dialog; without the weather, a kite flies at one height in every sky.
+optional_depends = ["tiamat_default_ui", "tiamat_weather"]
+
+# NO `[theme]` HERE, ON PURPOSE. The engine wears the LAST theme in load
+# order, and the interface mod owns the look.

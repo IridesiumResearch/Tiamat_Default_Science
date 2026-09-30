@@ -230,7 +230,7 @@ A six-year-old will never reach the Fork. So the first taste of science is five 
 1. **Instantly visible.** A kite in the sky, the hour told, a fire lit by sunshine, a needle that finds home, water that climbs.
 2. **Three ingredients at most, one station, no timers over 60 seconds, no failure, nothing lost.**
 3. **Readable without reading.** The *Theatrum Machinarum* (§11) is a book of machine pictures.
-4. **One-click carving.** The sundial's gnomon and the cairn are UI presets (ask **U-S1**, shared with magic's U-M1). The rod and plate are the UI's own Pillar and Slab.
+4. **One-click carving.** The sundial's gnomon and the cairn are UI presets, through the interface's `add_preset` (ask U-S1, answered 2026-09-29), shown once their node is held. The rod and plate are the UI's own Pillar and Slab.
 5. **Nobody gets lost.** The compass pointing to your cairn is the most useful thing a small child can own in a world 118 km across.
 6. **Toybox discoveries** (§6.12).
 
@@ -767,7 +767,7 @@ Every time in this section is time with a player near: stations pause in unloade
 - **W-M1, cinnabar** — shared with magic.
 
 **UI**
-- **U-S1, shape-crafter presets from siblings** — shared with magic's U-M1: gear, wheel, pipe, coil, ring, gnomon, cairn as buttons, shown when their node is held.
+- ~~**U-S1, shape-crafter presets from siblings**~~ — answered (interface `ae8954a`): `add_preset{ id, label, mask, visible? }`. At most eight added presets show at once across every mod, so gear, wheel, pipe, coil and ring join gnomon and cairn only as their nodes are held.
 
 **Weather**
 - **Wx-S2, a layered sky overlay** — shared with magic's Wx-M1.

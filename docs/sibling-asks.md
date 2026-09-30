@@ -104,12 +104,19 @@ native droplets from sulfur crust.
 
 ## Tiamat Default UI
 
-**U-S1, shape-crafter presets from siblings.** Magic's U-M1, shared: a
+~~**U-S1, shape-crafter presets from siblings.**~~ Magic's U-M1, shared: a
 way for another mod to add presets, so gear, wheel, pipe, coil, ring,
 gnomon and cairn are one click, shown when their node is held. Pillar and
 Slab (`rod` and `plate`) already are. *Why:* no API adds a preset
 (`crafting.lua`). *Stands in:* carving by hand, with the *Theatrum*'s
 pictures of each mask.
+*Answered (interface ae8954a, 2026-09-29):* `add_preset{ id, label, mask,
+visible? }` on the interface's exports, exactly as asked. Four to a row after
+Block, Slab, Stairs and Pillar; `label` 1–8 bytes (a button is a quarter of
+the column at 800x600); `mask` in `x + 3*y + 9*z`, neither empty nor full;
+`visible(player)` asked each time the crafter is drawn, so keep it a lookup;
+eight added presets show at most, in the order added. The crafter is now a
+block's tab (the shape crafter block), so presets show where it is used.
 
 ## Tiamat Default Progress
 
