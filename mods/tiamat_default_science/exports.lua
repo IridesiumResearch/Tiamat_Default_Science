@@ -12,7 +12,7 @@ local G = tds.glyphs
 -- The glyphs, as the brief's `glyphs` field: short id -> its canonical mask
 -- and every registered orientation. A copy, so nobody holds this mod's own.
 local glyphs = {}
-for _, glyph in ipairs(tds.config.glyphs) do
+for _, glyph in ipairs(G.table) do
     glyphs[glyph.id] = { mask = glyph.mask, variants = G.variants(glyph.mask) }
 end
 

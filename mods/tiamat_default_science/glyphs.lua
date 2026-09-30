@@ -11,10 +11,10 @@
 -- a rod three). Masks are whole numbers and the turning is index arithmetic,
 -- so nothing here is floating point.
 --
--- Where the interface is loaded, each glyph is also a one-click preset in
--- the shape crafter, shown to a player once they know its node.
+-- Where the interface is loaded, a glyph with a `preset` is also a one-click
+-- shape in the shape crafter, shown to a player once they know its node.
+-- The table is `glyph_table.lua`, which `tools/glyphs.py` reads too.
 
-local C = tds.config
 local U = tds.util
 
 local G = {}
@@ -65,11 +65,16 @@ function G.variants(mask)
 end
 
 G.ids = {}          -- short id -> qualified glyph id
+local short_of = {} -- qualified glyph id -> short id
 G.count = 0         -- masks registered
 
-for _, glyph in ipairs(C.glyphs) do
+-- Loaded here and only here: `require` does not cache in this sandbox.
+G.table = require("glyph_table")
+
+for _, glyph in ipairs(G.table) do
     local id = U.id(glyph.id)
     G.ids[glyph.id] = id
+    short_of[id] = glyph.id
     if craft then
         for _, mask in ipairs(G.variants(glyph.mask)) do
             local ok, why = craft.register_glyph(mask, id)
@@ -96,10 +101,7 @@ function G.of(at)
     if not craft or at == nil then return nil end
     local mask = type(at) == "number" and at or at.occupancy
     local id = craft.glyph_of(mask)
-    for short, qualified in pairs(G.ids) do
-        if qualified == id then return short end
-    end
-    return nil
+    return id and short_of[id]
 end
 
 return G

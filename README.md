@@ -23,7 +23,12 @@ cairn its owner placed. The gnomon and the cairn are glyphs, registered with
 Craft in every orientation and offered as one-click shapes in the
 interface's shape crafter.
 
-The door, the tree and the machines behind it come next (§17, step 3 on).
+Step 3: **the door and the tree.** The Antikythera Mechanism is the science
+path's door in Progress; choosing it gives Natural Philosophy, the notebook
+and the Theatrum. All 102 nodes of tiers 3 to 7 are data in `tree.lua`,
+which `tools/check_tree.py` proves sound and writes into `docs/history.md`;
+the tiers whose content is built are registered, tier 3 first. The twelve
+glyphs are `glyph_table.lua`, which `tools/glyphs.py` checks against magic's.
 
 ## What is here
 
@@ -31,6 +36,8 @@ The door, the tree and the machines behind it come next (§17, step 3 on).
 |---|---|
 | `mods/tiamat_default_science/` | The mod. `init.lua` decides load order; `config.lua` holds every number; the rest is one file a system. |
 | `tools/make_textures.py` | Draws the placeholder textures. Standard library only; the same bytes on every machine. |
+| `tools/check_tree.py` | Proves the tree sound from `tree.lua`, prints the pacing table (brief §13), and with `--write` writes `docs/history.md`. |
+| `tools/glyphs.py` | Proves the glyph table sound, and that no glyph meets magic's or the interface's shapes. |
 | `tests/native/` | The mod run in the engine's real script VM, beside the REAL sibling mods, with a fake server around it. |
 | `docs/brief.md` | The design, and §2.1: what was checked and what changed. |
 | `docs/exports.md` | What other mods may call, and every id this mod registers. |

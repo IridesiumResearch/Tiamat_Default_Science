@@ -3,8 +3,8 @@
 """Generates the placeholder textures for mods/tiamat_default_science/textures.
 
 An item is flat colours in one silhouette on a clear ground, so it reads in
-a slot: a book, a lens, a kite, a compass. Every picture here is meant to be
-replaced.
+a slot: a book, a lens, a kite, a compass. A block is one flat colour. Every
+picture here is meant to be replaced.
 
 No dependencies beyond the standard library, and no randomness: the same
 bytes on every machine. Run from the repository root:
@@ -116,7 +116,29 @@ def compass():
     return c
 
 
-DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass}
+def notebook():
+    """A plain notebook, tied with cord."""
+    c = Canvas()
+    c.rect(3, 2, 12, 14, LEATHER_DARK)
+    c.rect(4, 3, 12, 13, PAGE)
+    c.rect(4, 3, 5, 13, LEATHER)
+    for y in (5, 7, 9, 11):
+        c.rect(7, y, 11, y, (150, 140, 120))
+    c.rect(3, 8, 12, 8, WOOD)
+    return c
+
+
+def antikythera():
+    """A block: weathered bronze, the colour of the Mechanism as it was found.
+    Flat, the Spindle's convention: variation across a surface is the
+    renderer's."""
+    c = Canvas()
+    c.rect(0, 0, SIZE - 1, SIZE - 1, (96, 128, 104))
+    return c
+
+
+DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass, "notebook": notebook,
+        "antikythera": antikythera}
 
 
 def main():

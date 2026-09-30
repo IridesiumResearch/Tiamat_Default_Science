@@ -10,10 +10,10 @@
 -- file required twice would run twice; nothing but this file calls it.
 --
 -- Order: numbers and helpers, then the hook fan-out every file subscribes
--- to, then what the Bench registers — items and glyphs before the recipes
--- and instruments that name them — then the book that shows them, and last
--- the engine hooks and the export, both of which must be whole before the
--- registration window closes.
+-- to, then what the mod registers — items, blocks and glyphs before the
+-- recipes and instruments that name them — then the book that shows them,
+-- the path and its tree, and last the engine hooks and the export, both of
+-- which must be whole before the registration window closes.
 
 tds = {}
 
@@ -32,10 +32,13 @@ tds.config = load("config")
 tds.util = load("util")
 tds.hooks = load("hooks")               -- one engine registration per hook, many subscribers
 tds.items = load("items")               -- every item, from config's tables
+tds.blocks = load("blocks")             -- the blocks the path must have (the door, so far)
 tds.glyphs = load("glyphs")             -- carved shapes that mean something, into Craft
 tds.apprentice = load("apprentice")     -- the Tinker's Bench: shared nodes, recipes, discoveries
 tds.instruments = load("instruments")   -- the sundial, the glass, the compass, the kite
 tds.primer = load("primer")             -- the Theatrum Machinarum
+tds.tree = load("tree")                 -- the science tree, tiers 3 to 7, as data
+tds.path = load("path")                 -- the Antikythera Mechanism's path, and the tree, into Progress
 load("commands")                        -- `science`, in chat
 
 tds.hooks.install()
@@ -43,5 +46,5 @@ tds.hooks.install()
 -- What other mods may call. One export per mod, built whole first.
 game.export(load("exports"))
 
-game.log(string.format("tiamat_default_science ready: the Tinker's Bench (%d nodes), %d glyph masks",
-    #tds.config.bench_nodes, tds.glyphs.count))
+game.log(string.format("tiamat_default_science ready: the Tinker's Bench (%d nodes), the Antikythera Mechanism, %d of %d path nodes, %d glyph masks",
+    #tds.config.bench_nodes, #tds.path.shipped, #tds.tree, tds.glyphs.count))

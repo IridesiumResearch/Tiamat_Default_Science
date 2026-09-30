@@ -13,13 +13,17 @@ local I = {}
 
 I.ids = {}          -- short id -> numeric material id
 
-for _, spec in ipairs(C.bench_items) do
+local function register(spec)
     I.ids[spec.id] = game.register_item{
         id = spec.id,
         name = spec.name,
         description = spec.description,
         texture = "textures/" .. spec.id .. ".png",
     }
+end
+
+for _, list in ipairs({ C.bench_items, C.path_items }) do
+    for _, spec in ipairs(list) do register(spec) end
 end
 
 return I

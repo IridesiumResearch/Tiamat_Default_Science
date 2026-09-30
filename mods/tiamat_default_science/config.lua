@@ -56,6 +56,12 @@ C.bench_items = {
         description = "A needle floating in a bowl. Use it to find north, or your cairn." },
 }
 
+-- Items the path gives or makes, beyond the Bench's.
+C.path_items = {
+    { id = "notebook", name = "Natural philosopher's notebook",
+        description = "Where your readings and discoveries are written down." },
+}
+
 -- The Theatrum's key, a suggestion the player may move (brief §10.3).
 C.theatrum_key = "KeyN"
 
@@ -78,16 +84,7 @@ C.bench_recipes = {
         outputs = { { "compass", count = 1 } } },
 }
 
--- Glyphs (brief §7.1): carved 27-cell masks, index x + 3y + 9z. Every one of
--- the 48 turns and mirrors of each is registered with Craft, so a shape
--- means the same however it was carved. `preset` is the interface's
--- one-click button, 1 to 8 letters, shown once `node` is held.
-C.glyphs = {
-    -- A slab with a peg in its middle: the shadow-caster.
-    { id = "gnomon", mask = 1846791, node = "shared.sundial", preset = "Gnomon" },
-    -- A slab with a two-cell column on it: a heap of stones marking home.
-    { id = "cairn", mask = 1912327, node = "shared.compass", preset = "Cairn" },
-}
+-- The glyphs themselves are `glyph_table.lua`, plain data a tool reads.
 
 -- What a sundial and a cairn may be carved from: blocks tagged so.
 C.stone_tag = "stone"
@@ -132,6 +129,44 @@ C.kite = {
     colour = { r = 0.9, g = 0.2, b = 0.15 },
     tail = { r = 1.0, g = 0.85, b = 0.2 },
 }
+
+-- The door (brief §3) -------------------------------------------------------------
+--
+-- The Antikythera Mechanism (c. 100 BC), the oldest geared computer known:
+-- thirty bronze gears in a wooden case, so the door is made of what a
+-- player at the Keystone can already cast. Progress adds the Keystone to the
+-- recipe and requires `shared.keystone`.
+C.path = {
+    id = "science",
+    label = "Natural Philosophy",
+    sentence = "The dials turn once, for you alone. This binds you; the other door closes.",
+    refusal = "The bronze wheels will not turn for you.",
+    inputs = {
+        { "C:bronze_gear", count = 8 },
+        { "C:bronze_ingot", count = 4 },
+        { "C:plank", count = 4 },
+    },
+    root = "science.natural_philosophy",        -- cost 0, given the moment the door is chosen
+    welcome = "The dials have turned. Build a frame.",
+    -- The Research tab shows a tier's nodes grouped under these (Progress's
+    -- `branches`), and a node only once all but one of what it needs is held.
+    branches = {
+        MECH = "Mechanics", METL = "Metallurgy", OPTI = "Optics", HEAT = "Heat and Steam",
+        ELEC = "Electricity", CHEM = "Chemistry", AUTO = "Automata", TESL = "Tesla",
+        GRAV = "Gravity", FOLD = "The Fold",
+    },
+    reveal = "near",
+}
+
+C.antikythera = {
+    id = "antikythera", name = "The Antikythera Mechanism",
+    description = "Bronze gears in a wooden case. Use it, holding the Keystone's knowledge, to take the path of natural philosophy.",
+    hardness = 1.8, tags = { "metal" },
+}
+
+-- The tiers of `tree.lua` registered with Progress: those whose content is
+-- built, so nobody buys a node that does nothing yet (the rest is data).
+C.shipped_tier = 3
 
 -- Toybox discoveries (brief §6.9): insight for play itself.
 C.toybox = {

@@ -29,6 +29,8 @@ fn main() {
     the_compass();
     the_kite();
     the_book();
+    the_tree();
+    the_door();
     determinism();
     println!("science native check: all passed");
 }
@@ -366,6 +368,64 @@ fn the_book() {
     let (_, tree) = r.last_dialog().expect("the book");
     assert!(tree.contains("the Gnomon button"), "how to carve one: {tree}");
     println!("the book: ok");
+}
+
+/// What ships of the tree is registered, gated beyond the Fork, and grouped
+/// by branch with the frontier revealed.
+fn the_tree() {
+    let mut r = Rig::new(Setup::default());
+    ready(&mut r, 5000);
+    assert_eq!(r.ask("t count"), "22", "Progress validated what ships: tier 3");
+    // A node that says no `reveal` of its own takes the path's, "near".
+    assert_eq!(r.ask("t branch science.water_wheel"), "MECH/nil", "a branch, and the path's reveal");
+    let answer = r.ask("t learn science.machine_frame");
+    assert!(answer.starts_with("nil") && answer.contains("lies beyond the Fork"), "{answer}");
+    assert!(r.ask("t learn science.telescope").starts_with("nil"), "tier 4 is data, not for sale yet");
+    assert_eq!(insight(&mut r), 5000, "nothing was spent");
+    println!("the tree: ok");
+}
+
+/// The Antikythera Mechanism: its recipe waits for the Keystone; choosing it
+/// binds the player, gives Natural Philosophy free and the notebook and the
+/// Theatrum once, and opens the tree, whose effects Progress then sums.
+fn the_door() {
+    let mut r = Rig::new(Setup::default());
+    ready(&mut r, 600);
+    let answer = r.ask("t can tiamat_default_progress:door_science");
+    assert!(answer.starts_with("nil") && !answer.contains("no such"), "the door's recipe, gated: {answer}");
+
+    r.put_block(20, 64, 20, "antikythera");
+    assert!(r.use_at(PLAYER, 20, 64, 20));
+    assert_eq!(r.said(), "The door is shut to you. Learn the Keystone first.");
+
+    assert_eq!(r.ask("progress grant shared.keystone"), "Learned: The Keystone");
+    assert!(r.use_at(PLAYER, 20, 64, 20));
+    let (form, tree) = r.last_dialog().expect("the Fork's question");
+    assert_eq!(form, "tiamat_default_progress:fork");
+    assert!(tree.contains("The dials turn once, for you alone."), "{tree}");
+    r.heard(PLAYER);
+    r.press(PLAYER, "tiamat_default_progress", "fork", "yes");
+    let heard = r.heard(PLAYER);
+    assert!(heard.iter().any(|l| l == "The dials have turned. Build a frame."), "{heard:?}");
+    assert_eq!(r.ask("t path"), "science");
+    assert_eq!(r.ask("t has science.natural_philosophy"), "true", "the root, free");
+    assert_eq!(insight(&mut r), 600, "and it cost nothing");
+    assert_eq!(r.units(PLAYER, "notebook"), 27, "the notebook, once");
+    assert_eq!(r.units(PLAYER, "theatrum"), 27, "and the Theatrum, once");
+
+    // The tree is open now, and its effects are summed where Craft reads them.
+    assert_eq!(r.ask("t learn science.machine_frame"), "true");
+    assert_eq!(r.ask("t learn science.simple_machines"), "true");
+    assert_eq!(r.ask("t learn science.gearing"), "true");
+    assert_eq!(r.ask("t learn science.water_wheel"), "true");
+    assert_eq!(r.ask("t learn science.trip_hammer"), "true");
+    assert_eq!(r.ask("t effects craft."), "craft.anvil_strikes=-1");
+    assert_eq!(insight(&mut r), 600 - 100 - 80 - 100 - 120 - 120);
+
+    assert!(r.use_at(PLAYER, 20, 64, 20));
+    assert_eq!(r.said(), "You are already of Natural Philosophy.");
+    assert_eq!(r.units(PLAYER, "notebook"), 27, "no second notebook");
+    println!("the door: ok");
 }
 
 /// Two runs of the same play leave the same storage behind.

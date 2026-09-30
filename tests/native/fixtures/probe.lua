@@ -14,6 +14,10 @@
 --   t science            this mod's export version
 --   t glyph <id>         how many orientations of a glyph this mod exports
 --   t glyph_of <mask>    what Craft says a mask is carved to
+--   t path               the speaker's path, or nil
+--   t count              how many science nodes Progress validated
+--   t effects <prefix>   the speaker's summed effects, "key=value" sorted
+--   t branch <node>      the branch Progress holds for a node
 
 local p = game.exports("tiamat_default_progress")
 local c = game.exports("tiamat_default_craft")
@@ -55,6 +59,26 @@ game.register_on_chat(function(e)
     elseif word == "glyph" then
         local g = s.glyphs[rest]
         say = g and tostring(#g.variants) or "none"
+    elseif word == "path" then
+        say = tostring(p.path(e.player))
+    elseif word == "count" then
+        local n = 0
+        for _, node in ipairs(p.nodes()) do
+            if node.path == "science" then n = n + 1 end
+        end
+        say = tostring(n)
+    elseif word == "effects" then
+        local fx = p.effects_of(e.player, rest ~= "" and rest or nil)
+        local keys = {}
+        for k in pairs(fx) do keys[#keys + 1] = k end
+        table.sort(keys)
+        for i, k in ipairs(keys) do keys[i] = k .. "=" .. fx[k] end
+        say = table.concat(keys, " ")
+    elseif word == "branch" then
+        say = "none"
+        for _, node in ipairs(p.nodes()) do
+            if node.id == rest then say = tostring(node.branch) .. "/" .. tostring(node.reveal) end
+        end
     elseif word == "glyph_of" then
         say = tostring(c.glyph_of(math.tointeger(tonumber(rest))))
     end
