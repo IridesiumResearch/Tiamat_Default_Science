@@ -16,7 +16,7 @@ the answer is under each.
 | Mod | Answered | Open |
 |---|---|---|
 | Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | — |
-| Life (in its working tree, not yet committed) | L-S2, L-S3, L-S4, L-S5, L-S6 | — |
+| Life (`87a95f6`) | L-S2, L-S3, L-S4, L-S5, L-S6 | — |
 | World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
 | The interface (`ae8954a`) | U-S1 | — |
 | Progress | — | P-S1, P-S2 |
