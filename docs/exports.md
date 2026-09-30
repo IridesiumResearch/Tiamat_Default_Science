@@ -66,4 +66,4 @@ Not exports, listed so the direction is clear: Progress's `register_node`,
 `register_glyph`, `glyph_of` and `ignite` (the burning glass, which listens
 for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`
 by name, so it is asked before a fire's box opens); the interface's `add_preset` and
-`widgets`; Weather's `weather_at`.
+`widgets`; Weather's `wind`.

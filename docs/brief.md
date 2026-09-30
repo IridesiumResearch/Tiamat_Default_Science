@@ -3,7 +3,7 @@
 
 # Tiamat Default Science — the brief
 
-*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 are §2.3. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
+*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — are §2.3. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
 
 *Not "tech": the id is `tiamat_default_science`, the path id `science`. Schism's `schism_tech` is superseded by this brief.*
 
@@ -112,7 +112,7 @@ Everything in Craft's and Progress's briefs §2 still applies. The ones that sha
 | Reading what a player looks at | `game.looking_at(uuid)` → block `{x,y,z,material,face}` in **cell** coordinates (three per block; divide by 3) or an entity; `game.star_in_view(uuid)` → `{ id, alignment }`; `game.stars()` → `{ id, x, y, z, magnitude, warmth }` (stubs) | Instruments are held items that read these; no new blocks. |
 | Damage | Life exports none; exports `set_alight` (Life exports) | The Tesla coil's arc sets hostile creatures alight. Pushing and stasis on Life's creatures: Life's `push` and `freeze` (L-S2, answered). |
 | Movement and gravity | `set_player_abilities` (fly, speed — last writer wins, client-predicted, and Life writes it); `push_player(uuid, impulse)` — "added, not set", **not** documented as predicted; **no per-player or per-domain gravity** (stubs) | Flight is a source of ours in Life's `set_ability` (L-S3, answered), never `set_player_abilities`. Low gravity is an upward impulse per tick until **E-S1**, tried in a real window for rubber-banding before it ships. |
-| The sky | `set_sky_modifier` is one per player, last writer wins, and **Weather writes it for everyone**, whenever its value changes (Weather `fx.lua`) | The Core's darkening and the atmosphere processor wait on Weather ask **Wx-S2** (= magic's Wx-M1, a layered overlay). This mod never calls `set_sky_modifier` until then. |
+| The sky | `set_sky_modifier` is one per player, last writer wins, and **Weather writes it for everyone**, whenever its value changes (Weather `fx.lua`) | The Core's darkening and the atmosphere processor go through Weather's `add_overlay(player, source, spec)` (Wx-S2, answered), laid over the weather's own. This mod never calls `set_sky_modifier`. |
 | Long recipes | Craft refuses any recipe over **72,000 ticks** (`max_ticks`) | Blister steel is one in-game day (24,000 ticks at the core sky's day), one recipe (§2.2). Stations pause while their chunk is unloaded (Craft `furnace.lua`) — except a heat station registered `long = true`, which works the ticks it missed when next loaded, fuel permitting (Craft 0.5.0). The furnace is one; a frame is not. |
 | Detailed stacks | a stack with a `detail` is never a Craft ingredient | Charged jars and cells (detail `e=`) are never ingredients; recipes take **empty** jars and cells, which carry no detail until first charged. |
 | Shared reagents | magic also makes saltpeter, oil of vitriol and quicksilver | Each mod registers its own item and adds it to the Craft groups `#saltpeter`, `#oil_of_vitriol`, `#quicksilver`; every recipe names the group, so reagents trade across the Fork. |
@@ -143,7 +143,7 @@ Every claim in §2 and below was re-checked against `stubs/game.lua`, the engine
 | A frame leaves the list on `on_dig_complete` | That hook is a veto asked before removal, which a later mod may refuse; plan-stamped stations have no placer (Craft `stations.lua`) | A slow sweep confirms removal; ownerless frames wait to be claimed; §6.1 |
 | Steel tools "speed 8/10/14" through Craft's `register_tool` | Craft's takes `{ id, type, tier, uses }`; speed is the engine's `speed_multiplier` (Craft `tools.lua`; stubs) | Split between the two; §6.3 |
 | The rod puts out every fire within 16 | `extinguish(x, y, z)` puts out one block, and no list of fires is exported (Weather `exports.lua`) | The strike's own fire; ask **Wx-S4** |
-| `on_lightning` gives the strike column | A bolt that found no ground is reported 40 blocks above a player, in the air (Weather `docs/exports-contract.md`) | The rod compares x and z only |
+| `on_lightning` gives the strike column | A bolt that found no ground was reported 40 blocks above a player, in the air (Weather `docs/exports-contract.md`) — **since 2026-09-28 there is no such bolt**: one lands only on open ground, and reports the block over it (Weather `2f437fe`) | The rod still compares x and z only, which costs nothing |
 | Weather has wind as `dx, dz, strength` | `wind(x, z, tick) → { x, z }`, a direction with no strength, not exported (Weather `climate.lua`) | Wx-S1 reworded |
 | `weather.warmth` | `warmth(x, y, z)`, 0..1000 | So written |
 | Weather does not run on a body's domain | Weather has no domain logic; it sends sky and clouds by x and z (Weather `fx.lua`) | Ask **Wx-S3** |
@@ -180,11 +180,11 @@ Every claim in §2 and below was re-checked against `stubs/game.lua`, the engine
 - **Science's creatures are made, not bred.** Draft 0 recorded that both trees end at making creatures through a shared trait vector (genomes here, essences in magic). This tree's answer is the automaton and the gravitic drone; genetics stays out of scope (§19) and science does not read the trait vector. Magic and Life should hear this before either builds that vector as shared.
 - **Blister steel is one day**: 24,000 ticks, one recipe under Craft's 72,000-tick cap. The node's text says history took a week.
 
-Also departing from draft 0, and to be said to the sibling concerned: Craft expected this mod to write "no job loop of its own", and since C-S1 it does not; and Progress expected four to six nodes a tier, where this tree has 15 to 25 — Progress allows it, and P-S1 should check its tree screen against it.
+Also departing from draft 0, and to be said to the sibling concerned: Craft expected this mod to write "no job loop of its own", and since C-S1 it does not; and Progress expected four to six nodes a tier, where this tree has 15 to 25 — Progress allows it, and since P-S1 shows them by branch, revealing only the frontier.
 
 ### 2.3 Answered 2026-09-30 — what the siblings built, and what it changes
 
-Every ask of Craft, Life, World and the interface is answered (`docs/sibling-asks.md` has each shape). The text below is changed where each appears; what stands in for an ask of Progress or Weather is unchanged, because none of theirs has been.
+Every sibling ask is answered (`docs/sibling-asks.md` has each shape and commit), and the text below is changed where each appears. What still stands in is for the engine's asks alone: E-S1 (gravity), E-S2 (the instance in a generator) and E-S3 (actions).
 
 | Ask | Now so | What changes here |
 |---|---|---|
@@ -202,8 +202,13 @@ Every ask of Craft, Life, World and the interface is answered (`docs/sibling-ask
 | W-S2 | `cave_earth` (tags `soil`, `nitrous`) | The saltpetre men leach cave earth; `dirt` retired |
 | W-M1 | `cinnabar` (tags `ore`, `mineral`) | Quicksilver is roasted from cinnabar; the sulfur-crust stand-in retired |
 | U-S1 | `add_preset` | Gnomon and cairn are one click — built, in 0.1.0 |
+| P-S1 | `register_node{ branch, reveal }`, `register_path{ branches, reveal }` (Progress `ef6014b`) | `tree.lua`'s branch codes (MECH, METL, …) are named on the Research tab, and the path reveals `"near"`: a player sees the frontier and one step past it, never 107 nodes at once |
+| P-S2 | `progress.study_percent`, summed over held nodes | The Difference Engine carries it at 20 and it pays |
+| Wx-S1 | `wind(x, z)` → direction and strength 0..1, 0.2 clear to 1 in a blizzard (Weather `2f437fe`) | The kite flies downwind and higher in it — built, in 0.1.0; windmills turn by it (§6.2) |
+| Wx-S2 | `add_overlay(player, source, spec)` | The Core's darkening and the atmosphere processor's sky (§6.8) |
+| Wx-S3 | Weather is the overworld's: a player in another domain is in no square | A body's sky and clouds are this mod's (§6.8) |
+| Wx-S4 | `fires_near(x, y, z, r)` | The lightning rod puts out every fire within 16 (§6.5) |
 
-Life's answers are in its working tree and not yet committed; nothing here uses them until tier 5.
 
 ---
 
@@ -336,7 +341,7 @@ Watt, steel in bulk, precision (and with it the **assembly jig**, where relics a
 | `science.maudslay_lathe` **The Screw-Cutting Lathe** | 450 | `lathe`, `crucible_steel` | MECH | Maudslay (1800): precision. Screws, springs, bearings — and the **assembly jig** movement, where relics are built from carved parts. |
 | `science.interchangeable_parts` **Interchangeable Parts** | 400 | `maudslay_lathe` | MECH | Standard parts: every assembly takes a quarter fewer. |
 | `science.jacquard_cards` **Punched Cards** ★ | 400 | `water_frame`, `maudslay_lathe` | AUTO | Jacquard (1804): a carved card in a frame chooses what it makes. |
-| `science.difference_engine` **The Difference Engine** | 550 | `jacquard_cards`, `interchangeable_parts` | AUTO | Babbage (1822): the relic; studies pay 20 % more insight (with **P-S2**). |
+| `science.difference_engine` **The Difference Engine** | 550 | `jacquard_cards`, `interchangeable_parts` | AUTO | Babbage (1822): the relic; studies pay 20 % more insight. |
 | `science.analytical_engine` **The Analytical Engine** | 600 | `difference_engine` | AUTO | Babbage and Lovelace (1837, 1843): card decks — programs for automata. |
 | `science.clockwork_automaton` **The Automaton** ★ | 600 | `jacquard_cards`, `escapement`, `maudslay_lathe` | AUTO | Al-Jazari, Vaucanson, Jaquet-Droz: a clockwork helper that follows, carries 27 slots and fetches for frames by its card. |
 | `science.voltaic_pile` **The Pile** ◆ | 400 | `leyden_jar`, `lead_chamber` | ELEC | Volta (1800): a steady current. Cells; wires now carry charge. |
@@ -410,7 +415,7 @@ Tesla's decade. Then **the Aether Drift** — the one node where the world leave
 | `trip_hammer` | `craft.anvil_strikes` −1 |
 | `pendulum_clock` | `science.machine_speed_percent` 10 |
 | `interchangeable_parts` | `science.assembly_parts_percent` −25 |
-| `difference_engine` | `science.study_bonus_percent` 20 (inert until **P-S2**) |
+| `difference_engine` | `progress.study_percent` 20 (read by Progress) |
 | `watt_engine` / `high_pressure_steam` | `science.steam_percent` 100 / 100 (so ×2, then ×3) |
 | `induction_motor` | `science.charge_use_percent` −25 |
 | `incandescent_lamp` | `science.lamp_use_percent` −75 |
@@ -471,7 +476,7 @@ Two integer quantities. **Turning** (mechanical, units per tick: "turns") travel
 - **Wooden shafts** carry ≤ 16 turns and a run of ≤ 16 blocks; **steel** 128 and 64; gears change nothing but direction (the history lesson is the escapement, not gear ratios — keep it simple for children).
 - **Wire loss**: 1 charge per 16 blocks of copper per second (DC), cut by 90 % with `polyphase_ac`, then halved by `transformer`, then −25 % with `bakelite` insulation. Wardenclyffe (§7.3) removes distance for its receivers entirely.
 - **Every 20 ticks**, per network: sum supply, sum demand, share supply in frame order; surplus charge fills stores (jars 100, cells 1,000, accumulator banks = frames full of cells). Turning is never stored — a millrace stops, the mill stops.
-- **Sources** (turns or charge per second, before effects): crank 4 while used; water wheel 4 × (water blocks touching its lower half, max 4) — so 4–16; windmill 2 + 1 per 16 blocks above ground (`depth_under` negative) capped 8, ×2 in `storm`/`blizzard`, ×0 in `clear` with intensity < 100‰ (`weather_at`), and as in `cloudy` without Weather; Newcomen 16 (1 coal / 30 s); Watt 32; high pressure 48; voltaic pile 2 charge (a cell item slowly drained, recharged by electrolysis reversed); radium cell 1 forever; aether cell 10 forever; lightning 2,000 at once; gravity engine 512.
+- **Sources** (turns or charge per second, before effects): crank 4 while used; water wheel 4 × (water blocks touching its lower half, max 4) — so 4–16; windmill (2 + 1 per 16 blocks above ground, `depth_under` negative, capped 8) × twice Weather's wind strength, rounded down — so 0.4× on a clear day, 2× in a blizzard, and 1× without Weather; Newcomen 16 (1 coal / 30 s); Watt 32; high pressure 48; voltaic pile 2 charge (a cell item slowly drained, recharged by electrolysis reversed); radium cell 1 forever; aether cell 10 forever; lightning 2,000 at once; gravity engine 512.
 - **Budget.** Every network tick is O(frames + sources) in that network; networks are capped per player (32) and in size (512 blocks).
 
 ### 6.3 The furnace and the metallurgy ladder
@@ -526,7 +531,7 @@ One HUD script (`hud.lua`, reserve 0 — it draws top-left) shows the held instr
 ### 6.5 Electricity
 
 - **Leyden jar** (item, detail `e=<0..100>`); **cell** (item, `e=<0..1000>`); the detail is rewritten in place (Craft does the same for tool wear), so a charged jar never stacks with an empty one.
-- **Lightning rod** (construct §7.3): Weather's `on_lightning(x, y, z)` → if a rod construct's tip is within 8 blocks of the strike in x and z (a bolt that found no ground is reported 40 blocks above a player, in the air, so y is not compared), every jar and cell in frames on its network fills, up to 2,000 in total; and the strike's own fire is `extinguish`ed (Weather puts out one block a call and exports no list of fires; **Wx-S4** would let a rod clear 16 round it). Discovery *"You caught lightning!"* (30).
+- **Lightning rod** (construct §7.3): Weather's `on_lightning(x, y, z)` → if a rod construct's tip is within 8 blocks of the strike in x and z (a bolt reports the block over the ground it struck), every jar and cell in frames on its network fills, up to 2,000 in total; and every fire within 16 of the rod is put out: Weather's `fires_near`, then `extinguish` each. Discovery *"You caught lightning!"* (30).
 - **Franklin's kite**: while flying a kite (§4) in `storm` with a jar in the off-hand, the jar gains 5 per second. Historically dangerous; here harmless.
 - **Lamp** (`lamp` / `lamp_lit` blocks): lit while its network (or a Tesla coil within 16, or Wardenclyffe) pays 1 charge / s (¼ with the incandescent lamp). Swapped by the network tick, not by a random tick.
 - **Electromagnet** (held): every Life `drop` item entity within 8 is pulled toward you (Life's `pull_drops`, L-S4).
@@ -560,11 +565,11 @@ The **aether** is the period's own physics: Maxwell's waves needed a medium, and
 
 **Tone.** The Core is *Event Horizon*: something enormous, beautiful and wrong. Three concentric rings turn on three axes around a sphere of black; the sound is a low choir that is almost a hum; the sky dims when it spins up; the rings stop dead when it opens. Nothing is gory, ever. The dread is scale and silence.
 
-- **The Core** (construct §7.3): anchor = a **throat** block (`wormhole`, the one block the Fold adds) at the centre of three orthogonal 5×5 rings of cavorite `ring` glyph blocks; a gravity engine within 16; four Tesla coils at the corners of its base. Checked on use of the throat with a `fold_key` (relic §7.5). While spinning: three entities with the `core_ring` model spawned at the centre, each yawing/pitching at a different rate (`set_entity yaw/pitch` every tick — three entities, cheap); the sky darkens for everyone within 64 (through Weather's overlay, Wx-S2; until then the hum alone — `flash` adds light and cannot darken); `play_loop` of `core_hum`.
+- **The Core** (construct §7.3): anchor = a **throat** block (`wormhole`, the one block the Fold adds) at the centre of three orthogonal 5×5 rings of cavorite `ring` glyph blocks; a gravity engine within 16; four Tesla coils at the corners of its base. Checked on use of the throat with a `fold_key` (relic §7.5). While spinning: three entities with the `core_ring` model spawned at the centre, each yawing/pitching at a different rate (`set_entity yaw/pitch` every tick — three entities, cheap); the sky darkens for everyone within 64 (Weather's `add_overlay`, source `tiamat_default_science:core`, taken off when it stops); `play_loop` of `core_hum`.
 - **Wormholes** (`wormhole_gates`): two gate constructs (3×3 upright ring of 8 cavorite ring blocks, air at the centre) linked by using each with your `fold_key` (the pairing is kept in storage against you, so the key carries no detail). Powered (32 charge/s each while open), the centre becomes a `wormhole` block (passable, transparent, light {6,4,12}); `register_on_player_move` into it → `move_player` to the twin (same domain). Items thrown in follow. Cap 8 pairs per player.
 - **The Fold to the stars** (`fold_to_stars`): at a Core, the player looks at a star (`star_in_view`, alignment ≥ 0.9998, about a degree — the nearest star is always answered, so the threshold is the aim) and chooses *Fold to the star* in the Core dialog. A body is made for that star: `create_domain("tiamat_default_science:body_<kind>", tostring(star.id), { position = star })`. `kind` from the star's `warmth`: < 0.2 **ice**, < 0.4 **rust** (red desert), < 0.6 **regolith** (grey, cratered), < 0.8 **basalt** (volcanic), else **glass** (obsidian and sand, scorched). Magnitude → size of the body's habitable disc and its gravity (low-g bodies push you up, as plating does). Every body is **barren**: no plants, no water on the surface (ice below, on ice bodies), no life. Science reaches worlds; it does not make them (magic weaves; science travels and changes). The first visit to each star's body is a discovery (`body:*`, 100).
 - **The slot trick** (because a generator is not told its instance — **E-S2**): five templates (one per kind) registered at load. Every block coordinate in every domain lies in −60,000..59,999 (engine `coords.rs`), so each kind's template is a 15 × 15 grid of 8,000-block slots; a body takes the next free slot of its kind and is a disc of at most 3,000 blocks radius at that slot's centre, air beyond. Each body is its own slice of noise, and its size and gravity band are readable from the slot in the generator (a pure function of position) and in this mod. That is 225 bodies of each kind, 1,125 in a world — the cap, in `config.lua`; the Fold refuses a star whose kind is full and says so. A return gate is built for you on arrival (a single wormhole block on a cavorite plate); stepping into it `transfer_entity`s you back to the Core's domain — the one cross-domain gate, since wormhole pairs are same-domain `move_player`.
-- **Terraforming**: a frame with the `terraformer` movement on a body converts its 16×16 footprint around it, one column per 10 ticks at 128 charge/s: regolith/rust/ash → World `dirt` → `grass`; places World's plants (`tall_grass`, `fern`, … by `set_block`; World exports no cover call) from a palette; on ice bodies, melts ice to water (`set_fluid` from ice units: conserved). When 60 % of a 64×64 region is green, the body is *living* (discovery 500) and the `atmosphere_processor` may change its sky (per player on arrival through Weather's overlay, Wx-S2; Weather has no domain logic and sends sky and clouds by x and z whatever domain a player is in, so until **Wx-S3** lets this mod own a body's sky, a body has Weather's).
+- **Terraforming**: a frame with the `terraformer` movement on a body converts its 16×16 footprint around it, one column per 10 ticks at 128 charge/s: regolith/rust/ash → World `dirt` → `grass`; places World's plants (`tall_grass`, `fern`, … by `set_block`; World exports no cover call) from a palette; on ice bodies, melts ice to water (`set_fluid` from ice units: conserved). When 60 % of a 64×64 region is green, the body is *living* (discovery 500) and the `atmosphere_processor` may change its sky (per player on arrival, through `add_overlay`; Weather stands aside off the overworld, so a body's sky and clouds are this mod's own).
 - **The Deep** (`the_deep`, world option): a Core folded *blind* — the Core dialog's second choice, offered only in a world with the option — misfolds. A registered (not instanced) domain `tiamat_default_science:deep`: floating fragments of World's `dark_basalt`, `obsidian` and `morphic_rock` in a black void, no stars, a dim red grade, a slow wind loop and far-off voices that are almost your own chat played backwards (sound design, not text). **Strange matter**: digging `morphic_rock` in the Deep drops `strange_matter` units instead (a `register_on_dig_complete` drops override; a dig event names no domain, so this mod keeps each player's domain from `register_on_player_move` and answers only in the Deep — and a drops override is last-answer-wins, so agree with World that it does not answer for `morphic_rock`). **The shades** (model `shade`): tall, still silhouettes that are always a little further away than they were; if one reaches you, you are pushed toward the nearest edge and your lamp-light flickers. **Falling off a fragment** (below y = −64) returns you through your throat to the Core — alive, but the strange matter you carried stays behind. That is the whole danger, and it is enough.
 - **Recall beacon**: a carried pocket fold home to your nearest gate, once an hour.
 - **The Unified Field Engine** (capstone relic): a pocket wormhole to any gate or body you have visited, 256 charge per use.
@@ -582,7 +587,7 @@ The **aether** is the period's own physics: Maxwell's waves needed a medium, and
 | **Reading** (`read:*`) | others' treatises | 10, ≤ 20 per reader |
 | **Toybox** | first kite flown, first hour told, first fire by sunshine, first water lifted, the Magdeburg hemispheres pulled by two horses tied to them (Life's tether) | 3–10 |
 | **Milestones** (`award`, logged as `milestone` in `progress sources`) | first body made living (500), first Core spin (300), first return from the Deep (300) | — |
-| **Difference engine** | +20 % on every study, with **P-S2** | — |
+| **Difference engine** | +20 % on every study (`progress.study_percent`) | — |
 
 ---
 
@@ -793,14 +798,14 @@ Every time in this section is time with a player near: stations pause in unloade
 - ~~**U-S1, shape-crafter presets from siblings**~~ — answered (interface `ae8954a`): `add_preset{ id, label, mask, visible? }`. At most eight added presets show at once across every mod, so gear, wheel, pipe, coil and ring join gnomon and cairn only as their nodes are held.
 
 **Weather**
-- **Wx-S2, a layered sky overlay** — shared with magic's Wx-M1.
-- **Wx-S1, wind.** Export `wind(x, z)` — internally `wind(x, z, tick) → { x, z }`, a direction with no strength — and, if Weather will, a strength beside it, for windmills and kites. Fallback: weather intensity alone.
-- **Wx-S3, domains.** Weather stands aside for players off the overworld (it sends sky and clouds by x and z whatever the domain), so a body's sky is this mod's.
-- **Wx-S4, fires near a point.** `fires_near(pos, r)`, so a lightning rod can put out every fire round it. Fallback: the strike's own block.
+- ~~**Wx-S2, a layered sky overlay**~~ — answered, with magic's Wx-M1: `add_overlay`.
+- ~~**Wx-S1, wind**~~ — answered: `wind(x, z)` → direction and strength.
+- ~~**Wx-S3, domains**~~ — answered: Weather is the overworld's.
+- ~~**Wx-S4, fires near a point**~~ — answered: `fires_near(x, y, z, r)`.
 
 **Progress**
-- **P-S1, branch labels and a reveal rule** — shared with magic's P-M1. Check the tree screen against 15 to 25 nodes a tier (§2.2).
-- **P-S2, a study-insight effect.** Progress reads an effect key (say `progress.study_percent`) when it pays a study, so the Difference Engine's +20 % does something. Until then the effect is carried and inert.
+- ~~**P-S1, branch labels and a reveal rule**~~ — answered, with magic's P-M1: `branch`, `reveal`.
+- ~~**P-S2, a study-insight effect**~~ — answered: `progress.study_percent`.
 
 ### `docs/engine-asks.md`
 
@@ -833,7 +838,7 @@ Craft's and Progress's code rules verbatim. Additions:
 - **Instruments:** each reading against stubbed World/Weather/stars; discoveries once each.
 - **Lightning:** a stubbed `on_lightning` near a rod fills jars and extinguishes a stubbed fire.
 - **Automata:** a deck runs its cards; hold never duplicates or loses a stack; path budget respected.
-- **Gravity:** plating applies impulses only above it; flight only through Life's `set_ability`, never `set_player_abilities`; no `set_sky_modifier` without Wx-S2.
+- **Gravity:** plating applies impulses only above it; flight only through Life's `set_ability`, never `set_player_abilities`; the sky only through Weather's `add_overlay`, never `set_sky_modifier`.
 - **Fold:** a star body is created at the star's position with the kind from warmth; two bodies generate different terrain (slots); no coordinate leaves −60,000..59,999; the Fold refuses a full kind; terraforming converts a footprint; the Deep's morphic rock drops strange matter only in the Deep; falling off returns the player and keeps the strange matter behind.
 - **Repath:** automata dormant, bodies sealed not destroyed; back again → restored.
 - **Determinism:** full suite twice → identical storage dump.

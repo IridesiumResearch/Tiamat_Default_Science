@@ -19,8 +19,8 @@ the answer is under each.
 | Life (`87a95f6`) | L-S2, L-S3, L-S4, L-S5, L-S6 | — |
 | World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
 | The interface (`ae8954a`) | U-S1 | — |
-| Progress | — | P-S1, P-S2 |
-| Weather | — | Wx-S1, Wx-S2, Wx-S3, Wx-S4 |
+| Progress (`ef6014b`) | P-S1, P-S2 | — |
+| Weather (`2f437fe`) | Wx-S1, Wx-S2, Wx-S3, Wx-S4 | — |
 
 ## Tiamat Default Craft
 
@@ -78,7 +78,7 @@ calls `craft.perform` when a frame's job reaches the recipe's ticks (brief
 one player leading two. *Why:* the Magdeburg hemispheres are pulled by two
 horses; today a lead makes a creature follow whoever holds it and nothing
 ties one to a block (`husbandry.lua`). *Stands in:* one horse, led.
-*Answered (Life, uncommitted):* a lead right-clicked at a fence post ties everything its holder leads to it; one player leading two was already so. The Magdeburg hemispheres get their two horses.
+*Answered (Life `87a95f6`):* a lead right-clicked at a fence post ties everything its holder leads to it; one player leading two was already so. The Magdeburg hemispheres get their two horses.
 
 ~~**L-S5, reading the worn view.**~~ Not needed:
 `game.inventory(uuid, "tiamat_default_life:worn")` reads it, and the view
@@ -90,14 +90,14 @@ export `pull_drops(pos, radius, uuid)`. *Why:* a held magnet draws drops
 within 8 blocks. The engine does not check who owns an entity
 (`mlua_vm.rs`), so this is a courtesy, not a permission. *Stands in:*
 `set_entity`, once Life agrees.
-*Answered (Life, uncommitted):* yes, and `pull_drops(pos, radius, strength)`.
+*Answered (Life `87a95f6`):* yes, and `pull_drops(pos, radius, strength)`.
 
 ~~**L-S3, composed abilities.**~~ As magic's L-M3: a per-source ability
 (`speed_mul`, `fly`) Life composes, since `set_player_abilities` is last
 writer wins and Life writes it. For the levitator and gravity plating.
 *Stands in:* upward impulses with `push_player`; no
 `set_player_abilities` from this mod.
-*Answered (Life, uncommitted):* `set_ability(uuid, source, { speed_mul, fly })`, composed with Life's own cold and hunger. Levitator flight is a source of ours, never `set_player_abilities`.
+*Answered (Life `87a95f6`):* `set_ability(uuid, source, { speed_mul, fly })`, composed with Life's own cold and hunger. Levitator flight is a source of ours, never `set_player_abilities`.
 
 ~~**L-S2, act on Life's creatures.**~~ *Wanted:* `push(entity, velocity)` and
 `freeze(entity, ticks)`, for gravity wells, repulsors and the stasis
@@ -105,7 +105,7 @@ field. *Why:* Life's AI drives its creatures, and a velocity written from
 outside is overwritten or fights it. *Stands in:* wells and stasis act on
 item entities and this mod's own; the Tesla coil already works on Life's
 creatures through `set_alight`.
-*Answered (Life, uncommitted):* `push(entity, velocity)` and `freeze(entity, ticks)` on Life's creatures.
+*Answered (Life `87a95f6`):* `push(entity, velocity)` and `freeze(entity, ticks)` on Life's creatures.
 
 ## Tiamat Default World
 
@@ -141,34 +141,40 @@ block's tab (the shape crafter block), so presets show where it is used.
 
 ## Tiamat Default Progress
 
-**P-S2, a study-insight effect.** *Wanted:* Progress reads an effect key
+~~**P-S2, a study-insight effect.**~~ *Wanted:* Progress reads an effect key
 (say `progress.study_percent`) when it pays a study. *Why:* `register_study`
 pays a fixed `insight` and `research.lua` reads no effect, so the
 Difference Engine's "studies pay 20 % more" does nothing. *Stands in:* the
 effect is carried and inert.
+*Answered (Progress `ef6014b`):* studies read `progress.study_percent`, summed over the nodes a player holds, and pay that many per cent more. The Difference Engine carries 20.
 
-**P-S1, a branch label and a reveal rule.** Magic's P-M1, shared. This
+~~**P-S1, a branch label and a reveal rule.**~~ Magic's P-M1, shared. This
 path registers 107 nodes, 15 to 25 a tier where Progress's brief expected
 four to six, so the tree screen wants checking against it too.
+*Answered (Progress `ef6014b`):* `register_node{ branch, reveal }` and `register_path{ branches, reveal }`. The Research tab groups a tier by branch, and `reveal = "near"` shows a node only once all but one of its requirements are held.
 
 ## Tiamat Weather
 
-**Wx-S4, fires near a point.** *Wanted:* `fires_near(pos, r)` answering
+~~**Wx-S4, fires near a point.**~~ *Wanted:* `fires_near(pos, r)` answering
 positions. *Why:* a lightning rod puts out the fires round it;
 `extinguish(x, y, z)` puts out one block and `fires()` answers counts.
 *Stands in:* the strike's own block is put out.
+*Answered (Weather `2f437fe`):* `fires_near(x, y, z, r)`, the blocks alight within `r` (up to 64), ordered.
 
-**Wx-S3, domains.** *Wanted:* Weather stands aside for a player off the
+~~**Wx-S3, domains.**~~ *Wanted:* Weather stands aside for a player off the
 overworld. *Why:* Weather has no domain logic and sends sky and clouds by
 x and z whatever domain a player is in (`fx.lua`), so a star body gets the
 overworld's weather at the same coordinates. *Stands in:* a body has
 Weather's sky and clouds.
+*Answered (Weather `2f437fe`):* Weather is the overworld's. A player in another domain is in no square, and what was sent is taken back; `weather_for` and `falling_on` answer nil for them.
 
-**Wx-S2, a layered sky overlay.** Magic's Wx-M1, shared: the Core's
+~~**Wx-S2, a layered sky overlay.**~~ Magic's Wx-M1, shared: the Core's
 darkening and the atmosphere processor. *Stands in:* this mod never calls
 `set_sky_modifier`; the Core has its hum alone.
+*Answered (Weather `2f437fe`), with magic's Wx-M1:* `add_overlay(player, source, spec | nil)`, laid over the weather's own; intensities and saturations multiply, colours mix in source order, the fog stays the weather's.
 
-**Wx-S1, wind.** *Wanted:* an export `wind(x, z)`. Internally it is
+~~**Wx-S1, wind.**~~ *Wanted:* an export `wind(x, z)`. Internally it is
 `wind(x, z, tick) → { x, z }`, a direction with no strength
 (`climate.lua`); a strength beside it, if Weather will. For windmills and
 kites. *Stands in:* weather kind and intensity alone.
+*Answered (Weather `2f437fe`):* `wind(x, z)` → `x, z, strength`: the climate's direction, and 0..1 from the weather there, 0.2 clear to 1 in a blizzard. The kite uses it (0.1.0).

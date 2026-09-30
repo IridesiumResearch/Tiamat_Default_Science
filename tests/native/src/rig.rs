@@ -531,9 +531,14 @@ impl fluid::Access for World {
         }
         true
     }
-    /// The world's water is the one fluid here, number 1.
+    /// The world's water is fluid 1 and Weather's rainwater fluid 2: the two
+    /// the siblings name. Volumes are kept, kinds are not.
     fn fluid_id(&self, name: &str) -> Option<FluidId> {
-        (name == "tiamat_default_world:water").then_some(FluidId(1))
+        match name {
+            "tiamat_default_world:water" => Some(FluidId(1)),
+            "tiamat_weather:rainwater" => Some(FluidId(2)),
+            _ => None,
+        }
     }
 }
 
@@ -919,6 +924,13 @@ impl Rig {
             self.world.put_carved(x, y, z, self.material(id), occupancy);
         }
         out.allowed
+    }
+
+    /// The world is open, with this seed: `game.world_seed` is set in every
+    /// mod, as the server does once a world is loaded. Weather's wind and
+    /// climate answer only then.
+    pub fn open_world(&mut self, seed: u64) {
+        self.vm.set_world_seed(seed);
     }
 
     /// The day's hour, as a fraction: 0 midnight, 0.5 noon.

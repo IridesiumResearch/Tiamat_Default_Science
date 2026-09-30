@@ -118,13 +118,12 @@ C.compass = {
 }
 
 -- The kite, drawn in the sky over whoever holds it under the open sky.
--- Heights are blocks above the holder's feet; the weather lifts it.
+-- Heights are blocks above the holder's feet; the wind lifts it and carries it downwind.
 C.kite = {
     period = 10,                    -- ticks between redraws
     height = 8,
-    behind = 4,                     -- blocks behind the holder's facing
-    storm_height = 6,               -- more in a storm or a blizzard
-    per_mille_height = 4,           -- more at 1,000 permille of any other weather
+    behind = 4,                     -- blocks downwind, or behind the holder in still air
+    wind_height = 10,               -- more at the wind's full strength (1, a blizzard): 2 on a clear day
     open_sky = 15,
     radius = 64,                    -- how far the kite is seen
     colour = { r = 0.9, g = 0.2, b = 0.15 },

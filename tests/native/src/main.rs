@@ -57,7 +57,20 @@ fn insight(r: &mut Rig) -> i32 {
 /// Bursts this mod's kite drew since the last call: the kite is seen from
 /// further than anything else here, so its radius picks it out.
 fn kite_bursts(r: &Rig) -> usize {
-    r.bursts().iter().filter(|b| b.contains("radius: 64.0")).count()
+    kite_positions(r).len()
+}
+
+/// Where each of those bursts was drawn, `[x, y, z]`.
+fn kite_positions(r: &Rig) -> Vec<[f64; 3]> {
+    r.bursts()
+        .iter()
+        .filter(|b| b.contains("radius: 64.0"))
+        .map(|b| {
+            let at = b.split("pos: [").nth(1).expect("a position").split(']').next().unwrap();
+            let v: Vec<f64> = at.split(", ").map(|n| n.parse().unwrap()).collect();
+            [v[0], v[1], v[2]]
+        })
+        .collect()
 }
 
 /// Everything registers into the real siblings, and nothing is refused.
@@ -105,7 +118,9 @@ fn loads_without_the_optional_mods() {
     r.hold(PLAYER, "kite");
     r.bursts();
     r.tick(10);
-    assert_eq!(kite_bursts(&r), 2, "a kite and its tail, with no weather to lift it");
+    let at = kite_positions(&r);
+    assert_eq!(at.len(), 2, "a kite and its tail");
+    assert_eq!(at[0], [100.5, 72.0, 96.5], "with no weather: eight up, four behind a body facing north");
     println!("loads without the optional mods: ok");
 }
 
@@ -297,6 +312,7 @@ fn the_compass() {
 /// Held under the open sky, a kite flies; under a roof, or put away, not.
 fn the_kite() {
     let mut r = Rig::new(Setup::default());
+    r.open_world(20260930);
     ready(&mut r, 0);
     r.give(PLAYER, "kite", 27);
 
@@ -306,7 +322,13 @@ fn the_kite() {
 
     r.hold(PLAYER, "kite");
     r.tick(10);
-    assert_eq!(kite_bursts(&r), 2, "a kite and its tail");
+    let at = kite_positions(&r);
+    assert_eq!(at.len(), 2, "a kite and its tail");
+    // Weather's wind: at least a clear day's 0.2 lifts it two blocks, and
+    // it stands four blocks off downwind, whichever way that is.
+    assert!(at[0][1] >= 74.0 && at[0][1] <= 82.0, "lifted by the wind: {:?}", at[0]);
+    let (dx, dz) = (at[0][0] - 100.5, at[0][2] - 100.5);
+    assert!((dx.abs() + dz.abs() - 4.0).abs() < 1e-6, "four blocks off along |x| + |z|: {:?}", at[0]);
     assert_eq!(insight(&mut r), 5, "a kite in the sky, the first time");
     r.tick(10);
     assert_eq!(kite_bursts(&r), 2, "drawn again every half second");

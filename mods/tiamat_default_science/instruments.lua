@@ -207,19 +207,36 @@ end)
 
 -- The kite -------------------------------------------------------------------------------
 
---- How high a kite flies over `pos`, in blocks: higher in any weather,
---- highest in a storm.
-function S.kite_height(pos)
-    local height = C.kite.height
-    if weather then
-        local kind, intensity = weather.weather_at(math.floor(pos.x), math.floor(pos.y), math.floor(pos.z))
-        if kind == "storm" or kind == "blizzard" then
-            height = height + C.kite.storm_height
-        elseif intensity then
-            height = height + (intensity * C.kite.per_mille_height) // 1000
-        end
+--- The wind over `pos`: its direction across the ground and its strength,
+--- 0.2 on a clear day to 1 in a blizzard (Weather's `wind`, ask Wx-S1).
+--- Nil where there is no weather: without Weather, before the world opens,
+--- and off the overworld, which is the only place Weather blows.
+function S.wind(pos, domain)
+    if not (weather and weather.wind) or domain ~= nil then return nil end
+    local x, z, strength = weather.wind(math.floor(pos.x), math.floor(pos.z))
+    if x == nil then return nil end
+    return x, z, strength
+end
+
+--- Where a kite flies over a body at `p` facing `facing`: downwind of its
+--- holder and higher the harder it blows; with no wind, behind them at the
+--- plain height.
+function S.kite_at(p, facing, domain)
+    local wx, wz, strength = S.wind(p, domain)
+    if wx then
+        return {
+            x = p.x + wx * C.kite.behind,
+            y = p.y + C.kite.height + math.floor(strength * C.kite.wind_height),
+            z = p.z + wz * C.kite.behind,
+            domain = domain,
+        }
     end
-    return height
+    return {
+        x = p.x - facing.x * C.kite.behind,
+        y = p.y + C.kite.height,
+        z = p.z - facing.z * C.kite.behind,
+        domain = domain,
+    }
 end
 
 local function fly(uuid, body)
@@ -227,12 +244,7 @@ local function fly(uuid, body)
     local domain = U.place(tds.domain_of[uuid])
     local light = game.get_light{ x = math.floor(p.x), y = math.floor(p.y) + 2, z = math.floor(p.z), domain = domain }
     if light.sun < C.kite.open_sky then return false end
-    local at = {
-        x = p.x - body.facing.x * C.kite.behind,
-        y = p.y + S.kite_height(p),
-        z = p.z - body.facing.z * C.kite.behind,
-        domain = domain,
-    }
+    local at = S.kite_at(p, body.facing, domain)
     local life = C.kite.period / 20 + 0.3
     game.emit_particles{ pos = at, count = 10, colour = C.kite.colour, size = 0.25, lifetime = life,
         area = { x = 0.35, y = 0.5, z = 0.35 }, gravity = 0, collide = false, radius = C.kite.radius }
