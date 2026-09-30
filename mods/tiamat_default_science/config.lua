@@ -30,7 +30,7 @@ C.bench_nodes = {
     {
         id = "shared.burning_glass", tier = 1, cost = 15, requires = "shared.theatrum",
         label = "The Burning Glass",
-        text = "A glass lens: look through it at anything to learn what it is.",
+        text = "A glass lens: it tells you what things are, and lights fires in the noon sun.",
     },
     {
         id = "shared.kite", tier = 1, cost = 10, requires = "shared.theatrum",
@@ -49,7 +49,7 @@ C.bench_items = {
     { id = "theatrum", name = "Theatrum Machinarum",
         description = "Theatre of Machines: a book of machines told in pictures. Use it to read." },
     { id = "lens", name = "Burning glass",
-        description = "A ground glass lens. Use it on anything to see what it is." },
+        description = "A ground glass lens. Use it on anything to see what it is, or on a laid fire at noon." },
     { id = "kite", name = "Kite",
         description = "Cloth on sticks. Hold it under the open sky." },
     { id = "compass", name = "Wet compass",
@@ -95,6 +95,17 @@ C.stone_tag = "stone"
 -- to dusk (fractions of the day, 0 midnight), with the sky open above it.
 C.sundial = { dawn = 0.25, dusk = 0.75, open_sky = 15 }
 
+-- The burning glass lights a laid campfire, or an unlit furnace with fuel
+-- in it, only in the high sun: between these fractions of the day, with
+-- the sky open above what it lights.
+-- `at` is what it may be held to: blocks Craft lights, listed so the glass
+-- is asked before the fire's own box opens. Craft says whether each can be
+-- lit now.
+C.burning_glass = {
+    from = 0.40, to = 0.60, open_sky = 15,
+    at = { "C:unlit_campfire", "C:unfired_kiln", "C:kiln", "C:bloomery" },
+}
+
 -- The compass: how near a cairn counts as home, and its needle — dots drawn
 -- from the player toward where it points, seen by them alone.
 C.compass = {
@@ -125,6 +136,7 @@ C.toybox = {
     hour = 3,                       -- the first hour told by a sundial
     kite = 5,                       -- the first kite flown
     home = 5,                       -- the first time a compass finds home
+    sunfire = 5,                    -- the first fire lit by sunshine
 }
 
 return C

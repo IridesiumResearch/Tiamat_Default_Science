@@ -5,12 +5,13 @@
 -- that read the world and say what they read.
 --
 --   the sundial      a gnomon carved from stone: used in sunshine, it tells the hour
---   the burning glass held and used on anything: its name, what it is, how hard
+--   the burning glass held and used on anything: its name, what it is, how hard;
+--                    on a laid fire in the noon sun, it lights it
 --   the compass      used anywhere: a needle of dots to north, or to your cairn
 --   the kite         held under the open sky: it flies over you, higher in storms
 --
--- The burning glass does not light fires yet: Craft lights a fire only for
--- its own striker, and ask C-S6 would let it (brief §2.1).
+-- What may be lit, and whether it can be now, is Craft's to say: the glass
+-- asks Craft's `ignite` (ask C-S6) at the blocks Craft lights.
 --
 -- What is read here is shown, never kept as the world's state, and every
 -- number that decides anything is a whole one. The compass and the kite
@@ -25,6 +26,7 @@ local I = tds.items
 local S = {}
 
 local weather = U.exports("tiamat_weather")
+local craft = U.exports("tiamat_default_craft")
 
 local LENS = I.ids.lens
 local COMPASS = I.ids.compass
@@ -76,7 +78,16 @@ tds.on_use(function(e)
     return said
 end)
 
--- The burning glass, as a magnifier ------------------------------------------------------
+-- The burning glass ------------------------------------------------------------------------
+
+--- Whether the noon sun falls on `pos`: the high hours, and the sky open
+--- above it.
+function S.high_sun(pos)
+    local t = game.time_of_day()
+    if t < C.burning_glass.from or t >= C.burning_glass.to then return false end
+    local light = game.get_light{ x = pos.x, y = pos.y + 1, z = pos.z, domain = pos.domain }
+    return light.sun >= C.burning_glass.open_sky
+end
 
 --- "Granite: stone. Two seconds to break by hand."
 function S.magnify(material)
@@ -98,6 +109,21 @@ end
 tds.on_use(function(e)
     if not e.x or not holding(e, LENS) then return nil end
     return S.magnify(e.material)
+end)
+
+-- Held to a laid fire or a cold kiln: asked before the fire's box opens.
+local lightable = {}
+for i, id in ipairs(C.burning_glass.at) do lightable[i] = U.id(id) end
+tds.on_use_at(lightable, function(e)
+    if not holding(e, LENS) or not craft then return nil end
+    local pos = U.block_of(e)
+    if not S.high_sun(pos) then
+        return "The glass needs the high noon sun on it to light a fire."
+    end
+    local lit, why = craft.ignite(pos, e.player)
+    if not lit then return why end          -- Craft's words: no fuel, alight already
+    A.discover(e.player, A.SUNFIRE)
+    return "The sun through the glass sets it alight!"
 end)
 
 -- The compass, and the cairn it finds ------------------------------------------------------

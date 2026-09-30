@@ -77,6 +77,7 @@ end
 A.HOUR = game.mod_id .. ".hour"
 A.KITE = game.mod_id .. ".kite"
 A.HOME = game.mod_id .. ".home"
+A.SUNFIRE = game.mod_id .. ".sunfire"
 
 if progress then
     progress.register_discovery{ id = A.HOUR, insight = C.toybox.hour, label = "The hour, told by the sun",
@@ -84,6 +85,8 @@ if progress then
     progress.register_discovery{ id = A.KITE, insight = C.toybox.kite, label = "A kite in the sky",
         group = "toybox" }
     progress.register_discovery{ id = A.HOME, insight = C.toybox.home, label = "A needle that finds home",
+        group = "toybox" }
+    progress.register_discovery{ id = A.SUNFIRE, insight = C.toybox.sunfire, label = "A fire lit by sunshine",
         group = "toybox" }
 end
 

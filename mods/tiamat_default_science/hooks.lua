@@ -13,6 +13,8 @@ local H = {}
 
 local words = {}
 local uses = {}
+local listed = {}
+local listed_materials = {}
 local places = {}
 local ticks = {}
 local dialogs = {}
@@ -43,6 +45,17 @@ end
 --- answer stops the rest. Subscribers are asked in the order they subscribed.
 function tds.on_use(fn)
     uses[#uses + 1] = fn
+end
+
+--- Runs `fn(event)` for a use at one of `materials` (qualified ids), asked
+--- BEFORE any mod's unlisted handler: a burning glass held to a laid fire
+--- is for the glass, not for the fire's box. Materials nobody registered are
+--- skipped. Answer as `tds.on_use` does; `nil` lets every other mod be asked.
+function tds.on_use_at(materials, fn)
+    for _, id in ipairs(materials) do
+        if tds.util.material(id) then listed_materials[#listed_materials + 1] = id end
+    end
+    listed[#listed + 1] = fn
 end
 
 --- Runs `fn(event)` before a block is placed. It watches: this mod refuses
@@ -93,6 +106,10 @@ function H.install()
     -- `anywhere`: the Theatrum is read, and the compass followed, wherever
     -- the player looks.
     game.register_on_use(function(event) return first_verdict(uses, event) end, { anywhere = true })
+    if #listed_materials > 0 then
+        game.register_on_use(function(event) return first_verdict(listed, event) end,
+            { materials = listed_materials })
+    end
 
     game.register_on_place(function(event)
         for _, fn in ipairs(places) do fn(event) end

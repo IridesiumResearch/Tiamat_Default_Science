@@ -10,24 +10,36 @@ smallest change that would answer it. Newest first within each mod. The
 design reasons are in `docs/brief.md` §14 and §2.1; where magic wants the
 same thing, its ask is named beside ours so the two are answered once.
 
-Every ask below is **open** as of 2026-09-29 unless it is struck through.
+Where they stand on 2026-09-30. Struck through is answered or withdrawn;
+the answer is under each.
+
+| Mod | Answered | Open |
+|---|---|---|
+| Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | — |
+| Life (in its working tree, not yet committed) | L-S2, L-S3, L-S4, L-S5, L-S6 | — |
+| World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
+| The interface (`ae8954a`) | U-S1 | — |
+| Progress | — | P-S1, P-S2 |
+| Weather | — | Wx-S1, Wx-S2, Wx-S3, Wx-S4 |
 
 ## Tiamat Default Craft
 
-**C-S7, unattended perform.** *Wanted:* the exported `perform` accepts
+~~**C-S7, unattended perform.**~~ *Wanted:* the exported `perform` accepts
 `{ unattended = true }`, as Craft's own auto stations use internally.
 *Why:* the exported form rejects it (`exports.lua`), so every `perform` is
 attended: a tool not found in the frame's slots is looked for in its
 owner's own inventory (`registry.lua`). A frame's tools should be the
 frame's. *Stands in:* attended, documented in brief §2.
+*Answered (Craft `1d22935`):* `perform(uuid, id, container, { unattended = true })`; unattended, a container's tools must be in it, and nobody's inventory is looked in.
 
-**C-S6, lighting a fire.** *Wanted:* `ignite(pos, uuid)` lights a laid
+~~**C-S6, lighting a fire.**~~ *Wanted:* `ignite(pos, uuid)` lights a laid
 campfire or an unlit heat station, answering whether it did. *Why:* a
 campfire lights only to a held `fire_striker` (`fire.lua`) and a furnace
 only through its own striker path (`furnace.lua`); `add_fuel_at` needs a
 fire already lit. The burning glass lights a fire from the noon sun, a
 bench node a small child reaches in the first hour. *Stands in:* the
 burning glass is a magnifier only.
+*Answered (Craft `1d22935`):* `ignite(pos, uuid)` lights a laid campfire or an unlit heat station with fuel in it, or answers why not. The burning glass uses it at noon (brief §4), listening at the fires by name so it is asked before the fire's box opens.
 
 ~~**C-S5, idempotent glyphs.**~~ Kept as a convenience, not a fault:
 registering a mask again with the same id answers `nil, "that mask is
@@ -37,70 +49,79 @@ already <id>"` and never raises. Magic's C-M7; asked once, together.
 in-game day (24,000 ticks), under `max_ticks`. Magic's C-M5 stands on its
 own.
 
-**C-S3, a glyph as an ingredient.** Identical to magic's C-M1; asked once,
+~~**C-S3, a glyph as an ingredient.**~~ Identical to magic's C-M1; asked once,
 together. *Stands in:* relic recipes register their plain inputs, and the
 assembly jig takes the carved parts itself with `game.container_take`
 around `perform`, giving them back with `game.container_give` if it fails
 (brief §7.5).
+*Answered (Craft `1d22935`):* `{ glyph = id, material = id or #group, count = n }` as an input (consumed) or a tool (kept). Relics are ordinary recipes; the jig's take-and-give fallback is retired.
 
-**C-S2, a boost that needs power.** *Wanted:*
+~~**C-S2, a boost that needs power.**~~ *Wanted:*
 `boost = { tool, heat, when = fn(container) → bool }`. *Why:* the blowing
 engine should blast only while a powered frame touches the furnace, and the
 Bessemer converter likewise. *Stands in:* the blowing engine boosts
 whenever it is in the tool slot (a documented simplification).
+*Answered (Craft `1d22935`):* `boost = { tool, heat, when = fn(container) }`, asked every second while the tool is there.
 
-**C-S1, a station run by a predicate.** *Wanted:*
+~~**C-S1, a station run by a predicate.**~~ *Wanted:*
 `register_station{ auto = true, runs = fn(container) → speed_percent }`, so
 Craft advances a frame's recipe itself while the predicate answers more
 than 0. *Why:* Craft's brief expected this mod to write "no job loop of its
 own"; without this it must. *Stands in:* this mod's loop, every 20 ticks,
 calls `craft.perform` when a frame's job reaches the recipe's ticks (brief
 §6.1) — works today.
+*Answered (Craft `1d22935`):* `register_station{ runs = fn(container) → percent }`, asked once a second for each placed, loaded station; Craft keeps the job and makes the recipe as the placer, unattended. The frame writes no job loop (brief §6.1).
 
 ## Tiamat Default Life
 
-**L-S6, a tether.** *Wanted:* a creature on a `lead` tied to a block, or
+~~**L-S6, a tether.**~~ *Wanted:* a creature on a `lead` tied to a block, or
 one player leading two. *Why:* the Magdeburg hemispheres are pulled by two
 horses; today a lead makes a creature follow whoever holds it and nothing
 ties one to a block (`husbandry.lua`). *Stands in:* one horse, led.
+*Answered (Life, uncommitted):* a lead right-clicked at a fence post ties everything its holder leads to it; one player leading two was already so. The Magdeburg hemispheres get their two horses.
 
 ~~**L-S5, reading the worn view.**~~ Not needed:
 `game.inventory(uuid, "tiamat_default_life:worn")` reads it, and the view
 is documented in Life's exports. Magic's L-M4 is answered the same way.
 
-**L-S4, moving drop entities.** *Wanted:* Life's agreement that the
+~~**L-S4, moving drop entities.**~~ *Wanted:* Life's agreement that the
 electromagnet may `set_entity` the velocity of Life's dropped items, or an
 export `pull_drops(pos, radius, uuid)`. *Why:* a held magnet draws drops
 within 8 blocks. The engine does not check who owns an entity
 (`mlua_vm.rs`), so this is a courtesy, not a permission. *Stands in:*
 `set_entity`, once Life agrees.
+*Answered (Life, uncommitted):* yes, and `pull_drops(pos, radius, strength)`.
 
-**L-S3, composed abilities.** As magic's L-M3: a per-source ability
+~~**L-S3, composed abilities.**~~ As magic's L-M3: a per-source ability
 (`speed_mul`, `fly`) Life composes, since `set_player_abilities` is last
 writer wins and Life writes it. For the levitator and gravity plating.
 *Stands in:* upward impulses with `push_player`; no
 `set_player_abilities` from this mod.
+*Answered (Life, uncommitted):* `set_ability(uuid, source, { speed_mul, fly })`, composed with Life's own cold and hunger. Levitator flight is a source of ours, never `set_player_abilities`.
 
-**L-S2, act on Life's creatures.** *Wanted:* `push(entity, velocity)` and
+~~**L-S2, act on Life's creatures.**~~ *Wanted:* `push(entity, velocity)` and
 `freeze(entity, ticks)`, for gravity wells, repulsors and the stasis
 field. *Why:* Life's AI drives its creatures, and a velocity written from
 outside is overwritten or fights it. *Stands in:* wells and stasis act on
 item entities and this mod's own; the Tesla coil already works on Life's
 creatures through `set_alight`.
+*Answered (Life, uncommitted):* `push(entity, velocity)` and `freeze(entity, ticks)` on Life's creatures.
 
 ## Tiamat Default World
 
-**W-S2, cave earth.** *Wanted:* a nitrous earth block under overhangs and
+~~**W-S2, cave earth.**~~ *Wanted:* a nitrous earth block under overhangs and
 in caves. *Why:* the saltpetre men leached cave earth and ash; World has no
 such block. *Stands in:* `dirt` and `#ash` in the leaching vat.
+*Answered (World `1d50d64`):* `cave_earth` (tags `soil`, `nitrous`) on cave floors. The saltpetre men leach it; `dirt` retired.
 
 ~~**W-S1, pitchblende.**~~ Landed: World generates `pitchblende` from
 1,200 blocks down beside the lead and the silver (`blocks.lua`,
 `generate.lua`). Craft's W3.
 
-**W-M1, cinnabar.** Magic's ask, shared. Science roasts it for
+~~**W-M1, cinnabar.**~~ Magic's ask, shared. Science roasts it for
 quicksilver (`cinnabar_roasting`). *Stands in:* as magic's fallback,
 native droplets from sulfur crust.
+*Answered (World `1d50d64`):* `cinnabar` (tags `ore`, `mineral`) round the vents. Quicksilver is roasted from it; the sulfur-crust stand-in retired.
 
 ## Tiamat Default UI
 

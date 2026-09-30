@@ -36,8 +36,8 @@ All are namespaced `tiamat_default_science:` by the engine.
 - **Into Progress:** the shared nodes `shared.theatrum`, `shared.sundial`,
   `shared.burning_glass`, `shared.kite` (tier 1) and `shared.compass`
   (tier 2); the discoveries `tiamat_default_science.hour`,
-  `tiamat_default_science.kite` and `tiamat_default_science.home`, in the
-  group `toybox`.
+  `tiamat_default_science.kite`, `tiamat_default_science.home` and
+  `tiamat_default_science.sunfire`, in the group `toybox`.
 - **Into Craft:** the recipes `theatrum`, `lens`, `kite`, `compass` (by
   hand), each qualified `tiamat_default_science:<id>`; the glyphs `gnomon`
   and `cairn`, each in its six orientations.
@@ -63,5 +63,7 @@ the word is chat.
 
 Not exports, listed so the direction is clear: Progress's `register_node`,
 `register_discovery`, `discover` and `has`; Craft's `register`,
-`register_glyph` and `glyph_of`; the interface's `add_preset` and
+`register_glyph`, `glyph_of` and `ignite` (the burning glass, which listens
+for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`
+by name, so it is asked before a fire's box opens); the interface's `add_preset` and
 `widgets`; Weather's `weather_at`.

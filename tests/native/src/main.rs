@@ -25,6 +25,7 @@ fn main() {
     the_bench();
     the_sundial();
     the_burning_glass();
+    sunfire();
     the_compass();
     the_kite();
     the_book();
@@ -210,6 +211,45 @@ fn the_burning_glass() {
     assert!(line.ends_with("to break by hand.") || line.ends_with("It breaks at a touch."), "{line}");
     assert!(!r.use_at_nothing(PLAYER), "at the sky there is nothing to see");
     println!("the burning glass: ok");
+}
+
+/// A laid campfire lit by the noon sun through the glass, and only then;
+/// with nothing in hand, the fire's box opens as it always did.
+fn sunfire() {
+    let mut r = Rig::new(Setup::default());
+    ready(&mut r, 0);
+    let unlit = "tiamat_default_craft:unlit_campfire";
+    r.put_block(7, 64, 7, unlit);
+    r.give(PLAYER, "lens", 27);
+    r.hold(PLAYER, "lens");
+
+    r.set_time(0.3);
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 7, 64, 7));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The glass needs the high noon sun on it to light a fire."));
+
+    r.set_time(0.5);
+    r.roof(true);
+    assert!(r.use_at(PLAYER, 7, 64, 7));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The glass needs the high noon sun on it to light a fire."));
+    r.roof(false);
+
+    assert!(r.use_at(PLAYER, 7, 64, 7));
+    let heard = r.heard(PLAYER);
+    assert!(heard.iter().any(|l| l == "The sun through the glass sets it alight!"), "{heard:?}");
+    // With Life loaded, a burning campfire is Life's block (Craft, `fire.lua`).
+    let lit = r.material("tiamat_default_life:campfire");
+    assert_eq!(r.world.blocks.lock().unwrap().get(&(7, 64, 7)).map(|b| b.0), Some(lit), "Craft lit it");
+    // Ours for sunshine, and Progress's own for a first fire lit (Craft's `fire:lit`).
+    assert_eq!(insight(&mut r), 10, "a fire lit by sunshine, and a first fire");
+
+    // Nothing in hand at another laid fire: Craft's box, not the glass.
+    r.put_block(9, 64, 9, unlit);
+    r.inventory.held.lock().unwrap().remove(&PLAYER);
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 9, 64, 9), "Craft still hears it");
+    assert!(!r.heard(PLAYER).iter().any(|l| l.contains("glass")), "the glass says nothing");
+    println!("sunfire: ok");
 }
 
 /// North, then home: a cairn placed is where the needle points.

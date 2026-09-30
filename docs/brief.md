@@ -3,7 +3,7 @@
 
 # Tiamat Default Science — the brief
 
-*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, and what was decided with the designer that day is §2.2. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
+*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 are §2.3. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
 
 *Not "tech": the id is `tiamat_default_science`, the path id `science`. Schism's `schism_tech` is superseded by this brief.*
 
@@ -105,15 +105,15 @@ Everything in Craft's and Progress's briefs §2 still applies. The ones that sha
 | A path and a door | Progress `register_path`; the door recipe adds the Keystone and `shared.keystone` (Progress exports) | Door = `tiamat_default_science:antikythera` (§3). |
 | Path nodes before the Fork | refused while a player has no path; tier ≥ 3 must reach `shared.fork` (Progress `nodes.lua`) | The child's door is the **Tinker's Bench**: five `shared.*` nodes this mod registers (§4). |
 | Node limits | tier 0..7; cost ≤ 100,000; ≤ 8 requires; ≤ 8 integer effects (Progress `config.lua`) | Proven by `tools/check_tree.py` (§13). |
-| Stations that are driven by something other than fuel | Craft `register_station{ auto = true }` — "its recipes are not pressed"; the campfire is one, burned by Craft's own code; `perform(uuid, recipe_id, container)` is one transaction on a station's slots (Craft exports) | The **frame** is an `auto` station; this mod's power loop decides when a frame's recipe is done and calls `craft.perform` for it. Recipes, screens, containers and digging-out stay Craft's. Ask **C-S1** would let Craft run it. `perform` is always *attended* — a tool missing from the slots is looked for in the owner's inventory (Craft `registry.lua`); **C-S7** would export the unattended form. |
+| Stations that are driven by something other than fuel | Craft `register_station{ auto = true }` — "its recipes are not pressed"; the campfire is one, burned by Craft's own code; `perform(uuid, recipe_id, container)` is one transaction on a station's slots (Craft exports) | The **frame** is a `runs` station (C-S1, answered): Craft asks this mod's `runs(container)` once a second for a speed in per cent and keeps the job, choosing the most particular recipe the slots allow and making it as the placer, unattended. Recipes, screens, containers and digging-out stay Craft's; this mod writes no job loop. |
 | Heat | heat tiers 1..9 from fuels; `boost = { tool, heat }` (Craft exports) | The **furnace** is a Craft heat station: coke is heat 3, the blowing engine boosts to 5 (blast), the converter tool is Bessemer. |
-| Carved parts | `register_glyph`, `glyph_of`; a carved stack is never a Craft ingredient (Craft exports) | Glyphs work today; assembly from carved parts needs **C-M1/C-S3** (shared with magic), fallback §7.5. |
+| Carved parts | `register_glyph`, `glyph_of`; a carved stack is never a Craft ingredient (Craft exports) | Glyphs work today; assembly from carved parts is an ordinary recipe naming a glyph (C-S3, answered), §7.5. |
 | Node effects on Craft | Craft sums `craft.*` effects over every node a player holds (Progress `effects_of`) | Science nodes carry `craft.smelt_ore_units`, `craft.sluice_gold_period`, `craft.anvil_strikes`… (§5.6). |
 | Reading what a player looks at | `game.looking_at(uuid)` → block `{x,y,z,material,face}` in **cell** coordinates (three per block; divide by 3) or an entity; `game.star_in_view(uuid)` → `{ id, alignment }`; `game.stars()` → `{ id, x, y, z, magnitude, warmth }` (stubs) | Instruments are held items that read these; no new blocks. |
-| Damage | Life exports none; exports `set_alight` (Life exports) | The Tesla coil's arc sets hostile creatures alight. Stasis on Life's creatures: **L-S2**. |
-| Movement and gravity | `set_player_abilities` (fly, speed — last writer wins, client-predicted, and Life writes it); `push_player(uuid, impulse)` — "added, not set", **not** documented as predicted; **no per-player or per-domain gravity** (stubs) | Low gravity is an upward impulse per tick, tried in a real window for rubber-banding before it ships; flight is the same until **L-S3** and **E-S1**. |
+| Damage | Life exports none; exports `set_alight` (Life exports) | The Tesla coil's arc sets hostile creatures alight. Pushing and stasis on Life's creatures: Life's `push` and `freeze` (L-S2, answered). |
+| Movement and gravity | `set_player_abilities` (fly, speed — last writer wins, client-predicted, and Life writes it); `push_player(uuid, impulse)` — "added, not set", **not** documented as predicted; **no per-player or per-domain gravity** (stubs) | Flight is a source of ours in Life's `set_ability` (L-S3, answered), never `set_player_abilities`. Low gravity is an upward impulse per tick until **E-S1**, tried in a real window for rubber-banding before it ships. |
 | The sky | `set_sky_modifier` is one per player, last writer wins, and **Weather writes it for everyone**, whenever its value changes (Weather `fx.lua`) | The Core's darkening and the atmosphere processor wait on Weather ask **Wx-S2** (= magic's Wx-M1, a layered overlay). This mod never calls `set_sky_modifier` until then. |
-| Long recipes | Craft refuses any recipe over **72,000 ticks** (`max_ticks`) | Blister steel is one in-game day (24,000 ticks at the core sky's day), one recipe (§2.2). Stations pause while their chunk is unloaded (Craft `furnace.lua`), so every time in this brief is time with a player near. |
+| Long recipes | Craft refuses any recipe over **72,000 ticks** (`max_ticks`) | Blister steel is one in-game day (24,000 ticks at the core sky's day), one recipe (§2.2). Stations pause while their chunk is unloaded (Craft `furnace.lua`) — except a heat station registered `long = true`, which works the ticks it missed when next loaded, fuel permitting (Craft 0.5.0). The furnace is one; a frame is not. |
 | Detailed stacks | a stack with a `detail` is never a Craft ingredient | Charged jars and cells (detail `e=`) are never ingredients; recipes take **empty** jars and cells, which carry no detail until first charged. |
 | Shared reagents | magic also makes saltpeter, oil of vitriol and quicksilver | Each mod registers its own item and adds it to the Craft groups `#saltpeter`, `#oil_of_vitriol`, `#quicksilver`; every recipe names the group, so reagents trade across the Fork. |
 | Worlds at stars | `create_domain(template, key, { position })` makes a body AT a star, which then has that star's sky; generator told `{x,y,z,seed}` only (stubs; engine `core_space` proves the mechanism) | Star bodies use the **slot trick** (§6.8): every coordinate in every domain lies in −60,000..59,999 (engine `coords.rs`), so bodies are tiled inside that; **E-S2** would retire it. |
@@ -180,7 +180,30 @@ Every claim in §2 and below was re-checked against `stubs/game.lua`, the engine
 - **Science's creatures are made, not bred.** Draft 0 recorded that both trees end at making creatures through a shared trait vector (genomes here, essences in magic). This tree's answer is the automaton and the gravitic drone; genetics stays out of scope (§19) and science does not read the trait vector. Magic and Life should hear this before either builds that vector as shared.
 - **Blister steel is one day**: 24,000 ticks, one recipe under Craft's 72,000-tick cap. The node's text says history took a week.
 
-Also departing from draft 0, and to be said to the sibling concerned: Craft expected this mod to write "no job loop of its own", and it writes one (§6.1) until C-S1; and Progress expected four to six nodes a tier, where this tree has 15 to 25 — Progress allows it, and P-S1 should check its tree screen against it.
+Also departing from draft 0, and to be said to the sibling concerned: Craft expected this mod to write "no job loop of its own", and since C-S1 it does not; and Progress expected four to six nodes a tier, where this tree has 15 to 25 — Progress allows it, and P-S1 should check its tree screen against it.
+
+### 2.3 Answered 2026-09-30 — what the siblings built, and what it changes
+
+Every ask of Craft, Life, World and the interface is answered (`docs/sibling-asks.md` has each shape). The text below is changed where each appears; what stands in for an ask of Progress or Weather is unchanged, because none of theirs has been.
+
+| Ask | Now so | What changes here |
+|---|---|---|
+| C-S1 | `register_station{ runs = fn(container) → percent }`; Craft keeps the job (`runs.lua`) | The frame's job loop is gone (§6.1). Craft picks the most particular recipe the slots allow, so **a punched card no longer chooses by number** (§6.6): at tier 5, cards become glyph tools a recipe names, or Craft is asked for a choice hook — to settle before step 6 |
+| C-S2 | `boost = { tool, heat, when }` | The blowing engine and the converter blast only while a powered frame touches the furnace |
+| C-S3 | `{ glyph, material, count }` as an input or a tool | Relics are ordinary recipes at the jig; the take-and-give fallback is retired (§7.5) |
+| C-S5 | The same mask with the same id again answers `true` | Nothing |
+| C-S6 | `ignite(pos, uuid)` | The burning glass lights a laid campfire, kiln or bloomery in the noon sun, listening at those blocks by name so it is asked before the fire's box opens — built, in 0.1.0 |
+| C-S7 | `perform(..., { unattended = true })` | A frame's tools are its own |
+| Craft 0.5.0, unasked | `long = true`: a heat station works the time it missed while unloaded | The furnace is `long`, so blister steel's day passes whether or not anybody stands by it |
+| L-S2 | `push(entity, velocity)`, `freeze(entity, ticks)` | Wells, repulsors and stasis reach Life's creatures |
+| L-S3 | `set_ability(uuid, source, { speed_mul, fly })` | The levitator flies through it; plating's low gravity still waits on E-S1 |
+| L-S4 | Yes, and `pull_drops(pos, radius, strength)` | The electromagnet calls `pull_drops` |
+| L-S6 | A lead used at a fence post ties what its holder leads | The Magdeburg hemispheres get their two horses |
+| W-S2 | `cave_earth` (tags `soil`, `nitrous`) | The saltpetre men leach cave earth; `dirt` retired |
+| W-M1 | `cinnabar` (tags `ore`, `mineral`) | Quicksilver is roasted from cinnabar; the sulfur-crust stand-in retired |
+| U-S1 | `add_preset` | Gnomon and cairn are one click — built, in 0.1.0 |
+
+Life's answers are in its working tree and not yet committed; nothing here uses them until tier 5.
 
 ---
 
@@ -218,7 +241,7 @@ A six-year-old will never reach the Fork. So the first taste of science is five 
 |---|---|---|---|---|
 | `shared.theatrum` **Theatre of Machines** ★ | 5 | `shared.firecraft` | APPR | Leupold's *Theatrum Machinarum* (1724), a picture-only primer: the science recipe book a child can read. Recipe: 1 `leather`, 2 `bark_strip`, 1 `charcoal` (hand). |
 | `shared.sundial` **The Sundial** ★ | 10 | `shared.theatrum` | APPR | Carve a *gnomon* (the shape-crafter preset) from any stone: use it in daylight and it tells the hour. Egypt, 1500 BC. |
-| `shared.burning_glass` **The Burning Glass** ★ | 15 | `shared.theatrum` | APPR | A ground glass lens. Held as a magnifier it names any block and its hardness; once Craft can be asked to light a fire (**C-S6**), it lights a laid campfire or kiln from the noon sun, no striker. |
+| `shared.burning_glass` **The Burning Glass** ★ | 15 | `shared.theatrum` | APPR | A ground glass lens. Held as a magnifier it names any block and its hardness; held to a laid campfire or kiln in the noon sun, it lights it, no striker (Craft's `ignite`). |
 | `shared.kite` **The Kite** ★ | 10 | `shared.theatrum` | APPR | Cloth, sticks and cord (China, 5th c. BC). Held in the open it flies above you, higher in wind and storm, and tugs when you run. |
 
 | Node | Cost | Requires | Branch | Unlocks |
@@ -263,7 +286,7 @@ The frame, the crank and the water wheel come first and are ★: the first thing
 | `science.blast_furnace` **The Blast Furnace** ◆ | 160 | `water_wheel` | METL | The **furnace** station with water-driven bellows: iron ore, charcoal and calcite flux → pig iron and slag. |
 | `science.finery_forge` **The Finery** ◆ | 120 | `blast_furnace` | METL | Pig iron → Craft's wrought iron bars, three for every two pigs. |
 | `science.cast_iron` **Cast Iron** ◆ | 120 | `blast_furnace` | METL | Sand-mould casting: cast iron pipe, cylinder, wheel and frame plates. |
-| `science.saltpetre_works` **The Saltpetre Men** ◆ | 100 | `machine_frame` | CHEM | `dirt` and `#ash` leached in the frame → saltpeter (cave earth when World has it: **W-S2**). |
+| `science.saltpetre_works` **The Saltpetre Men** ◆ | 100 | `machine_frame` | CHEM | World's `cave_earth` and `#ash` leached in the frame → saltpeter. |
 | `science.gunpowder` **Black Powder** | 140 | `saltpetre_works` | CHEM | The *Wujing Zongyao* ratio (1044): a mining charge that loosens 3×3×3 of rock into drops. Hurts no one. |
 | `science.escapement` **The Escapement** ◆ | 140 | `gearing` | MECH | The verge and foliot (c. 1300): the clock movement; frames can be timed; clockwork parts. |
 | `science.alhazen_optics` **The Book of Optics** ★ ◆ | 100 | `glassworks` | OPTI | Ibn al-Haytham (1021): the reading stone and the surveyor's staff — distance, height and depth of whatever you look at. |
@@ -422,7 +445,7 @@ Recipe: Craft's `iron_frame` + 4 `plank` + 4 `iron_nails` at the workbench (`sci
 | `stamps` | stamp_mill | 8 | 20 units ore → 27 crushed ore, smelted by this mod's own kiln/furnace recipes exactly as ore (a third more metal) |
 | `leaching_vat` | saltpetre_works | 2 | saltpeter from cave earth + ash |
 | `trip_hammer` | trip_hammer | 8 | this mod's own powered copies of Craft's anvil products (plate, nails, chain, hinge, heads: same inputs and outputs, registered at the frame) |
-| `blowing_engine` *(sits in the **furnace's** tool slot, not a frame's; it should blow only while a powered frame touches the furnace — ask C-S2)* | blast_furnace | 8 | heat 5 |
+| `blowing_engine` *(sits in the **furnace's** tool slot, not a frame's; it blows only while a powered frame touches the furnace — Craft's `boost.when`)* | blast_furnace | 8 | heat 5 |
 | `friction_globe` | electrostatics | 4 | charge into Leyden jars in its inputs |
 | `pump` | archimedes_screw / de_re_metallica | 4 | lifts or drains water (`set_fluid`, conserved by tally) |
 | `lathe_bed` | lathe | 8 | turned shafts, pistons, bearings |
@@ -438,7 +461,7 @@ Recipe: Craft's `iron_frame` + 4 `plank` + 4 `iron_nails` at the workbench (`sci
 | `telegraph` | telegraph | 1 charge / message | a telegraph (§6.5) |
 | `terraformer` | terraforming | 128 charge | §6.10 |
 
-**The job loop** (`frame.lua`): frames are kept on this mod's own list, from `register_on_place` / `register_on_dig_complete` of the `frame` block (and rebuilt at load from `game.containers("tiamat_default_craft:tiamat_default_science:frame:")`, the containers Craft names for them). Every 20 ticks, per frame: read its movement; if its network supplies the movement's need (§6.2), add 20 × (1 + machine speed %) to its job; the recipe is the card's choice, else the first in `craft.recipes(station)` whose tools include the movement and for which `craft.can(owner, id, container)` answers true; when the job reaches the recipe's `ticks`, `craft.perform(owner, id, container)`. *Owner* is the player who placed it (Craft keeps `placer:<container>` in its private storage; this mod keeps its own copy from `on_place`), so the gate and the firsts are theirs. `on_dig_complete` is a veto asked before removal, which a later mod may still refuse, so a frame leaves the list only when its container is gone, found by a slow sweep within the tick budget; a plan-stamped frame has no placer and runs for nobody until a player uses it and claims it.
+**Running a frame** (`frame.lua`): the frame is registered with `runs = fn(container)`, and Craft asks it once a second for each placed, loaded frame. The answer is the frame's speed in per cent: 0 unless its movement's need is met by its network (§6.2), else 100 × (1 + machine speed %). Craft keeps the job, chooses the most particular recipe the slots allow, and makes it as the placer, unattended — tools from the frame's own slots only. This mod keeps no list of frames to walk and no job state; `runs` reads the network the container's block sits on, which is stored (§6.2), so it is a lookup. A plan-stamped frame has no placer, and Craft decides what that means.
 
 ### 6.2 The two networks — turning and charge
 
@@ -475,7 +498,7 @@ The ladder is the real one, each step cheaper or better than the last:
 | Blister steel | 4 `iron_bar` + 27 charcoal, **one in-game day** (24,000 ticks) at heat 2 → 4 blister steel | cementation_steel |
 | Crucible steel | 2 blister steel + Craft crucible (tool) at heat 5 → 1 steel ingot; ingot → `steel_stock` block (27 units) | crucible_steel |
 | Puddled iron | pig, heat 3, 1 min → 2 bars | puddling |
-| Bessemer steel | 3 pig + the `converter` tool + blast (heat 5 *and* powered — C-S2), 1 min → 3 steel | bessemer |
+| Bessemer steel | 3 pig + the `converter` tool + blast (heat 5 *and* powered — `boost.when`), 1 min → 3 steel | bessemer |
 | Chrome steel | 27 units chromium ore + 2 steel in a frame with `arc_electrodes` | arc_furnace |
 
 **Tools** (tier and uses through Craft `register_tool`; speed is `speed_multiplier` on the engine's `game.register_tool` of the same id): steel pick, axe, spade, chisel, hammer — tier 3, 800 uses, speed 8; chrome steel — tier 4, 2,000 uses, speed 10; the diamond drill — type `pick`, tier 5, 4,000 uses, speed 14, spends 1 charge from a carried cell per block (Craft `wear` for uses; this mod for charge). Science registers a dig class `reinforced` (tier 3) for cavorite, so cavorite resists iron.
@@ -486,7 +509,7 @@ One HUD script (`hud.lua`, reserve 0 — it draws top-left) shows the held instr
 
 | Instrument | Reads | Shows / does | Discovery family |
 |---|---|---|---|
-| burning glass | the hour and the open sky: `time_of_day()` between 0.40 and 0.60 **and** `get_light(pos).sun == 15` (sun is sky *exposure*, not brightness) | lights a laid campfire or kiln you look at, once **C-S6** lands; until then, nothing | — |
+| burning glass | the hour and the open sky: `time_of_day()` between 0.40 and 0.60 **and** `get_light(pos).sun == 15` (sun is sky *exposure*, not brightness) | lights a laid campfire, kiln or bloomery you look at, through Craft's `ignite` | toybox: a fire lit by sunshine |
 | magnifier | `looking_at` (cells ÷ 3) → material → `game.tags`, hardness | name, tags, hardness | — |
 | compass | your cairn, else north | a needle | — |
 | dip needle | nearest `metal_ore` block ≤ 16 along the six axis rays from you (96 reads, spread over 6 ticks) | a needle and "near"/"far" | — |
@@ -506,7 +529,7 @@ One HUD script (`hud.lua`, reserve 0 — it draws top-left) shows the held instr
 - **Lightning rod** (construct §7.3): Weather's `on_lightning(x, y, z)` → if a rod construct's tip is within 8 blocks of the strike in x and z (a bolt that found no ground is reported 40 blocks above a player, in the air, so y is not compared), every jar and cell in frames on its network fills, up to 2,000 in total; and the strike's own fire is `extinguish`ed (Weather puts out one block a call and exports no list of fires; **Wx-S4** would let a rod clear 16 round it). Discovery *"You caught lightning!"* (30).
 - **Franklin's kite**: while flying a kite (§4) in `storm` with a jar in the off-hand, the jar gains 5 per second. Historically dangerous; here harmless.
 - **Lamp** (`lamp` / `lamp_lit` blocks): lit while its network (or a Tesla coil within 16, or Wardenclyffe) pays 1 charge / s (¼ with the incandescent lamp). Swapped by the network tick, not by a random tick.
-- **Electromagnet** (held): every Life `drop` item entity within 8 is pulled toward you (`set_entity` velocity; the engine does not check who owns an entity, so **L-S4** is a courtesy to agree with Life, not a permission).
+- **Electromagnet** (held): every Life `drop` item entity within 8 is pulled toward you (Life's `pull_drops`, L-S4).
 - **Telegraph**: no new block — a telegraph is a *frame* with the `telegraph` movement; two of them joined by copper wire are a line. Chat `t <message>` while standing at one sends it to players within 16 of the other. With `radio`, any radio frame in the domain, no wire.
 - **Tesla coil** (construct): lamps within 16 light with no wire; hostile Life creatures within 8 are `set_alight` for 60 ticks every 5 s (2 charge each); jars and cells carried by anyone within 8 charge 5/s.
 - **Wardenclyffe** (construct): every receiver (a frame with `receiver` movement) in the domain is on its network, with no loss. One per world per player; the tower must stand ≥ 40 blocks above ground and root ≥ 30 below — as Tesla's did.
@@ -528,9 +551,9 @@ The **aether** is the period's own physics: Maxwell's waves needed a medium, and
 - **Aetherium** (item): orichalcum "rung" in a frame with a Tesla coil within 8 → aetherium ingot. World's orichalcum finally has its science reading.
 - **Cavorite** (block): 1 aetherium + 1 lead ingot + 1 `helium` + 1 steel ingot → 27 units (Wells: an alloy with helium). Class `reinforced`. Carvable like any block.
 - **Gravity plating**: a `plate` glyph of cavorite under your feet → an upward impulse each tick that cancels 5/6 of gravity (moon gravity) while you stand within 3 blocks above it. **Cavorite soles** (worn; read from `game.inventory(uuid, "tiamat_default_life:worn")`): the same anywhere, halved. Until **E-S1** (engine gravity scale) this is `push_player` per tick — test that it does not rubber-band.
-- **Gravity well**: a frame with `attractor` / `repulsor` movement; 16 charge/s; radius 8; item entities and Life creatures pushed toward/away (L-S2 for Life's creatures; own entities always).
-- **Levitator** (worn harness + carried cell): flight, 4 charge/s (fly ability via L-S3, else impulses).
-- **Stasis field**: frame movement; entities in radius 6 have velocity zeroed each tick (own entities; Life's via L-S2).
+- **Gravity well**: a frame with `attractor` / `repulsor` movement; 16 charge/s; radius 8; item entities pushed toward/away, and Life's creatures through Life's `push` (L-S2).
+- **Levitator** (worn harness + carried cell): flight, 4 charge/s, as a source of ours in Life's `set_ability` (L-S3).
+- **Stasis field**: frame movement; entities in radius 6 hang still: our own by velocity zeroed each tick, Life's by Life's `freeze` (L-S2).
 - **Gravity engine** (construct): 512 charge/s. The only thing that can feed the Core.
 
 ### 6.8 The Core, wormholes and the Fold
@@ -557,7 +580,7 @@ The **aether** is the period's own physics: Maxwell's waves needed a medium, and
 | **Bodies** (`body:*`) | first visit to each star body | 100 |
 | **Inventions** (discoveries) | first run of each movement; first lightning caught; first steel; first lamp lit; first wormhole | 10–100 |
 | **Reading** (`read:*`) | others' treatises | 10, ≤ 20 per reader |
-| **Toybox** | first kite flown, first hour told, first fire by sunshine (with C-S6), first water lifted, the Magdeburg hemispheres pulled by a led horse (two horses with **L-S6**) | 3–10 |
+| **Toybox** | first kite flown, first hour told, first fire by sunshine, first water lifted, the Magdeburg hemispheres pulled by two horses tied to them (Life's tether) | 3–10 |
 | **Milestones** (`award`, logged as `milestone` in `progress sources`) | first body made living (500), first Core spin (300), first return from the Deep (300) | — |
 | **Difference engine** | +20 % on every study, with **P-S2** | — |
 
@@ -627,7 +650,7 @@ At a frame with the `assembly_jig` movement. Each relic is carved parts + items:
 | Fold key | 1 `cavorite` ring, 1 cavorite rod | strange matter or aetherium ×9, radium | the_core |
 | Unified Field Engine | 3 `cavorite` rings, 1 cavorite wheel | strange matter ×27, an aether cell (a source, no detail), the fold key (no detail: its pair id is kept in storage against the player) | unified_field |
 
-**Mechanism.** With Craft ask **C-S3** (= magic's C-M1: a glyph named as an ingredient) these are ordinary recipes. **Fallback (today):** the recipe is registered with its non-carved inputs; the jig's job, when its time is up, first takes the carved parts from the frame's input slots with `game.container_take` (which matches shape exactly — each registered variant tried), then `craft.perform`s; if perform fails, the parts are given back with `game.container_give`. `interchangeable_parts` removes a quarter of each relic's parts (rounded down, min 1).
+**Mechanism.** Ordinary Craft recipes at the frame with the `assembly_jig`: each carved part is an input `{ glyph = "tiamat_default_science:<glyph>", material = <stock>, count = n }` (C-S3), consumed like any other. `interchangeable_parts` removes a quarter of each relic's parts (rounded down, min 1): a second, cheaper recipe the node gates. Craft prefers the MORE particular recipe, so how the cheaper one wins for a player who holds the node is settled at step 6 with the punched cards (§2.3).
 
 ---
 
@@ -662,7 +685,7 @@ From a table in `items.lua` (≈ 130). Groups: `#movement`, `#instrument`, `#cel
 
 **Pitchblende.** World has it: `pitchblende`, from 1,200 blocks down beside the lead and the silver (World `blocks.lua`, `generate.lua`). 27 blocks of it give 1 radium grain (§5.4).
 
-**Quicksilver** needs cinnabar, as for magic: **W-M1** (shared ask), same fallback (native droplets from sulfur crust).
+**Quicksilver** is roasted from World's `cinnabar` (W-M1, answered).
 
 ---
 
@@ -746,25 +769,25 @@ Every time in this section is time with a player near: stations pause in unloade
 ### `docs/sibling-asks.md`
 
 **Craft**
-- **C-S1, a station run by a predicate.** `register_station{ auto = true, runs = fn(container) → speed_percent }` so Craft advances a frame's recipe itself while the predicate answers > 0. Fallback: this mod's loop + `perform` (§6.1) — works today.
-- **C-S2, a boost that needs power.** `boost = { tool, heat, when = fn(container) → bool }`. Fallback: the blowing engine boosts whenever present (documented simplification).
-- **C-S3, a glyph as an ingredient** — identical to magic's C-M1; the two mods ask once, together.
+- ~~**C-S1, a station run by a predicate**~~ — answered (Craft 0.5.0): `runs = fn(container) → percent`.
+- ~~**C-S2, a boost that needs power**~~ — answered: `boost.when`.
+- ~~**C-S3, a glyph as an ingredient**~~ — answered, with magic's C-M1: `{ glyph, material, count }`.
 - ~~**C-S4, long recipes**~~ — withdrawn: blister steel is one day (§2.2).
-- **C-S5, idempotent glyphs** — as C-M7; a convenience, since a repeat already answers `nil` and never raises.
-- **C-S6, lighting a fire.** Export `ignite(pos, uuid)` for a laid campfire or an unlit station, so the burning glass can light one without the striker. Fallback: the burning glass is a magnifier only.
-- **C-S7, unattended perform.** Export `perform`'s `{ unattended = true }` form, so a frame's tools are the frame's and never its owner's pockets. Fallback: attended, documented.
+- ~~**C-S5, idempotent glyphs**~~ — answered, with magic's C-M7.
+- ~~**C-S6, lighting a fire**~~ — answered: `ignite(pos, uuid)`.
+- ~~**C-S7, unattended perform**~~ — answered: `perform(..., { unattended = true })`.
 
 **Life**
-- **L-S2, act on Life's creatures.** `push(entity, velocity)` / `freeze(entity, ticks)` for wells, repulsors and stasis; the Tesla coil already works through `set_alight`.
-- **L-S3, composed abilities** (as magic's L-M3) for the levitator and gravity plating.
-- **L-S4, moving drop entities.** The engine does not check who owns an entity, so this is a courtesy: agree with Life that the electromagnet may `set_entity` its drops, or have it export `pull_drops(pos, radius, uuid)`.
+- ~~**L-S2, act on Life's creatures**~~ — answered: `push`, `freeze`.
+- ~~**L-S3, composed abilities**~~ — answered, with magic's L-M3: `set_ability`.
+- ~~**L-S4, moving drop entities**~~ — answered: `pull_drops(pos, radius, strength)`.
 - ~~**L-S5, reading the worn view**~~ — not needed: `game.inventory(uuid, "tiamat_default_life:worn")` reads it.
-- **L-S6, a tether.** Tie a creature on a `lead` to a block, so two horses can pull the Magdeburg hemispheres. Fallback: one horse, led.
+- ~~**L-S6, a tether**~~ — answered: a lead used at a fence post.
 
 **World**
 - ~~**W-S1, pitchblende**~~ — landed: World generates it from 1,200 down.
-- **W-S2, cave earth.** A nitrous earth under overhangs and in caves, for the saltpetre men. Fallback: `dirt`.
-- **W-M1, cinnabar** — shared with magic.
+- ~~**W-S2, cave earth**~~ — answered: `cave_earth`.
+- ~~**W-M1, cinnabar**~~ — answered, with magic: `cinnabar`.
 
 **UI**
 - ~~**U-S1, shape-crafter presets from siblings**~~ — answered (interface `ae8954a`): `add_preset{ id, label, mask, visible? }`. At most eight added presets show at once across every mod, so gear, wheel, pipe, coil and ring join gnomon and cairn only as their nodes are held.
@@ -810,7 +833,7 @@ Craft's and Progress's code rules verbatim. Additions:
 - **Instruments:** each reading against stubbed World/Weather/stars; discoveries once each.
 - **Lightning:** a stubbed `on_lightning` near a rod fills jars and extinguishes a stubbed fire.
 - **Automata:** a deck runs its cards; hold never duplicates or loses a stack; path budget respected.
-- **Gravity:** plating applies impulses only above it; no `set_player_abilities` without L-S3; no `set_sky_modifier` without Wx-S2.
+- **Gravity:** plating applies impulses only above it; flight only through Life's `set_ability`, never `set_player_abilities`; no `set_sky_modifier` without Wx-S2.
 - **Fold:** a star body is created at the star's position with the kind from warmth; two bodies generate different terrain (slots); no coordinate leaves −60,000..59,999; the Fold refuses a full kind; terraforming converts a footprint; the Deep's morphic rock drops strange matter only in the Deep; falling off returns the player and keeps the strange matter behind.
 - **Repath:** automata dormant, bodies sealed not destroyed; back again → restored.
 - **Determinism:** full suite twice → identical storage dump.
@@ -824,7 +847,7 @@ Craft's and Progress's code rules verbatim. Additions:
 3. Door, `tree.lua`, `check_tree.py`, glyphs. **Tests: tree, door, glyphs.**
 4. Frame + crank + job loop; turning network; water wheel, windmill, screw, mills; furnace and the ladder to cast iron and blister steel; saltpeter and powder; optics basics. **Tier 3 playable.** `0.2.0`.
 5. Instruments and their discoveries; vacuum; jars, rod, kite; Newcomen; coke and crucible steel; steel tools. `0.3.0`.
-6. Tier 5: Watt, Bessemer, lathe and assembly jig (relic fallback), cards, automaton, charge network, pile, dynamo, motor, lamp, telegraph, elevator, photography. `0.4.0`.
+6. Tier 5: Watt, Bessemer, lathe and assembly jig (relics from glyph inputs), cards, automaton, charge network, pile, dynamo, motor, lamp, telegraph, elevator, photography. `0.4.0`.
 7. Tier 6: AC, Tesla coil, radio, X-rays, radium, oscillator, arc furnace, drill, Wardenclyffe, aether, cavorite. `0.5.0`.
 8. Tier 7: gravity devices, gravity engine, the Core, wormholes, star bodies, terraforming, the Deep, capstone. `1.0.0`.
 9. Pacing from a real session's ledger; `config.lua` only.
