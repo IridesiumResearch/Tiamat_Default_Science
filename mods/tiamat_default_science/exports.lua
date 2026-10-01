@@ -30,8 +30,15 @@ local function network_at(pos)
     return { kind = "turning", supply = N.supply(net), demand = N.demand(net), size = net.size }
 end
 
+--- The charge a carried stack holds (a Leyden jar's), 0 for anything else.
+local function charge_of(stack)
+    if type(stack) ~= "table" then return nil end
+    return tds.electricity.charge_of(stack)
+end
+
 return {
     version = 1,
     glyphs = glyphs,
     network_at = network_at,
+    charge_of = charge_of,
 }

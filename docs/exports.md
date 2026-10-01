@@ -23,10 +23,11 @@ one in `depends` or `optional_depends`. Source:
 | `version` | integer, `1` | Bumped only when a change would break a reader. |
 | `glyphs` | `{ [id] = { mask, variants } }`, read-only | This mod's glyphs: the canonical mask of each (`x + 3y + 9z`) and every orientation registered with Craft, smallest first. The twelve of `glyph_table.lua`: `rod`, `plate`, `gear`, `wheel`, `pipe`, `coil`, `ring`, `gnomon`, `cairn`, `bracket`, `nozzle`, `rail`. |
 | `network_at(pos)` | `{ x, y, z, domain? }`, whole blocks | The turning network at a block: `{ kind = "turning", supply, demand, size }` (turns supplied, turns its frames need, blocks in it), or nil where none is. |
+| `charge_of(stack)` | a stack, as `game.inventory` reports one | The charge a Leyden jar carries (0 to 100, read from its detail `e=<n>`); 0 for anything else, nil for a stack that is not a table. |
 
-That is all, for now. The brief's other fields (§12: `charge_of`,
-`add_charge`, `register_movement`, `register_source`, `bodies`, `on_fold`)
-are added as the machines they read are built.
+That is all, for now. The brief's other fields (§12: `add_charge`,
+`register_movement`, `register_source`, `bodies`, `on_fold`) are added as
+the machines they read are built.
 
 ## Identifiers it registers
 
@@ -46,6 +47,19 @@ All are namespaced `tiamat_default_science:` by the engine.
   `glass_tube`, `glass_jar`, `glass_bulb`, `lens_blank`, `surveyors_staff`,
   `dip_needle`, `drawplate`; and the tool `crowbar` (Craft's `maul`, tier 1;
   an engine tool quick on `#cracked` rock).
+- **Tier 4 items:** the instruments `telescope`, `microscope`,
+  `chronometer`, `barometer`, `thermometer`, `orrery`; `air_pump`,
+  `magdeburg_hemispheres`, `balloon_pack`; `leyden_jar` (charge in its detail,
+  `e=<0..100>`) and the movement `friction_globe`; `digester`, `bone_broth`
+  (food, through Life), `boiler` and the movement `cylinder`; `coke` (a fuel,
+  heat 3), `coal_tar`, `steel_ingot`, `quicksilver`, `oil_of_vitriol`; the
+  movements `lead_chamber`, `spinning_frame`, `lathe_bed`; `piston`,
+  `bearing`; and the tools `steel_pick`, `steel_axe`, `steel_spade`,
+  `steel_chisel` (tier 3, engine tools) and `steel_hammer` (in `#hammer`; the
+  chisel in `#chisel`). The block `steel_stock`.
+- **Groups it adds to:** `#quicksilver`, `#oil_of_vitriol`, `#saltpeter` (each
+  this mod's own reagent, so they trade across the Fork), `#furnace_carbon`
+  (Craft's charcoal and this mod's coke).
 - **Stations, into Craft:** `tiamat_default_science:frame` (tool 1, in 2–5,
   out 6–9; run by `runs`, its speed its network's turning) and
   `tiamat_default_science:furnace` (fuel 1, in 2–4, tool 5, out 6–8; heat,
@@ -73,6 +87,11 @@ All are namespaced `tiamat_default_science:` by the engine.
   `tiamat_default_science.invention:*` (group `inventions`) and
   `tiamat_default_science.read:*` (group `reading`), and the toy
   `tiamat_default_science.water`.
+- **Into Progress, tier 4:** the studies `study_leyden_jar` and
+  `study_steel_ingot`; the discovery families `tiamat_default_science.star:*`
+  (group `stars`), `.specimen:*` (`specimens`), `.weather:*` (`weather`) and
+  `.climate:*` (`climate`); the toys `.spark`, `.magdeburg`, `.balloon`,
+  `.franklin` and `.lightning` (group `inventions`).
 - **World option:** `blasting` (default on): whether mining charges loosen
   rock.
 - **Into the interface:** the shape-crafter presets `gnomon`, `cairn`,
@@ -95,6 +114,9 @@ the word is chat.
   placed, as `x,y,z,domain`. Forgotten when a compass finds it gone.
 - `placer:<x,y,z,domain>` — who placed the frame there, for its speed.
 - `read:<player UUID>` — how many treatises that player has learned from.
+- `rod:<x,y,z,domain>` — who placed the copper lightning rod there; forgotten
+  when a bolt finds it gone.
+- `mark:<player UUID>` — the block that player's chronometer last marked.
 - Particles: a compass's needle, to its holder alone; a kite over whoever
   flies it, to everyone within 64 blocks.
 
@@ -106,4 +128,6 @@ Not exports, listed so the direction is clear: Progress's `register_node`,
 `register_glyph`, `glyph_of` and `ignite` (the burning glass, which listens
 for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`
 by name, so it is asked before a fire's box opens); the interface's `add_preset` and
-`widgets`; Weather's `wind`.
+`widgets`; Weather's `wind`, `weather_at`, `weather_for`, `warmth`,
+`on_lightning`, `fires_near` and `extinguish`; World's `biome_under`; Life's
+`add_food` and `set_ability`.

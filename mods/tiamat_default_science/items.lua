@@ -8,6 +8,7 @@
 -- code.
 
 local C = tds.config
+local U = tds.util
 
 local I = {}
 
@@ -22,15 +23,28 @@ local function register(spec)
     }
 end
 
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items }) do
     for _, spec in ipairs(list) do register(spec) end
 end
 
 -- A tool that digs is an engine tool of the same id as its item; Craft puts
--- it in the hand of whoever holds the item (`mechanica.lua`).
-for _, spec in ipairs(C.tier3_items) do
-    if spec.speeds then
-        game.register_tool{ id = spec.id, name = spec.name, brush = "block", speeds = spec.speeds }
+-- it in the hand of whoever holds the item (`mechanica.lua`, `tier4.lua`).
+for _, list in ipairs({ C.tier3_items, C.tier4_items }) do
+    for _, spec in ipairs(list) do
+        if spec.speeds or spec.speed then
+            game.register_tool{ id = spec.id, name = spec.name, brush = spec.brush or "block",
+                speed_multiplier = spec.speed, speeds = spec.speeds }
+        end
+    end
+end
+
+-- Food, through Life: whoever eats it, Life's key and Life's effects.
+local life = U.exports("tiamat_default_life")
+if life then
+    for _, spec in ipairs(C.tier4_items) do
+        if spec.food and not life.add_food(U.id(spec.id), spec.food) then
+            game.log("tiamat_default_science: Life refused the food " .. spec.id)
+        end
     end
 end
 

@@ -1,9 +1,9 @@
 -- SPDX-FileCopyrightText: Iridesium
 -- SPDX-License-Identifier: GPL-3.0-only
 --
--- The furnace (brief §6.3): a Craft heat station of brick. It burns charcoal
--- or coal at their own heat; a blowing engine in its tool slot blasts it to
--- heat 5 — but only while the shaft it stands on turns (Craft's
+-- The furnace (brief §6.3): a Craft heat station of brick. It burns charcoal,
+-- coal or coke (heat 3, tier 4's) at their own heat; a blowing engine in its
+-- tool slot blasts it to heat 5 — but only while the shaft it stands on turns (Craft's
 -- `boost.when`, sibling ask C-S2), because a blowing engine with no power is
 -- a set of bellows nobody works.
 --
@@ -38,7 +38,7 @@ if craft then
         slots = { fuel = 1, input = { from = 2, to = 4 }, tool = 5, output = { from = 6, to = 8 } },
         heat = true,
         long = true,
-        fuels = { U.id("C:charcoal"), U.id("W:coal") },
+        fuels = { U.id("C:charcoal"), U.id("W:coal"), U.id("coke") },
         block = U.id(C.furnace.id),
         lit_block = U.id(C.furnace.lit),
         boost = { tool = U.id("blowing_engine"), heat = C.furnace.blast_heat, when = FU.blasting },

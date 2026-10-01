@@ -40,6 +40,14 @@ fn main() {
     mining_charges();
     printing();
     survey_and_dip();
+    tier4_instruments();
+    the_weather_glasses();
+    hemispheres_and_balloon();
+    leyden_jars();
+    the_lightning_rod();
+    the_newcomen_engine();
+    coke_and_steel();
+    tier4_works();
     determinism();
     println!("science native check: all passed");
 }
@@ -384,12 +392,12 @@ fn the_book() {
 fn the_tree() {
     let mut r = Rig::new(Setup::default());
     ready(&mut r, 5000);
-    assert_eq!(r.ask("t count"), "22", "Progress validated what ships: tier 3");
+    assert_eq!(r.ask("t count"), "43", "Progress validated what ships: tiers 3 and 4");
     // A node that says no `reveal` of its own takes the path's, "near".
     assert_eq!(r.ask("t branch science.water_wheel"), "MECH/nil", "a branch, and the path's reveal");
     let answer = r.ask("t learn science.machine_frame");
     assert!(answer.starts_with("nil") && answer.contains("lies beyond the Fork"), "{answer}");
-    assert!(r.ask("t learn science.telescope").starts_with("nil"), "tier 4 is data, not for sale yet");
+    assert!(r.ask("t learn science.watt_engine").starts_with("nil"), "tier 5 is data, not for sale yet");
     assert_eq!(insight(&mut r), 5000, "nothing was spent");
     println!("the tree: ok");
 }
@@ -471,7 +479,7 @@ fn tier3_loads() {
     let mut r = Rig::new(Setup::default());
     r.join(PLAYER);
     r.tick(1);
-    assert_eq!(r.ask("t ours"), "57", "4 on the Bench, 49 in tier 3, 4 studies");
+    assert_eq!(r.ask("t ours"), "90", "4 on the Bench, 49 in tier 3, 31 in tier 4, 6 studies");
     for recipe in ["frame", "crush_iron", "pig_iron", "blister_steel", "sand_mould_pipe", "clockwork", "print_treatise"] {
         let answer = r.ask(&format!("t can {MOD}:{recipe}"));
         assert!(!answer.contains("no such"), "{recipe}: {answer}");
@@ -709,6 +717,285 @@ fn survey_and_dip() {
     assert!(r.use_at_nothing(PLAYER));
     assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The needle leans gently down: metal ore, 6 blocks off."));
     println!("survey and dip: ok");
+}
+
+/// The telescope, the microscope, the chronometer and the orrery.
+fn tier4_instruments() {
+    let mut r = Rig::new(Setup::default());
+    ready(&mut r, 0);
+    r.stand_at(100.5, 64.0, 100.5);
+
+    // The telescope wants the night, and the sky.
+    r.give(PLAYER, "telescope", 27);
+    r.hold(PLAYER, "telescope");
+    r.set_time(0.5);
+    r.heard(PLAYER);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The sky is too bright to see the stars."));
+    r.set_time(0.9);
+    r.roof(true);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("You cannot see the sky from here."));
+    r.roof(false);
+
+    // The microscope: once per material.
+    r.give(PLAYER, "microscope", 27);
+    r.hold(PLAYER, "microscope");
+    r.put_block(105, 64, 100, "tiamat_default_world:granite");
+    let before = insight(&mut r);
+    assert!(r.use_at(PLAYER, 105, 64, 100));
+    let heard = r.heard(PLAYER);
+    assert!(heard.iter().any(|l| l.starts_with("Under the microscope: Granite")), "{heard:?}");
+    assert_eq!(insight(&mut r) - before, 3, "a specimen");
+    assert!(r.use_at(PLAYER, 105, 64, 100));
+    assert_eq!(insight(&mut r) - before, 3, "once");
+
+    // The chronometer: a mark, and the way back to it.
+    r.give(PLAYER, "chronometer", 27);
+    r.hold(PLAYER, "chronometer");
+    r.put_block(110, 64, 100, "tiamat_default_world:stone");
+    assert!(r.use_at(PLAYER, 110, 64, 100));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Marked: 110, 64, 100."));
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str),
+        Some("You are at 100, 64, 100. Your mark is about 10 blocks to the west."));
+
+    // The orrery: a sun and four planets, for the player alone.
+    r.give(PLAYER, "orrery", 27);
+    r.hold(PLAYER, "orrery");
+    r.bursts();
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.bursts().len(), 5, "a sun and four planets");
+    println!("tier 4 instruments: ok");
+}
+
+/// The barometer and the thermometer read Weather, and log what they read.
+fn the_weather_glasses() {
+    let mut r = Rig::new(Setup { weather: false, ..Setup::default() });
+    ready(&mut r, 0);
+    r.give(PLAYER, "barometer", 27);
+    r.hold(PLAYER, "barometer");
+    r.heard(PLAYER);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The quicksilver does not move."), "no Weather");
+
+    let mut r = Rig::new(Setup::default());
+    r.open_world(20261001);
+    ready(&mut r, 0);
+    r.stand_at(100.5, 64.0, 100.5);
+    r.tick(40);
+    r.give(PLAYER, "barometer", 27);
+    r.hold(PLAYER, "barometer");
+    let before = insight(&mut r);
+    assert!(r.use_at_nothing(PLAYER));
+    let said = r.heard(PLAYER).last().cloned().unwrap_or_default();
+    assert!(said != "The quicksilver does not move." && !said.is_empty(), "a reading: {said}");
+    assert_eq!(insight(&mut r) - before, 20, "a kind of weather, measured: {said}");
+
+    r.give(PLAYER, "thermometer", 27);
+    r.hold(PLAYER, "thermometer");
+    assert!(r.use_at_nothing(PLAYER));
+    let said = r.heard(PLAYER).last().cloned().unwrap_or_default();
+    assert!(said.ends_with("degrees Fahrenheit."), "{said}");
+    println!("the weather glasses: ok");
+}
+
+/// Two horses cannot part the hemispheres; the balloon burns charcoal.
+fn hemispheres_and_balloon() {
+    let mut r = Rig::new(Setup::default());
+    ready(&mut r, 0);
+    r.stand_at(100.5, 64.0, 100.5);
+    r.give(PLAYER, "magdeburg_hemispheres", 27);
+    r.hold(PLAYER, "magdeburg_hemispheres");
+    r.heard(PLAYER);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Bring two horses, and let them pull."));
+    r.creature(102.0, 64.0, 100.0, "tiamat_default_life:horse");
+    r.creature(99.0, 64.0, 103.0, "tiamat_default_life:horse");
+    let before = insight(&mut r);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str),
+        Some("The horses strain and strain, and cannot pull the hemispheres apart!"));
+    assert_eq!(insight(&mut r) - before, 5);
+
+    r.give(PLAYER, "balloon_pack", 27);
+    r.give(PLAYER, "tiamat_default_craft:charcoal", 54);
+    r.hold(PLAYER, "balloon_pack");
+    let before = insight(&mut r);
+    r.tick(10);
+    assert_eq!(r.units(PLAYER, "tiamat_default_craft:charcoal"), 27, "one charcoal alight");
+    assert_eq!(insight(&mut r) - before, 5, "up in a balloon");
+    r.tick(600);
+    assert_eq!(r.units(PLAYER, "tiamat_default_craft:charcoal"), 0, "and the next, when it burns out");
+    println!("hemispheres and balloon: ok");
+}
+
+/// The friction globe fills a Leyden jar; a charged jar sparks.
+fn leyden_jars() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, &["science.machine_frame", "science.simple_machines", "science.gearing",
+        "science.water_wheel", "science.glassworks", "science.electrostatics", "science.leyden_jar"]);
+    assert!(r.place(PLAYER, 110, 64, 110, "frame", FULL));
+    let frame = frame_at(110, 64, 110);
+    r.put_in(&frame, 1, "friction_globe", 27);
+    r.put_in(&frame, 2, "leyden_jar", 27);
+    assert!(r.place(PLAYER, 111, 64, 110, PLANK, WHEEL));
+    r.water(112, 64, 110, 27);
+    r.water(111, 63, 110, 27);
+    r.tick(400);
+    let jar = r.slot_of(&frame, 2).expect("the jar");
+    assert_eq!(jar.0, format!("{MOD}:leyden_jar"));
+    let charge: u32 = jar.2.as_deref().and_then(|d| d.strip_prefix("e=")).and_then(|n| n.parse().ok()).expect("charged");
+    assert!(charge >= 40 && charge <= 100, "rubbed for twenty seconds: {charge}");
+
+    r.hold_detailed(PLAYER, "leyden_jar", &format!("e={charge}"));
+    let before = insight(&mut r);
+    assert!(r.use_at_nothing(PLAYER));
+    let said = r.heard(PLAYER).last().cloned().unwrap_or_default();
+    assert!(said.starts_with("Crack! A blue spark leaps from the jar"), "{said}");
+    assert_eq!(insight(&mut r) - before, 3, "a spark from a jar");
+    r.hold(PLAYER, "leyden_jar");
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The jar is empty."), "it gave all it had");
+    println!("leyden jars: ok");
+}
+
+/// A bolt near a copper rod fills the jars its copper reaches, and puts the fires out.
+fn the_lightning_rod() {
+    let mut r = Rig::new(Setup::default());
+    r.open_world(20261001);
+    scientist(&mut r, &["science.machine_frame", "science.simple_machines", "science.wire_drawing",
+        "science.glassworks", "science.electrostatics", "science.leyden_jar", "science.lightning_rod"]);
+    // Built where the world's ground is, which is where Weather looks for it:
+    // the rod on top, copper stock down to a frame holding a jar.
+    let g: i32 = r.ask("t ground 122 122").parse().expect("the world has ground there");
+    assert!(r.place(PLAYER, 120, g + 2, 120, "frame", FULL));
+    let frame = frame_at(120, g + 2, 120);
+    r.put_in(&frame, 2, "leyden_jar", 27);
+    assert!(r.place(PLAYER, 120, g + 3, 120, "copper_stock", FULL));
+    assert!(r.place(PLAYER, 120, g + 4, 120, "copper_stock", ROD));
+    r.put_block(122, g, 122, "tiamat_default_world:stone");
+    r.aim(122, g, 122);
+    let before = insight(&mut r);
+    let said = r.ask("/weather strike");
+    assert!(said.starts_with("a bolt at"), "{said}");
+    let jar = r.slot_of(&frame, 2).expect("the jar");
+    assert_eq!(jar.2.as_deref(), Some("e=100"), "filled from the sky");
+    assert_eq!(insight(&mut r) - before, 30, "you caught lightning");
+    println!("the lightning rod: ok");
+}
+
+/// A burning furnace with a boiler, a copper pipe, a frame with a cylinder:
+/// an engine, whose turning crushes ore in the next frame.
+fn the_newcomen_engine() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, &["science.machine_frame", "science.simple_machines", "science.gearing",
+        "science.water_wheel", "science.stamp_mill", "science.blast_furnace", "science.cast_iron",
+        "science.papin_digester", "science.wire_drawing", "science.newcomen_engine"]);
+    assert!(r.place(PLAYER, 130, 64, 130, "furnace", FULL));
+    let furnace = furnace_at(130, 64, 130);
+    r.put_in(&furnace, 1, "tiamat_default_craft:charcoal", 27 * 20);
+    r.put_in(&furnace, 5, "boiler", 27);
+    assert_eq!(r.ask("t ignite 130 64 130"), "true");
+    assert!(r.place(PLAYER, 131, 64, 130, "copper_stock", 134_142_975), "a copper pipe");
+    assert!(r.place(PLAYER, 132, 64, 130, "frame", FULL));
+    r.put_in(&frame_at(132, 64, 130), 1, "cylinder", 27);
+    assert!(r.place(PLAYER, 133, 64, 130, "frame", FULL));
+    let mill = frame_at(133, 64, 130);
+    r.put_in(&mill, 1, "stamps", 27);
+    r.put_in(&mill, 2, "tiamat_default_world:lead_ore", 20);
+    r.tick(40);
+    assert_eq!(r.ask("t net 133 64 130"), "16/8/2", "the engine's 16 turns, against the stamps' 8");
+    r.tick(260);
+    assert_eq!(r.units_in(&mill, 6, 9, &format!("{MOD}:crushed_lead")), 27, "the engine works the mill");
+    println!("the Newcomen engine: ok");
+}
+
+/// Coke burns hot enough for the finery without a blast; crucible steel.
+fn coke_and_steel() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, &["science.machine_frame", "science.simple_machines", "science.gearing",
+        "science.water_wheel", "science.blast_furnace", "science.finery_forge", "science.cementation_steel",
+        "science.coke", "science.crucible_steel"]);
+    assert!(r.place(PLAYER, 140, 64, 140, "furnace", FULL));
+    let furnace = furnace_at(140, 64, 140);
+    r.put_in(&furnace, 1, "tiamat_default_craft:charcoal", 27 * 20);
+    r.put_in(&furnace, 2, "tiamat_default_world:coal", 27);
+    assert_eq!(r.ask("t ignite 140 64 140"), "true");
+    r.tick(2500);
+    assert_eq!(r.units_in(&furnace, 6, 8, &format!("{MOD}:coke")), 18, "coal baked to coke");
+    assert_eq!(r.units_in(&furnace, 6, 8, &format!("{MOD}:coal_tar")), 9, "and tar");
+
+    // On coke alone, the finery: heat 3, no blowing engine.
+    assert!(r.place(PLAYER, 150, 64, 150, "furnace", FULL));
+    let finery = furnace_at(150, 64, 150);
+    r.put_in(&finery, 1, &format!("{MOD}:coke"), 27 * 10);
+    r.put_in(&finery, 2, &format!("{MOD}:pig_iron"), 27 * 2);
+    assert_eq!(r.ask("t ignite 150 64 150"), "true");
+    r.tick(700);
+    assert_eq!(r.units_in(&finery, 6, 8, "tiamat_default_craft:iron_bar"), 27 * 3, "three bars from two pigs");
+
+    // Crucible steel: blister steel and a crucible, in a blast.
+    assert!(r.place(PLAYER, 160, 64, 160, "furnace", FULL));
+    let crucible = furnace_at(160, 64, 160);
+    r.put_in(&crucible, 1, &format!("{MOD}:coke"), 27 * 10);
+    r.put_in(&crucible, 2, &format!("{MOD}:blister_steel"), 27 * 2);
+    r.put_in(&crucible, 3, "tiamat_default_craft:crucible", 27);
+    r.put_in(&crucible, 5, "blowing_engine", 27);
+    assert!(r.place(PLAYER, 161, 64, 160, PLANK, WHEEL));
+    r.water(162, 64, 160, 27);
+    r.water(161, 63, 160, 27);
+    assert_eq!(r.ask("t ignite 160 64 160"), "true");
+    r.tick(1300);
+    assert_eq!(r.units_in(&crucible, 6, 8, &format!("{MOD}:steel_ingot")), 27, "a steel ingot");
+    println!("coke and steel: ok");
+}
+
+/// The lead chamber, the spinning frame and the lathe, each in a frame on
+/// one water wheel; bone broth in a kiln; quicksilver in a furnace.
+fn tier4_works() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, &["science.machine_frame", "science.simple_machines", "science.gearing",
+        "science.water_wheel", "science.blast_furnace", "science.cast_iron", "science.saltpetre_works",
+        "science.lead_chamber", "science.water_frame", "science.lathe", "science.papin_digester",
+        "science.glassworks", "science.cinnabar_roasting"]);
+    // Three frames in a row on a wheel: 16 turns against 4 + 8 + 8 = 20, so 80%.
+    assert!(r.place(PLAYER, 170, 64, 170, PLANK, WHEEL));
+    r.water(170, 63, 170, 27);
+    r.water(169, 64, 170, 27);
+    r.water(170, 64, 169, 27);
+    r.water(170, 65, 170, 27);
+    let chamber = frame_at(171, 64, 170);
+    let spinner = frame_at(172, 64, 170);
+    let lathe = frame_at(173, 64, 170);
+    for x in 171..=173 {
+        assert!(r.place(PLAYER, x, 64, 170, "frame", FULL));
+    }
+    r.put_in(&chamber, 1, "lead_chamber", 27);
+    r.put_in(&chamber, 2, "tiamat_default_world:sulfur", 27);
+    r.put_in(&chamber, 3, "saltpeter", 27);
+    r.put_in(&spinner, 1, "spinning_frame", 27);
+    r.put_in(&spinner, 2, "tiamat_default_life:wool", 81);
+    r.put_in(&lathe, 1, "lathe_bed", 27);
+    r.put_in(&lathe, 2, "tiamat_default_craft:iron_bar", 27);
+    r.tick(20);
+    assert_eq!(r.ask("t net 171 64 170"), "16/20/4");
+    r.tick(800);
+    assert_eq!(r.units_in(&chamber, 6, 9, &format!("{MOD}:oil_of_vitriol")), 81, "three of oil of vitriol");
+    assert_eq!(r.units_in(&spinner, 6, 9, "tiamat_default_craft:cloth"), 81, "three cloth from three wool");
+    assert_eq!(r.units_in(&lathe, 6, 9, &format!("{MOD}:piston")), 27, "a piston");
+
+    // Quicksilver, roasted out of cinnabar with a jar to catch it.
+    assert!(r.place(PLAYER, 180, 64, 180, "furnace", FULL));
+    let furnace = furnace_at(180, 64, 180);
+    r.put_in(&furnace, 1, "tiamat_default_craft:charcoal", 27 * 10);
+    r.put_in(&furnace, 2, "tiamat_default_world:cinnabar", 27);
+    r.put_in(&furnace, 3, "glass_jar", 27);
+    assert_eq!(r.ask("t ignite 180 64 180"), "true");
+    r.tick(700);
+    assert_eq!(r.units_in(&furnace, 6, 8, &format!("{MOD}:quicksilver")), 27, "quicksilver");
+    assert_eq!(r.units_in(&furnace, 2, 4, &format!("{MOD}:glass_jar")), 27, "and the jar kept");
+    println!("tier 4 works: ok");
 }
 
 /// Two runs of the same play leave the same storage behind.

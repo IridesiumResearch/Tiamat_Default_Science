@@ -169,7 +169,7 @@ function S.distance(dx, dz)
 end
 
 --- Dots from the player toward `(dx, dz)`, seen by them alone.
-local function needle(uuid, from, domain, dx, dz)
+function S.needle(uuid, from, domain, dx, dz)
     local m = math.max(math.abs(dx), math.abs(dz))
     if m == 0 then return end
     local ux, uz = dx / m, dz / m
@@ -190,18 +190,18 @@ tds.on_use(function(e)
     local here = body.pos
     local home = S.cairn(e.player)
     if home and home.domain ~= U.place(e.domain) then
-        needle(e.player, here, U.place(e.domain), 0, 1)
+        S.needle(e.player, here, U.place(e.domain), 0, 1)
         return "Your cairn is in another place. North is that way."
     end
     if not home then
-        needle(e.player, here, U.place(e.domain), 0, 1)
+        S.needle(e.player, here, U.place(e.domain), 0, 1)
         return "North is that way."
     end
     local dx, dz = home.x + 0.5 - here.x, home.z + 0.5 - here.z
     local far = S.distance(dx, dz)
     A.discover(e.player, A.HOME)
     if far <= C.compass.home_radius then return "You are home!" end
-    needle(e.player, here, U.place(e.domain), dx, dz)
+    S.needle(e.player, here, U.place(e.domain), dx, dz)
     return string.format("Home is about %d blocks away, to the %s.", far, S.direction(dx, dz))
 end)
 
@@ -322,7 +322,10 @@ tds.on_tick(C.kite.period, function()
         local held = game.held(uuid)
         if held and held.material == KITE then
             local body = body_of(uuid)
-            if body and fly(uuid, body) then A.discover(uuid, A.KITE) end
+            if body and fly(uuid, body) then
+                A.discover(uuid, A.KITE)
+                if tds.electricity then tds.electricity.kite(uuid, body.pos) end
+            end
         end
     end
 end)

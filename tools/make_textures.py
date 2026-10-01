@@ -219,6 +219,19 @@ DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass, "n
         "cast_pipe": bar((100, 100, 108)), "cast_cylinder": part((100, 100, 108)),
         "cast_wheel": part((100, 100, 108)), "frame_plate": bar((100, 100, 108)),
         "glass_tube": glassware, "glass_jar": glassware, "glass_bulb": glassware, "lens_blank": lens,
+        # tier 4
+        "steel_stock": flat(STEEL),
+        "telescope": bar(BRASS), "microscope": part(BRASS), "chronometer": part((210, 210, 215)),
+        "barometer": glassware, "thermometer": glassware, "orrery": part((230, 190, 60)),
+        "magdeburg_hemispheres": part(COPPER_C), "air_pump": part(IRON_GREY), "balloon_pack": part((200, 60, 50)),
+        "leyden_jar": glassware, "friction_globe": part(GLASS_EDGE),
+        "digester": part(IRON_GREY), "bone_broth": part((200, 170, 120)), "boiler": part((80, 80, 88)),
+        "cylinder": part((100, 100, 108)),
+        "coke": heap((50, 50, 55)), "coal_tar": heap((20, 20, 20)), "steel_ingot": bar(STEEL),
+        "quicksilver": heap((200, 205, 215)), "oil_of_vitriol": glassware, "lead_chamber": part((90, 95, 110)),
+        "spinning_frame": part(WOOD), "lathe_bed": part(IRON_GREY), "piston": bar(IRON_GREY), "bearing": part(STEEL),
+        "steel_pick": bar(STEEL), "steel_axe": bar(STEEL), "steel_spade": bar(STEEL), "steel_chisel": bar(STEEL),
+        "steel_hammer": bar(STEEL),
         }
 
 

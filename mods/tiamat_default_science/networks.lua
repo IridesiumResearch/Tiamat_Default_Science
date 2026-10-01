@@ -4,9 +4,10 @@
 -- The turning network (brief §6.2): how turning gets from a water wheel, a
 -- windmill or a crank to the frames that use it.
 --
--- A network is the blocks that touch, face to face: carved plank parts that
--- carry turning (rods for shafts, gears, wheels), and the frames and
--- furnaces they reach. It is found by a flood fill bounded at
+-- A network is the blocks that touch, face to face: carved plank or steel
+-- parts that carry turning (rods for shafts, gears, wheels), and the frames
+-- and furnaces they reach. Any plank part holds a network to wood's limits;
+-- all steel carries more, and further. It is found by a flood fill bounded at
 -- `max_blocks`, and kept in memory until any block of a kind that could
 -- belong to one is placed or dug — then every network is found again, the
 -- next time something asks. That is a departure from the brief's stored
@@ -43,6 +44,10 @@ local function is_plank(material)
     return known
 end
 
+local function is_steel(material)
+    return material ~= nil and material == B.steel_stock
+end
+
 --- What a block is to a network: `"frame"`, `"furnace"`, the part's glyph
 --- (`"rod"`, `"gear"`, `"wheel"`), or nil. `at` is `game.get_block`'s answer.
 function N.kind(at)
@@ -50,9 +55,9 @@ function N.kind(at)
     local m = at.material
     if m == B.frame then return "frame" end
     if m == B.furnace or m == B.furnace_lit then return "furnace" end
-    if is_plank(m) then
+    if is_plank(m) or is_steel(m) then
         local glyph = G.of(at)
-        if glyph and PARTS[glyph] then return glyph end
+        if glyph and PARTS[glyph] then return glyph, is_steel(m) end
     end
     return nil
 end
@@ -68,6 +73,7 @@ end
 
 local function could_belong(material)
     return material == B.frame or material == B.furnace or material == B.furnace_lit or is_plank(material)
+        or is_steel(material) or material == B.copper_stock
 end
 
 tds.on_place(function(e)
@@ -83,11 +89,11 @@ function N.at(pos)
     local key = U.key(pos)
     local net = networks[key]
     if net then return net end
-    local first = N.kind(game.get_block(pos))
+    local first, steel = N.kind(game.get_block(pos))
     if not first then return nil end
-    net = { frames = {}, furnaces = {}, wheels = {}, parts = 0, size = 0 }
+    net = { frames = {}, furnaces = {}, wheels = {}, parts = 0, size = 0, wood = false }
     local seen = { [key] = true }
-    local queue = { { pos = pos, kind = first } }
+    local queue = { { pos = pos, kind = first, steel = steel } }
     local head = 1
     while queue[head] and net.size < C.network.max_blocks do
         local item = queue[head]
@@ -100,14 +106,15 @@ function N.at(pos)
             net.furnaces[#net.furnaces + 1] = item.pos
         else
             net.parts = net.parts + 1
-            if item.kind == "wheel" then net.wheels[#net.wheels + 1] = item.pos end
+            if not item.steel then net.wood = true end
+            if item.kind == "wheel" and not item.steel then net.wheels[#net.wheels + 1] = item.pos end
         end
         for _, next in ipairs(U.neighbours(item.pos)) do
             local k = U.key(next)
             if not seen[k] then
                 seen[k] = true
-                local kind = N.kind(game.get_block(next))
-                if kind then queue[#queue + 1] = { pos = next, kind = kind } end
+                local kind, is = N.kind(game.get_block(next))
+                if kind then queue[#queue + 1] = { pos = next, kind = kind, steel = is } end
             end
         end
     end
@@ -171,6 +178,39 @@ function N.wheel(pos)
     return math.floor(base * 2 * wind(pos))
 end
 
+--- The furnace at `pos`, if it burns with a boiler in its tool slot.
+local function boiling(pos)
+    local at = game.get_block(pos)
+    if not (at and at.material == B.furnace_lit) then return false end
+    for _, stack in ipairs(game.container(U.station_name("furnace", pos)) or {}) do
+        if stack.slot == 5 and stack.material == tds.items.ids.boiler then return true end
+    end
+    return false
+end
+
+--- What the engine at the frame at `pos` gives, in turns: a copper pipe
+--- touches it, and a burning furnace with a boiler touches the pipe. Watt's
+--- condenser and Trevithick's strong steam raise it (`science.steam_percent`).
+function N.engine(pos, movement)
+    for _, side in ipairs(U.neighbours(pos)) do
+        local at = game.get_block(side)
+        if at and at.material == B.copper_stock and G.of(at) == "pipe" then
+            for _, far in ipairs(U.neighbours(side)) do
+                if boiling(far) then
+                    local turns = C.movements[movement].engine
+                    local placer = U.placer(pos)
+                    if placer and progress then
+                        local fx = progress.effects_of(placer, "science.") or {}
+                        turns = turns * (100 + (fx["science.steam_percent"] or 0)) // 100
+                    end
+                    return turns
+                end
+            end
+        end
+    end
+    return 0
+end
+
 --- What a network turns now, kept `refresh` ticks.
 function N.supply(net)
     local now = tds.now()
@@ -179,10 +219,14 @@ function N.supply(net)
     for _, pos in ipairs(net.frames) do
         local until_tick = cranked[U.key(pos)]
         if until_tick and until_tick > now then s = s + C.sources.crank end
+        local m = N.movement(U.station_name("frame", pos))
+        if m and C.movements[m].engine then s = s + N.engine(pos, m) end
     end
     for _, pos in ipairs(net.wheels) do s = s + N.wheel(pos) end
-    if net.parts > C.network.wood_run then s = 0 end
-    s = math.min(s, C.network.wood_capacity)
+    local run = net.wood and C.network.wood_run or C.network.steel_run
+    local capacity = net.wood and C.network.wood_capacity or C.network.steel_capacity
+    if net.parts > run then s = 0 end
+    s = math.min(s, capacity)
     net.supply, net.supply_at = s, now
     return s
 end

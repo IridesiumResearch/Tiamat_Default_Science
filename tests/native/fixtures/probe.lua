@@ -20,6 +20,7 @@
 --   t branch <node>      the branch Progress holds for a node
 --   t ours               how many Craft recipes carry this mod's id
 --   t net <x> <y> <z>    this mod's network there: supply/demand/size
+--   t ground <x> <z>     the world's ground height there, as generated
 --   t ignite <x> <y> <z> Craft lights the station there, for the speaker
 --   t progress <ticks> <container>  Craft's add_progress on a container
 
@@ -94,6 +95,13 @@ game.register_on_chat(function(e)
         local n = s.network_at({ x = math.tointeger(tonumber(x)), y = math.tointeger(tonumber(y)),
             z = math.tointeger(tonumber(z)) })
         say = n and string.format("%d/%d/%d", n.supply, n.demand, n.size) or "none"
+    elseif word == "ground" then
+        -- The ground's height as the world generated it: y + blocks under it.
+        local w = game.exports("tiamat_default_world")
+        local x, z = string.match(rest, "^(-?%d+) (-?%d+)$")
+        x, z = math.tointeger(tonumber(x)), math.tointeger(tonumber(z))
+        local d = w and w.depth_under and w.depth_under(x, 0, z)
+        say = d and tostring(math.floor(d)) or "none"
     elseif word == "ignite" then
         local x, y, z = string.match(rest, "^(-?%d+) (-?%d+) (-?%d+)$")
         local ok, why = c.ignite({ x = math.tointeger(tonumber(x)), y = math.tointeger(tonumber(y)),

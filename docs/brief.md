@@ -3,7 +3,7 @@
 
 # Tiamat Default Science — the brief
 
-*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3; where the build of tier 3 departs from the text is §2.4. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
+*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3; where the build of tiers 3 and 4 departs from the text is §2.4 and §2.5. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
 
 *Not "tech": the id is `tiamat_default_science`, the path id `science`. Schism's `schism_tech` is superseded by this brief.*
 
@@ -234,6 +234,26 @@ Tier 3 is built (steps 3 and 4 of §17). Where building it found the text wrong 
 | The reading stone and the surveyor's staff | The staff; the Bench's burning glass is the reading stone | One magnifier is enough |
 | A treatise's topic | Signed by its printer (`a=<eight hex>`), no topic; `read:<mark>` pays once per author, twenty at most | A topic would be a choice the press cannot be told |
 | Crushed ore smelts "as ore" | Kiln recipes (crucible, heat 2) for copper, tin, silver, gold and lead, a bloomery recipe for iron, and the group `#smeltable_iron` the blast furnace takes | Craft's ore recipes name the ore |
+
+
+### 2.5 Built for 0.3.0 — where tier 4 departs from this text
+
+Tier 4 is built (step 5 of §17). As for tier 3 (§2.4), where building it found the text wrong or unbuildable:
+
+| The text | What was built | Why |
+|---|---|---|
+| One HUD script shows the held instrument's reading (§6.4, §10.3) | Each instrument answers in a line of chat when used | One reading a use is what a child reads; a HUD is a later polish, not a mechanism |
+| A charged jar as the study `study_charged_jar` | The study takes an empty jar, `study_leyden_jar` | A charged jar carries its charge in its detail, and a stack with a detail is never an ingredient |
+| The friction globe charges jars (a frame recipe) | This mod's own loop, as the pump's: every two seconds at the frame's speed, 5 charge into the first jar in its inputs not full | It makes nothing Craft could name |
+| Papin's digester, a frame movement heated by a furnace beside it | A tool in Craft's kiln: two bones, heat 1, two bone broths | The kiln is already the heat; a frame touching a furnace would be a second way to say so |
+| The Newcomen engine burns 1 coal / 30 s | The furnace burns its own fuel; the engine turns while it is lit with a boiler in its tool slot, a carved copper pipe touching it, and a frame with the cylinder touching the pipe: 16 turns, raised by `science.steam_percent` | A burning furnace already spends fuel at its own rate |
+| Steel shafts carry 128 over 64 blocks | An all-steel network: 128 turns, 64 carved parts at most; one plank part holds it to wood's 16 and 16 | Engines of the next tier need it; it is a material rule, not a path |
+| The lightning rod's tip within 8 of the strike | Rods remembered where placed, checked when a bolt lands within 8 in x and z: still a rod, the sky open over it, its placer holding the node. Its copper (any carving of copper stock, 64 blocks at most) reaches frames, whose jars fill, 2,000 in all; every fire within 16 is put out (`fires_near`) | As written, now that Weather answers all four asks |
+| The Magdeburg hemispheres held by two horses tied to them | Two horses within 8 blocks | Life's tether is a fence post's; which horse is tied to what is Life's own business |
+| The balloon: rise slowly, fall softly | Flight at half speed through Life's `set_ability`, while a charcoal from the pack burns (30 seconds each) | Low gravity reaches the engine through Life (ask L-S7, open); flight already does |
+| Steel tools forged | Made at the workbench from steel ingots, a haft and a hammer | Craft's anvil forges Craft's iron; this is the same shape of recipe Craft uses for hafting |
+| Crucible steel, the crucible in the tool slot | The crucible in an input slot (Craft looks for tools there too) | The furnace's tool slot holds the blowing engine the heat needs |
+| The water frame: cloth from wool three times over | Three wool, three cloth (Craft's own is three wool, one cloth) | The same, said in Craft's units |
 
 ---
 

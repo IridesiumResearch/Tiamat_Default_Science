@@ -41,6 +41,16 @@ mining charges, glass blown and ground, the surveyor's staff and the dip
 needle, clockwork from carved gears, and copper drawn into stock. Where the
 build departs from the brief is its §2.4.
 
+Step 5: **tier 4, natural philosophy** (0.3.0). The instruments that pay
+the long tail of insight — a telescope that logs every star, a microscope
+every material, a barometer every kind of weather and a thermometer every
+climate — with the chronometer, the orrery, the Magdeburg hemispheres and a
+balloon. Charge in Leyden jars, filled by a friction globe, a lightning rod
+or Franklin's kite. The Newcomen engine: a burning furnace with a boiler,
+a copper pipe, and a frame with a cylinder. Coke, crucible steel, steel
+stock and steel tools; quicksilver, oil of vitriol, the water frame and the
+lathe. Its departures from the brief are §2.5.
+
 ## What is here
 
 | File | What |

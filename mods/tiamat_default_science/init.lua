@@ -39,7 +39,10 @@ tds.networks = load("networks")         -- turning: shafts, gears, wheels, and w
 tds.frame = load("frame")               -- the machine frame, run by Craft at its network's speed
 tds.furnace = load("furnace")           -- the furnace, blasted by a turning shaft
 tds.mechanica = load("mechanica")       -- tier 3's recipes, studies and inventions
+tds.tier4 = load("tier4")               -- tier 4's recipes, groups, steel tools, studies and discoveries
 tds.instruments = load("instruments")   -- the sundial, the glass, the compass, the kite, the staff, the needle
+tds.philosophy = load("philosophy")     -- the telescope, the microscope, the weather glasses, the chronometer
+tds.electricity = load("electricity")   -- the Leyden jar, the friction globe, the lightning rod
 load("charges")                         -- mining charges
 load("printing")                        -- treatises, printed and read
 tds.primer = load("primer")             -- the Theatrum Machinarum

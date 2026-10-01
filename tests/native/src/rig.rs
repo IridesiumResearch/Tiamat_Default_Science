@@ -982,6 +982,13 @@ impl Rig {
         self.inventory.held.lock().unwrap().insert(player, (material, Some(detail.to_owned())));
     }
 
+    /// A creature of `model` standing at `(x, y, z)`: what a mod reads off it.
+    pub fn creature(&self, x: f64, y: f64, z: f64, model: &str) {
+        let mut body = Entity::at(Transform::from_world(x, y, z), "tiamat_default_life");
+        body.model = Some(model.to_owned());
+        ent::Access::spawn(&self.entities, body);
+    }
+
     /// One of this mod's stored values, as debug text.
     pub fn stored(&self, key: &str) -> Option<String> {
         self.storage.0.lock().unwrap().get(&(MOD.to_owned(), key.to_owned())).map(|v| format!("{v:?}"))

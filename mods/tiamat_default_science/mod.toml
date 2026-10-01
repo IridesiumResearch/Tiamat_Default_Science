@@ -3,11 +3,13 @@
 #
 # Built so far: the Tinker's Bench, five shared nodes a child can reach long
 # before the Fork (brief §4); the Antikythera Mechanism, the science door;
-# and tier 3, Mechanica — frames, turning networks, water wheels and
-# windmills, the furnace and the iron ladder (§17, steps 1 to 4).
+# tier 3, Mechanica — frames, turning networks, water wheels and windmills,
+# the furnace and the iron ladder; and tier 4, natural philosophy — the
+# instruments, the Leyden jar and the lightning rod, the Newcomen engine and
+# steel (§17, steps 1 to 5).
 id = "tiamat_default_science"
 name = "Tiamat Default Science"
-version = "0.2.0"
+version = "0.3.0"
 description = "Natural philosophy: machines, steam, electricity, Tesla — and past the aether, gravity and the Fold."
 license = "GPL-3.0-only"
 # Without any of these there is nothing to build with: the world's rock and

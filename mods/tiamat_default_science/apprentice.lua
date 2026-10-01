@@ -69,9 +69,10 @@ if progress then
         group = "toybox" }
 end
 
---- The player found something: paid once, by Progress.
+--- The player found something: paid once, by Progress. Answers whether
+--- this was the first time.
 function A.discover(uuid, id)
-    if progress then progress.discover(uuid, id) end
+    return progress ~= nil and progress.discover(uuid, id) == true
 end
 
 --- Whether a player holds the node `id` (a Creative world holds all).

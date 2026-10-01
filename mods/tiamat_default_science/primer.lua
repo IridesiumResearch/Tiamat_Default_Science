@@ -28,7 +28,7 @@ local W = ui and ui.widgets
 -- Pictures ride in the dialog's own tree, so they cost none of the
 -- server's 512 registered pictures: a content hash is enough.
 local pictures = {}
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items }) do
     for _, spec in ipairs(list) do
         local ok, hash = pcall(game.content_hash, "textures/" .. spec.id .. ".png")
         if ok then pictures[spec.id] = hash end
@@ -68,15 +68,30 @@ local HOW = {
     ["science.magnetism"] = "Use the dip needle anywhere: it leans toward metal ore.",
     ["science.printing_press"] = "Put the press in a frame and your notebook in its inputs. Give "
         .. "treatises to other players: each one teaches them.",
+    ["science.telescope"] = "Use it at night under the open sky, pointed straight at a star.",
+    ["science.microscope"] = "Use it on anything: every new material is a discovery.",
+    ["science.barometer"] = "Use it anywhere: every kind of weather you measure is a discovery.",
+    ["science.thermometer"] = "Use it anywhere: every land's climate you record is a discovery.",
+    ["science.chronometer"] = "Use it at a block to mark it, and anywhere to find your way back.",
+    ["science.electrostatics"] = "Put the friction globe in a turning frame, and Leyden jars in its inputs.",
+    ["science.leyden_jar"] = "Use a charged jar for a spark.",
+    ["science.lightning_rod"] = "Carve copper stock into a rod and set it highest of all, open to the sky, "
+        .. "with copper carvings down to a frame holding jars. A bolt nearby fills them.",
+    ["science.franklins_kite"] = "Fly your kite in a storm with a Leyden jar in your other hand.",
+    ["science.newcomen_engine"] = "A burning furnace with a boiler in its tool slot, a carved copper pipe "
+        .. "touching it, and a frame with a cylinder touching the pipe: an engine.",
+    ["science.vacuum_pump"] = "Use the hemispheres with two horses near.",
+    ["science.balloon"] = "Hold the balloon with charcoal in your pack.",
+    ["science.coke"] = "Bake coal in the furnace. Coke burns hot enough for the finery without a blast.",
 }
 
 --- The name a player reads for a config id: this mod's item's own name, or
 --- the other mod's id made readable ("C:bark_strip" -> "bark strip").
 local names = {}
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items }) do
     for _, spec in ipairs(list) do names[spec.id] = spec.name end
 end
-for _, spec in ipairs({ C.frame, C.furnace, C.copper_stock }) do names[spec.id] = spec.name end
+for _, spec in ipairs({ C.frame, C.furnace, C.copper_stock, C.steel_stock }) do names[spec.id] = spec.name end
 
 local function name_of(id)
     if names[id] then return names[id] end
@@ -175,7 +190,7 @@ end
 
 local function recipes_of(id)
     local list = {}
-    for _, source in ipairs({ A.recipes, tds.mechanica and tds.mechanica.recipes or {} }) do
+    for _, source in ipairs({ A.recipes, tds.mechanica and tds.mechanica.recipes or {}, tds.tier4 and tds.tier4.recipes or {} }) do
         for _, r in ipairs(source[id] or {}) do list[#list + 1] = r end
     end
     return list

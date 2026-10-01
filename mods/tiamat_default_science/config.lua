@@ -166,7 +166,7 @@ C.antikythera = {
 
 -- The tiers of `tree.lua` registered with Progress: those whose content is
 -- built, so nobody buys a node that does nothing yet (the rest is data).
-C.shipped_tier = 3
+C.shipped_tier = 4
 
 -- Tier 3: Mechanica (brief §5.1, §6) ------------------------------------------------
 
@@ -226,6 +226,13 @@ C.movements = {
     pump = { need = 4, period = 40 },   -- makes nothing: lifts a block of water every `period` ticks at full speed
     leaching_vat = { need = 2 },
     press = { need = 4 },
+    friction_globe = { need = 4, period = 40 },     -- makes nothing: charges a Leyden jar in its inputs
+    lead_chamber = { need = 4 },
+    spinning_frame = { need = 8 },
+    lathe_bed = { need = 8 },
+    -- An engine needs nothing and gives: a frame with a cylinder, a copper
+    -- pipe from a burning furnace with a boiler in it, turns its network.
+    cylinder = { need = 0, engine = 16 },
 }
 
 -- The turning network (brief §6.2). Parts are carved plank rods, gears and
@@ -233,8 +240,10 @@ C.movements = {
 C.network = {
     parts = { "rod", "gear", "wheel" },     -- glyphs that carry turning, in plank
     max_blocks = 512,                        -- a flood fill stops here
-    wood_capacity = 16,                      -- turns a plank network carries at most
-    wood_run = 16,                           -- carved parts a plank network may have; more carries nothing
+    wood_capacity = 16,                      -- turns a network with any plank part carries at most
+    wood_run = 16,                           -- carved parts it may have; more carries nothing
+    steel_capacity = 128,                    -- an all-steel network's
+    steel_run = 64,
     refresh = 20,                            -- ticks a network's supply is kept before it is read again
 }
 
@@ -352,7 +361,7 @@ C.tier3_recipes = {
 
     -- The furnace's ladder (brief §6.3).
     { id = "pig_iron", station = "furnace", node = "science.blast_furnace", heat = 5, ticks = 1200,
-        inputs = { { "#smeltable_iron", units = 54 }, { "C:charcoal", units = 27 }, { "W:calcite", units = 9 } },
+        inputs = { { "#smeltable_iron", units = 54 }, { "#furnace_carbon", units = 27 }, { "W:calcite", units = 9 } },
         outputs = { { "pig_iron", count = 3 }, { "slag", count = 1 } } },
     { id = "finery_iron", station = "furnace", node = "science.finery_forge", heat = 3, ticks = 600,
         inputs = { { "pig_iron", count = 2 } }, outputs = { { "C:iron_bar", count = 3 } } },
@@ -435,6 +444,194 @@ C.inventions = {
         blister_steel = "blister_steel",
     },
 }
+
+-- Tier 4: Natural philosophy, 1600–1760 (brief §5.2, §6.4, §6.5) -------------------------
+
+C.tier4_items = {
+    -- Instruments: each reads the world and says what it reads.
+    { id = "telescope", name = "Telescope", description = "Use it at night under the open sky, at a star, to log it." },
+    { id = "microscope", name = "Microscope", description = "Use it on anything to look very closely." },
+    { id = "chronometer", name = "Chronometer", description = "Use it at a block to mark it; anywhere, for where you are and your mark." },
+    { id = "barometer", name = "Barometer", description = "Use it anywhere: the weather, and which way it is going." },
+    { id = "thermometer", name = "Thermometer", description = "Use it anywhere: how warm it is." },
+    { id = "orrery", name = "Orrery", description = "Use it to watch the planets go round the sun." },
+    { id = "magdeburg_hemispheres", name = "Magdeburg hemispheres", description = "Pumped empty of air. Two horses cannot pull them apart." },
+    { id = "air_pump", name = "Air pump", description = "Guericke's pump: it draws the air out of a vessel." },
+    { id = "balloon_pack", name = "Balloon", description = "Hold it with charcoal in your pack: it rises, and falls softly." },
+    -- Charge.
+    { id = "leyden_jar", name = "Leyden jar", description = "A jar lined with tin foil that keeps charge. Use a charged one for a spark." },
+    { id = "friction_globe", name = "Friction globe", description = "A movement: turning it charges the Leyden jars in a frame." },
+    -- Heat and steam.
+    { id = "digester", name = "Papin's digester", description = "In a kiln's tool slot: cooks bones into broth under pressure." },
+    { id = "bone_broth", name = "Bone broth", description = "Hearty and warm.",
+        food = { food = 8, saturation = 6, effects = { { "hearty", 2400 } }, temperature = "warm" } },
+    { id = "boiler", name = "Boiler", description = "In a furnace's tool slot: the furnace raises steam for an engine." },
+    { id = "cylinder", name = "Engine cylinder", description = "A movement: a frame with it, piped to a boiler, is an engine." },
+    -- Metallurgy and chemistry.
+    { id = "coke", name = "Coke", description = "Coal baked hard: a hotter fuel." },
+    { id = "coal_tar", name = "Coal tar", description = "Black and sticky, left when coal is coked." },
+    { id = "steel_ingot", name = "Steel ingot", description = "Cast steel, from the crucible." },
+    { id = "quicksilver", name = "Quicksilver", description = "Liquid silver metal, roasted out of cinnabar." },
+    { id = "oil_of_vitriol", name = "Oil of vitriol", description = "A strong acid, made in a chamber of lead." },
+    { id = "lead_chamber", name = "Lead chamber", description = "A movement: sulfur and saltpetre, burned in lead, give oil of vitriol." },
+    { id = "spinning_frame", name = "Spinning frame", description = "A movement: spins wool into cloth, three times over." },
+    { id = "lathe_bed", name = "Lathe bed", description = "A movement: turns pistons and bearings." },
+    { id = "piston", name = "Piston", description = "Turned on a lathe." },
+    { id = "bearing", name = "Bearing", description = "Turned on a lathe." },
+    -- Steel tools (tier 3 of the dig classes): Craft's tools, engine tools where they dig.
+    { id = "steel_pick", name = "Steel pick", description = "Tier 3. Digs rock.",
+        tool = { type = "pick", tier = 3, uses = 800 }, speed = 3.4 },
+    { id = "steel_axe", name = "Steel axe", description = "Tier 3. Digs wood.",
+        tool = { type = "axe", tier = 3, uses = 800 }, speed = 3.9 },
+    { id = "steel_spade", name = "Steel spade", description = "Tier 3. Digs earth.",
+        tool = { type = "spade", tier = 3, uses = 800 }, speed = 4.2 },
+    { id = "steel_chisel", name = "Steel chisel", description = "Tier 3. Carves one cell at a time.",
+        tool = { type = "chisel", tier = 3, uses = 1600 }, speed = 1.2, brush = "subnode", group = "#chisel" },
+    { id = "steel_hammer", name = "Steel hammer", description = "Tier 3. For the anvil.",
+        tool = { type = "hammer", tier = 3, uses = 800 }, group = "#hammer" },
+}
+
+-- Groups the reagents join, so they trade across the Fork (brief §2): each
+-- mod adds its own item, and every recipe names the group.
+C.tier4_groups = {
+    ["#quicksilver"] = { "quicksilver" },
+    ["#oil_of_vitriol"] = { "oil_of_vitriol" },
+    ["#saltpeter"] = { "saltpeter" },
+    ["#furnace_carbon"] = { "C:charcoal", "coke" },
+}
+
+C.coke_fuel = { heat = 3, ticks = 1800 }         -- hotter than charcoal (2): the finery without a blast
+
+C.steel_stock = {
+    id = "steel_stock", name = "Steel stock",
+    description = "A block of steel, one ingot's worth. Carve it into shafts, gears and rings.",
+    hardness = 3.0, tags = { "metal" },
+}
+
+C.tier4_recipes = {
+    -- Instruments.
+    { id = "telescope", station = "workbench", node = "science.telescope",
+        inputs = { { glyph = "plate", material = "C:glass", count = 2 }, { "cast_pipe", count = 1 }, { "C:bronze_ingot", count = 1 } },
+        outputs = { { "telescope", count = 1 } } },
+    { id = "microscope", station = "workbench", node = "science.microscope",
+        inputs = { { "lens_blank", count = 2 }, { "glass_tube", count = 1 }, { "C:bronze_ingot", count = 1 } },
+        outputs = { { "microscope", count = 1 } } },
+    { id = "chronometer", station = "workbench", node = "science.chronometer",
+        inputs = { { "clockwork", count = 1 }, { "C:silver_ingot", count = 1 }, { "lens_blank", count = 1 } },
+        outputs = { { "chronometer", count = 1 } } },
+    { id = "barometer", station = "workbench", node = "science.barometer",
+        inputs = { { "glass_tube", count = 1 }, { "#quicksilver", count = 1 }, { "#plank", count = 1 } },
+        outputs = { { "barometer", count = 1 } } },
+    { id = "thermometer", station = "workbench", node = "science.thermometer",
+        inputs = { { "glass_tube", count = 1 }, { "#quicksilver", count = 1 } }, outputs = { { "thermometer", count = 1 } } },
+    { id = "orrery", station = "workbench", node = "science.newtonian_mechanics",
+        inputs = { { "clockwork", count = 1 }, { "C:bronze_gear", count = 2 }, { "C:gold_ingot", count = 1 } },
+        outputs = { { "orrery", count = 1 } } },
+    { id = "air_pump", station = "workbench", node = "science.vacuum_pump",
+        inputs = { { "cast_cylinder", count = 1 }, { "C:bellows", count = 1 }, { "glass_jar", count = 1 } },
+        outputs = { { "air_pump", count = 1 } } },
+    { id = "magdeburg_hemispheres", station = "workbench", node = "science.vacuum_pump", tools = { { "air_pump", wear = 0 } },
+        inputs = { { "C:copper_ingot", count = 2 }, { "C:iron_hinge", count = 1 } }, outputs = { { "magdeburg_hemispheres", count = 1 } } },
+    { id = "balloon_pack", station = "workbench", node = "science.balloon",
+        inputs = { { "C:cloth", count = 4 }, { "C:cord", count = 2 }, { "C:iron_plate", count = 1 } },
+        outputs = { { "balloon_pack", count = 1 } } },
+
+    -- Charge.
+    { id = "leyden_jar", station = "workbench", node = "science.leyden_jar",
+        inputs = { { "glass_jar", count = 1 }, { "C:tin_ingot", count = 1 } }, outputs = { { "leyden_jar", count = 1 } } },
+    { id = "friction_globe", station = "workbench", node = "science.electrostatics",
+        inputs = { { "C:glass", count = 2 }, { "#plank", count = 2 }, { glyph = "wheel", material = "#plank", count = 1 } },
+        outputs = { { "friction_globe", count = 1 } } },
+
+    -- Heat and steam.
+    { id = "digester", station = "workbench", node = "science.papin_digester",
+        inputs = { { "cast_cylinder", count = 1 }, { "C:iron_plate", count = 1 }, { "C:iron_nails", count = 1 } },
+        outputs = { { "digester", count = 1 } } },
+    { id = "bone_broth", station = "kiln", node = "science.papin_digester", heat = 1, ticks = 400,
+        tools = { { "digester", wear = 0 } }, inputs = { { "L:bone", count = 2 } }, outputs = { { "bone_broth", count = 2 } } },
+    { id = "boiler", station = "workbench", node = "science.newcomen_engine",
+        inputs = { { "C:iron_plate", count = 4 }, { "copper_stock", count = 1 } }, outputs = { { "boiler", count = 1 } } },
+    { id = "cylinder", station = "workbench", node = "science.newcomen_engine",
+        inputs = { { "cast_cylinder", count = 1 }, { "C:iron_chain", count = 1 }, { "#plank", count = 2 } },
+        outputs = { { "cylinder", count = 1 } } },
+
+    -- Metallurgy.
+    { id = "coke", station = "furnace", node = "science.coke", heat = 2, ticks = 2400,
+        inputs = { { "W:coal", units = 27 } }, outputs = { { "coke", units = 18 }, { "coal_tar", units = 9 } } },
+    { id = "crucible_steel", station = "furnace", node = "science.crucible_steel", heat = 5, ticks = 1200,
+        tools = { "C:crucible" }, inputs = { { "blister_steel", count = 2 } }, outputs = { { "steel_ingot", count = 1 } } },
+    { id = "steel_stock", station = "workbench", node = "science.crucible_steel", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "steel_ingot", count = 1 } }, outputs = { { "steel_stock", count = 1 } } },
+    { id = "steel_pick", station = "workbench", node = "science.crucible_steel", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "steel_ingot", count = 3 }, { "C:haft", count = 1 } }, outputs = { { "steel_pick", count = 1 } } },
+    { id = "steel_axe", station = "workbench", node = "science.crucible_steel", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "steel_ingot", count = 3 }, { "C:haft", count = 1 }, { "C:cord", count = 1 } }, outputs = { { "steel_axe", count = 1 } } },
+    { id = "steel_spade", station = "workbench", node = "science.crucible_steel", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "steel_ingot", count = 2 }, { "C:haft", count = 1 } }, outputs = { { "steel_spade", count = 1 } } },
+    { id = "steel_chisel", station = "workbench", node = "science.crucible_steel", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "steel_ingot", count = 1 }, { "C:stick", count = 1 } }, outputs = { { "steel_chisel", count = 1 } } },
+    { id = "steel_hammer", station = "workbench", node = "science.crucible_steel", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "steel_ingot", count = 2 }, { "C:stick", count = 1 } }, outputs = { { "steel_hammer", count = 1 } } },
+
+    -- Chemistry.
+    { id = "quicksilver", station = "furnace", node = "science.cinnabar_roasting", heat = 2, ticks = 600,
+        tools = { { "glass_jar", wear = 0 } }, inputs = { { "W:cinnabar", units = 27 } }, outputs = { { "quicksilver", count = 1 } } },
+    { id = "lead_chamber", station = "workbench", node = "science.lead_chamber",
+        inputs = { { "C:lead_ingot", count = 4 }, { "#plank", count = 4 } }, outputs = { { "lead_chamber", count = 1 } } },
+    { id = "oil_of_vitriol", station = "frame", node = "science.lead_chamber", tools = { { "lead_chamber", wear = 0 } }, ticks = 600,
+        inputs = { { "W:sulfur", units = 27 }, { "#saltpeter", count = 1 } }, outputs = { { "oil_of_vitriol", count = 3 } } },
+
+    -- The water frame and the lathe.
+    { id = "spinning_frame", station = "workbench", node = "science.water_frame",
+        inputs = { { "#plank", count = 4 }, { "C:iron_bar", count = 1 }, { glyph = "gear", material = "#plank", count = 2 } },
+        outputs = { { "spinning_frame", count = 1 } } },
+    { id = "spin_cloth", station = "frame", node = "science.water_frame", tools = { { "spinning_frame", wear = 0 } }, ticks = 300,
+        inputs = { { "L:wool", count = 3 } }, outputs = { { "C:cloth", count = 3 } } },
+    { id = "lathe_bed", station = "workbench", node = "science.lathe",
+        inputs = { { "cast_wheel", count = 1 }, { "C:iron_bar", count = 2 }, { "#plank", count = 2 } },
+        outputs = { { "lathe_bed", count = 1 } } },
+    { id = "turn_piston", station = "frame", node = "science.lathe", tools = { { "lathe_bed", wear = 0 } }, ticks = 400,
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "piston", count = 1 } } },
+    { id = "turn_bearing", station = "frame", node = "science.lathe", tools = { { "lathe_bed", wear = 0 } }, ticks = 400,
+        inputs = { { "cast_wheel", count = 1 } }, outputs = { { "bearing", count = 2 } } },
+}
+
+C.tier4_studies = {
+    { id = "study_leyden_jar", name = "The Leyden jar", inputs = { { "leyden_jar", count = 1 } }, ticks = 1200, insight = 30 },
+    { id = "study_steel_ingot", name = "Cast steel", inputs = { { "steel_ingot", count = 1 } }, ticks = 2400, insight = 40 },
+}
+
+-- What tier 4's inventions are: the first of each.
+C.tier4_firsts = {
+    spin_cloth = "spinning_frame", turn_piston = "lathe", turn_bearing = "lathe", oil_of_vitriol = "lead_chamber",
+    coke = "coke", crucible_steel = "crucible_steel", bone_broth = "digester",
+}
+
+-- The instruments (brief §6.4).
+C.telescope = { alignment = 0.9998, dusk = 0.78, dawn = 0.22, open_sky = 15 }
+C.barometer = { history = 5 }                    -- readings kept, for rising or falling
+C.chronometer = { home_radius = 2 }
+C.orrery = { planets = 4, colours = {
+    { r = 0.7, g = 0.7, b = 0.75 }, { r = 0.95, g = 0.85, b = 0.6 }, { r = 0.3, g = 0.5, b = 1.0 }, { r = 0.9, g = 0.35, b = 0.2 } } }
+-- Eight points on a circle, as whole numbers over 1,000: the orrery's
+-- planets step round them, so no sine is taken.
+C.circle = { { 1000, 0 }, { 707, 707 }, { 0, 1000 }, { -707, 707 }, { -1000, 0 }, { -707, -707 }, { 0, -1000 }, { 707, -707 } }
+C.magdeburg = { radius = 8, horses = 2, horse = "L:horse" }
+C.balloon = { charcoal_ticks = 600, speed = 50 }  -- a charcoal burns 30 seconds; flying at half speed
+
+-- Charge (brief §6.5): carried in a jar's detail, `e=<n>`, 0 to 100.
+C.electric = { jar = 100, static = 5,               -- what one turn of the globe gives, every `period` at full speed
+    lightning = 2000, rod_reach = 8, rod_wire = 64, rod_fires = 16,
+    franklin = 3 }                                -- what a kite in a storm gives the jar in the off-hand, each redraw
+
+-- Discoveries, by family: what each pays.
+C.families = {
+    star = { insight = 1, group = "stars", label = "A star: %s" },
+    specimen = { insight = 3, group = "specimens", label = "Under the microscope: %s" },
+    weather = { insight = 20, group = "weather", label = "Weather measured: %s" },
+    climate = { insight = 3, group = "climate", label = "A climate recorded: %s" },
+}
+C.tier4_toys = { spark = 3, magdeburg = 5, balloon = 5, franklin = 10, lightning = 30 }
 
 -- Toybox discoveries (brief §6.9): insight for play itself.
 C.toybox = {

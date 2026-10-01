@@ -205,6 +205,12 @@ function U.neighbours(pos)
     }
 end
 
+--- Who placed one of this mod's station blocks at `pos`, or nil (one a plan
+--- stamped). Kept by `frame.lua`; read by the networks for a placer's effects.
+function U.placer(pos)
+    return game.storage.get("placer:" .. U.key(pos))
+end
+
 --- A sorted copy of a table's keys.
 function U.sorted_keys(t)
     local keys = {}

@@ -6,7 +6,7 @@
 -- beyond them is carved from the world's blocks, Craft's plank and glass,
 -- and this mod's three stocks. So far: the door (Progress's door must be a
 -- block a player uses), the frame and the furnace (a Craft station in the
--- world is a block), and copper stock (carving needs placeable metal).
+-- world is a block), and copper and steel stock (carving needs placeable metal).
 
 local C = tds.config
 
@@ -28,6 +28,7 @@ end
 B.antikythera = block(C.antikythera)
 B.frame = block(C.frame)
 B.copper_stock = block(C.copper_stock)
+B.steel_stock = block(C.steel_stock)
 B.furnace = block(C.furnace)
 -- The lit furnace glows; Craft swaps it in while the fire burns.
 B.furnace_lit = block({

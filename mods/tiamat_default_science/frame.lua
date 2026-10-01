@@ -29,9 +29,7 @@ local craft = U.exports("tiamat_default_craft")
 local function placer_key(pos) return "placer:" .. U.key(pos) end
 
 --- Who placed the frame at `pos`, or nil (a frame a plan stamped).
-function F.placer(pos)
-    return game.storage.get(placer_key(pos))
-end
+F.placer = U.placer
 
 tds.on_place(function(e)
     if e.material == B.frame then
@@ -54,7 +52,9 @@ if craft then
         block = U.id(C.frame.id),
         runs = function(name)
             local pos = U.station_pos(name, "frame")
-            if not pos or not N.movement(name) then return 0 end
+            local movement = N.movement(name)
+            -- An engine gives turning and makes nothing: it does not run.
+            if not pos or not movement or C.movements[movement].need == 0 then return 0 end
             return N.speed(pos, F.placer(pos))
         end,
     }
