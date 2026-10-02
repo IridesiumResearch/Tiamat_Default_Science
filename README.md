@@ -51,6 +51,17 @@ a copper pipe, and a frame with a cylinder. Coke, crucible steel, steel
 stock and steel tools; quicksilver, oil of vitriol, the water frame and the
 lathe. Its departures from the brief are §2.5.
 
+Step 6: **tier 5, the Industrial Revolution** (0.4.0). Watt's and
+Trevithick's steam, the steam hammer, puddling and the Bessemer converter;
+Maudslay's lathe, the assembly jig where relics are built from carved parts,
+and the safety elevator. Punched cards that choose what a frame makes, and
+the clockwork automaton whose cards are its program — four of them, in
+turn, with the Analytical Engine. Charge on copper wire: the voltaic pile,
+cells, the dynamo, the motor, arc lamps, electrolysis, the telegraph and the
+electromagnet. The daguerreotype and blueprints, the gravimeter, the
+spectroscope and dynamite. Its departures from the brief, the two design
+questions included, are §2.6.
+
 ## What is here
 
 | File | What |

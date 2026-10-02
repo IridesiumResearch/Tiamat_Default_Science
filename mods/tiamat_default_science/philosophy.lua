@@ -29,6 +29,7 @@ local P = {}
 local weather = U.exports("tiamat_weather")
 local world = U.exports("tiamat_default_world")
 local life = U.exports("tiamat_default_life")
+local progress = U.exports("tiamat_default_progress")
 
 local function holding(e, id)
     return e.held ~= nil and e.held.material == I.ids[id] and e.held.shape == nil
@@ -55,7 +56,9 @@ tds.on_use(function(e)
     if light.sun < C.telescope.open_sky then return "You cannot see the sky from here." end
     local seen = game.star_in_view(e.player)
     if not seen or seen.alignment < C.telescope.alignment then return "Point it straight at a star." end
-    if T4.found(e.player, "star", seen.id) then return "" end
+    -- With the spectroscope, each star's light is a second lesson (brief §5.3).
+    local split = progress and progress.has(e.player, "science.spectroscope") and T4.found(e.player, "spectrum", seen.id)
+    if T4.found(e.player, "star", seen.id) or split then return "" end
     return string.format("Star %d: you have logged it already.", seen.id)
 end)
 
@@ -161,6 +164,46 @@ tds.on_use(function(e)
     return "The planets go round the sun, as Newton said they must."
 end)
 
+-- The gravimeter (Cavendish) -------------------------------------------------------------------
+
+local HEAVY = {}
+for _, id in ipairs(C.gravimeter.heavy) do
+    local m = U.material(U.id(id))
+    if m then HEAVY[m] = true end
+end
+local AXES = {
+    { 0, -1, 0, "down" }, { 0, 1, 0, "up" }, { 0, 0, 1, "north" },
+    { 0, 0, -1, "south" }, { -1, 0, 0, "east" }, { 1, 0, 0, "west" },
+}
+
+--- The nearest heavy ore along the six axes from `pos`: six rays, as the dip
+--- needle reads, a little further.
+function P.heavy(pos, reach)
+    local best = nil
+    for _, axis in ipairs(AXES) do
+        for d = 1, reach do
+            local at = game.get_block{ x = pos.x + axis[1] * d, y = pos.y + axis[2] * d, z = pos.z + axis[3] * d,
+                domain = pos.domain }
+            if at and at.material and HEAVY[at.material] then
+                if not best or d < best.d then best = { d = d, way = axis[4], what = U.name_of(at.material) } end
+                break
+            end
+        end
+    end
+    return best
+end
+
+tds.on_use(function(e)
+    if not holding(e, "gravimeter") then return nil end
+    local body = body_of(e.player)
+    if not body then return nil end
+    local p = body.pos
+    local found = P.heavy({ x = math.floor(p.x), y = math.floor(p.y), z = math.floor(p.z), domain = U.place(e.domain) },
+        C.gravimeter.reach)
+    if not found then return "The balance hangs level." end
+    return string.format("The balance tips %s: %s, %d blocks off.", found.way, found.what, found.d)
+end)
+
 -- The Magdeburg hemispheres ------------------------------------------------------------------
 
 local HORSE = U.id(C.magdeburg.horse)
@@ -188,6 +231,8 @@ end)
 
 local SOURCE = game.mod_id .. ":balloon"
 local CHARCOAL = U.id("C:charcoal")
+local HYDROGEN = U.id("hydrogen")
+local JAR = U.id("glass_jar")
 local burning = {}          -- player -> the tick their charcoal burns out
 
 local function land(uuid)
@@ -200,10 +245,18 @@ tds.on_tick(C.kite.period, function(now)
         local held = game.held(uuid)
         if held and held.material == I.ids.balloon_pack and life and life.set_ability then
             if not burning[uuid] or burning[uuid] <= now then
-                if game.take(uuid, { material = CHARCOAL, count = 1 }) >= U.UNITS then
+                -- Hydrogen first (tier 5's electrolysis): it lifts longer, and faster.
+                local lift = nil
+                if game.take(uuid, { material = HYDROGEN, count = 1 }) >= U.UNITS then
+                    game.give(uuid, { material = JAR, count = 1 })
+                    lift = C.balloon.hydrogen
+                elseif game.take(uuid, { material = CHARCOAL, count = 1 }) >= U.UNITS then
+                    lift = { ticks = C.balloon.charcoal_ticks, speed = C.balloon.speed }
+                end
+                if lift then
                     if not burning[uuid] then T4.toy(uuid, "balloon") end
-                    burning[uuid] = now + C.balloon.charcoal_ticks
-                    life.set_ability(uuid, SOURCE, { fly = true, speed_mul = C.balloon.speed / 100 })
+                    burning[uuid] = now + lift.ticks
+                    life.set_ability(uuid, SOURCE, { fly = true, speed_mul = lift.speed / 100 })
                 else
                     land(uuid)
                 end

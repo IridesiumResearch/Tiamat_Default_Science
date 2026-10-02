@@ -95,6 +95,23 @@ for _, glyph in ipairs(G.table) do
     end
 end
 
+--- A glyph's canonical mask, by short id, or nil.
+function G.mask_of(short)
+    for _, glyph in ipairs(G.table) do
+        if glyph.id == short then return glyph.mask end
+    end
+    return nil
+end
+
+--- The card number a carving is punched to (`card_3` is 3), or nil.
+function G.card(mask)
+    local short = G.of(mask)
+    for _, glyph in ipairs(G.table) do
+        if glyph.id == short then return glyph.card end
+    end
+    return nil
+end
+
 --- The glyph (short id) a block is carved to, or nil: `at` is what
 --- `game.get_block` answered, or a placement's occupancy as a number.
 function G.of(at)

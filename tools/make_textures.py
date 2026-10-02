@@ -232,6 +232,16 @@ DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass, "n
         "spinning_frame": part(WOOD), "lathe_bed": part(IRON_GREY), "piston": bar(IRON_GREY), "bearing": part(STEEL),
         "steel_pick": bar(STEEL), "steel_axe": bar(STEEL), "steel_spade": bar(STEEL), "steel_chisel": bar(STEEL),
         "steel_hammer": bar(STEEL),
+        # tier 5
+        "lamp": flat((120, 120, 110)), "lamp_lit": flat((255, 250, 220)),
+        "steam_hammer": part((80, 80, 88)), "converter": part((90, 70, 60)), "screw": bar(IRON_GREY),
+        "spring": part(STEEL), "assembly_jig": part(IRON_GREY), "winding_drum": part((100, 100, 108)),
+        "camera": part(LEATHER), "photograph": part((200, 200, 205)), "silvered_plate": bar((215, 215, 225)),
+        "gravimeter": part(BRASS), "dynamite": part((190, 40, 30)), "soda": heap((235, 235, 225)),
+        "hydrogen": glassware, "cell": part((90, 95, 110)), "voltaic_pile": part(COPPER_C),
+        "electrolysis_cell": glassware, "electromagnet": part((120, 40, 40)), "dynamo_armature": part(COPPER_C),
+        "motor": part((70, 90, 120)), "telegraph": part(BRASS), "carbon_rod": bar((40, 40, 40)),
+        "difference_engine": part((230, 190, 60)), "automaton_spring": part(BRASS), "automaton_key": bar(BRASS),
         }
 
 

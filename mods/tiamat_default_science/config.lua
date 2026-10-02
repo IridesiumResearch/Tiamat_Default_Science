@@ -166,7 +166,7 @@ C.antikythera = {
 
 -- The tiers of `tree.lua` registered with Progress: those whose content is
 -- built, so nobody buys a node that does nothing yet (the rest is data).
-C.shipped_tier = 4
+C.shipped_tier = 5
 
 -- Tier 3: Mechanica (brief §5.1, §6) ------------------------------------------------
 
@@ -233,6 +233,15 @@ C.movements = {
     -- An engine needs nothing and gives: a frame with a cylinder, a copper
     -- pipe from a burning furnace with a boiler in it, turns its network.
     cylinder = { need = 0, engine = 16 },
+    -- Tier 5. `power = "charge"` runs on the charge network, not on turning.
+    steam_hammer = { need = 32 },
+    assembly_jig = { need = 16 },
+    winding_drum = { need = 8 },
+    dynamo_armature = { need = 16, dynamo = true },     -- takes turning, gives charge
+    motor = { need = 0, motor = true },                 -- takes charge, gives turning
+    voltaic_pile = { need = 0, pile = true },           -- gives charge while it has acid
+    electrolysis_cell = { need = 8, power = "charge" },
+    telegraph = { need = 1, power = "charge" },
 }
 
 -- The turning network (brief §6.2). Parts are carved plank rods, gears and
@@ -617,7 +626,8 @@ C.orrery = { planets = 4, colours = {
 -- planets step round them, so no sine is taken.
 C.circle = { { 1000, 0 }, { 707, 707 }, { 0, 1000 }, { -707, 707 }, { -1000, 0 }, { -707, -707 }, { 0, -1000 }, { 707, -707 } }
 C.magdeburg = { radius = 8, horses = 2, horse = "L:horse" }
-C.balloon = { charcoal_ticks = 600, speed = 50 }  -- a charcoal burns 30 seconds; flying at half speed
+C.balloon = { charcoal_ticks = 600, speed = 50,    -- a charcoal burns 30 seconds; flying at half speed
+    hydrogen = { ticks = 2400, speed = 75 } }      -- a jar of hydrogen lifts two minutes, faster; the jar comes back
 
 -- Charge (brief §6.5): carried in a jar's detail, `e=<n>`, 0 to 100.
 C.electric = { jar = 100, static = 5,               -- what one turn of the globe gives, every `period` at full speed
@@ -626,12 +636,216 @@ C.electric = { jar = 100, static = 5,               -- what one turn of the glob
 
 -- Discoveries, by family: what each pays.
 C.families = {
+    spectrum = { insight = 1, group = "stars", label = "A star's spectrum: %s" },
     star = { insight = 1, group = "stars", label = "A star: %s" },
     specimen = { insight = 3, group = "specimens", label = "Under the microscope: %s" },
     weather = { insight = 20, group = "weather", label = "Weather measured: %s" },
     climate = { insight = 3, group = "climate", label = "A climate recorded: %s" },
 }
 C.tier4_toys = { spark = 3, magdeburg = 5, balloon = 5, franklin = 10, lightning = 30 }
+
+-- Tier 5: the Industrial Revolution, 1760–1870 (brief §5.3) -------------------------------
+
+C.tier5_items = {
+    -- Steam, iron and steel.
+    { id = "steam_hammer", name = "Steam hammer", description = "A movement: one blow does an anvil's work. Wants a steel shaft." },
+    { id = "converter", name = "Bessemer converter", description = "In a blasting furnace, it blows pig iron into steel." },
+    -- Precision.
+    { id = "screw", name = "Screw", description = "Cut true on Maudslay's lathe." },
+    { id = "spring", name = "Steel spring", description = "Coiled steel, turned on the lathe." },
+    { id = "assembly_jig", name = "Assembly jig", description = "A movement: relics are built in it from carved parts." },
+    { id = "winding_drum", name = "Winding drum", description = "A movement: at the foot of an elevator's rail, it winds the platform." },
+    -- Optics.
+    { id = "camera", name = "Camera", description = "Use it on two corners of a building, with a silvered plate in your pack." },
+    { id = "photograph", name = "Daguerreotype", description = "A building, caught on silver. With Blueprints, use it to build that building again." },
+    { id = "silvered_plate", name = "Silvered plate", description = "Iron plated with silver, ready for a picture." },
+    { id = "gravimeter", name = "Gravimeter", description = "Use it anywhere: it leans toward heavy ore." },
+    -- Chemistry.
+    { id = "dynamite", name = "Dynamite", description = "Use it on rock: it loosens even the hardest. It hurts no one." },
+    { id = "soda", name = "Soda", description = "Split from brine by a current." },
+    { id = "hydrogen", name = "Jar of hydrogen", description = "Lighter than air: a balloon that floats longer." },
+    -- Electricity.
+    { id = "cell", name = "Cell", description = "Stores charge for a frame's network. Charge rides in it." },
+    { id = "voltaic_pile", name = "Voltaic pile", description = "A movement: copper, tin and acid give a steady current." },
+    { id = "electrolysis_cell", name = "Electrolysis cell", description = "A movement on the charge network: splits and plates." },
+    { id = "electromagnet", name = "Electromagnet", description = "Hold it with a charged cell: dropped things fly to you." },
+    { id = "dynamo_armature", name = "Dynamo armature", description = "A movement: a turning frame on copper wire makes charge." },
+    { id = "motor", name = "Electric motor", description = "A movement: a frame on charged wire turns its shaft." },
+    { id = "telegraph", name = "Telegraph key", description = "A movement: two keys on one wire. Say 'wire' and your words at one." },
+    { id = "carbon_rod", name = "Carbon rod", description = "For an arc lamp." },
+    -- Automata.
+    { id = "difference_engine", name = "The Difference Engine", description = "Babbage's engine: twelve gears of steel that calculate." },
+    { id = "automaton_spring", name = "Automaton", description = "Use it on the ground to wind up a clockwork helper." },
+    { id = "automaton_key", name = "Automaton key", description = "Use it on your automaton to wind it down and carry it." },
+}
+
+C.lamp = {
+    id = "lamp", lit = "lamp_lit", name = "Arc lamp",
+    description = "Lit while its copper's network has charge to spare.",
+    hardness = 1.0, tags = { "metal", "glass" }, light = { r = 15, g = 15, b = 14 },
+}
+
+-- The charge network (brief §6.2): copper stock, any carving of it, carries
+-- charge between frames and lamps. Units a second.
+C.grid = {
+    period = 20,                  -- ticks between reckonings
+    max_blocks = 512,
+    pile = 2, pile_acid_ticks = 6000,     -- a pile gives 2 a second, and drinks an oil of vitriol in five minutes
+    dynamo = 16,                  -- at full turning
+    motor = 16,                   -- charge in, turning out, at full charge
+    lamp = 1,
+    cell = 1000,                  -- what a cell holds
+    loss_per = 16,                -- 1 lost a second for every this many blocks of wire
+    telegraph_reach = 4,          -- how near a key a speaker stands
+    telegraph_hear = 16,          -- how near the far key a listener stands
+    magnet_radius = 8, magnet_strength = 0.3, magnet_drain = 1,   -- a second, from the carried cell
+}
+
+C.camera = { max_side = 16 }
+C.gravimeter = { reach = 24, heavy = { "W:gold_ore", "W:lead_ore", "W:diamond", "W:orichalcum" } }
+C.dynamite = { radius = 2 }
+C.elevator = { reach = 64 }       -- how far up a rail an elevator looks for landings
+
+C.tier5_recipes = {
+    -- Steam, iron and steel.
+    { id = "steam_hammer", station = "workbench", node = "science.steam_hammer",
+        inputs = { { "cast_cylinder", count = 1 }, { "piston", count = 2 }, { "steel_ingot", count = 2 } },
+        outputs = { { "steam_hammer", count = 1 } } },
+    { id = "steam_plate", station = "frame", node = "science.steam_hammer", tools = { { "steam_hammer", wear = 0 } },
+        ticks = 40, inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_plate", count = 1 } } },
+    { id = "decarburise_pig", station = "furnace", node = "science.puddling", heat = 3, ticks = 1200,
+        inputs = { { "pig_iron", count = 1 } }, outputs = { { "C:iron_bar", count = 2 } } },
+    { id = "converter", station = "workbench", node = "science.bessemer",
+        inputs = { { "C:iron_plate", count = 4 }, { "C:brick", count = 2 }, { "bearing", count = 1 } },
+        outputs = { { "converter", count = 1 } } },
+    { id = "bessemer_steel", station = "furnace", node = "science.bessemer", heat = 5, ticks = 1200,
+        tools = { { "converter", wear = 0 } }, inputs = { { "pig_iron", count = 3 } }, outputs = { { "steel_ingot", count = 3 } } },
+
+    -- Precision: Maudslay's lathe, and the elevator.
+    { id = "turn_screw", station = "frame", node = "science.maudslay_lathe", tools = { { "lathe_bed", wear = 0 } }, ticks = 200,
+        inputs = { { "C:iron_nails", count = 1 } }, outputs = { { "screw", count = 3 } } },
+    { id = "turn_spring", station = "frame", node = "science.maudslay_lathe", tools = { { "lathe_bed", wear = 0 } }, ticks = 400,
+        inputs = { { "steel_ingot", count = 1 } }, outputs = { { "spring", count = 2 } } },
+    { id = "assembly_jig", station = "workbench", node = "science.maudslay_lathe",
+        inputs = { { "C:iron_frame", count = 1 }, { "screw", count = 2 }, { "spring", count = 1 }, { "bearing", count = 1 } },
+        outputs = { { "assembly_jig", count = 1 } } },
+    { id = "winding_drum", station = "workbench", node = "science.otis_elevator",
+        inputs = { { "cast_wheel", count = 1 }, { "C:iron_chain", count = 2 }, { "spring", count = 1 } },
+        outputs = { { "winding_drum", count = 1 } } },
+
+    -- Optics.
+    { id = "camera", station = "workbench", node = "science.daguerreotype",
+        inputs = { { "lens_blank", count = 1 }, { "#plank", count = 4 }, { "C:leather", count = 1 } },
+        outputs = { { "camera", count = 1 } } },
+    { id = "gravimeter", station = "workbench", node = "science.cavendish_balance",
+        inputs = { { "steel_ingot", count = 1 }, { "C:lead_ingot", count = 2 }, { "clockwork", count = 1 } },
+        outputs = { { "gravimeter", count = 1 } } },
+
+    -- Chemistry.
+    { id = "dynamite", station = "hand", node = "science.dynamite",
+        inputs = { { "black_powder", count = 2 }, { "#oil_of_vitriol", count = 1 }, { "C:cord", count = 1 } },
+        outputs = { { "dynamite", count = 2 } } },
+
+    -- Electricity.
+    { id = "cell", station = "workbench", node = "science.voltaic_pile",
+        inputs = { { "C:lead_ingot", count = 2 }, { "#oil_of_vitriol", count = 1 }, { "C:copper_ingot", count = 1 } },
+        outputs = { { "cell", count = 1 } } },
+    { id = "voltaic_pile", station = "workbench", node = "science.voltaic_pile",
+        inputs = { { "C:copper_ingot", count = 4 }, { "C:tin_ingot", count = 4 }, { "C:cloth", count = 1 } },
+        outputs = { { "voltaic_pile", count = 1 } } },
+    { id = "electrolysis_cell", station = "workbench", node = "science.electrolysis",
+        inputs = { { "glass_jar", count = 2 }, { "copper_stock", count = 1 }, { "C:lead_ingot", count = 1 } },
+        outputs = { { "electrolysis_cell", count = 1 } } },
+    { id = "soda", station = "frame", node = "science.electrolysis", tools = { { "electrolysis_cell", wear = 0 } }, ticks = 400,
+        inputs = { { "W:salt", units = 27 }, { "L:water_bucket", count = 1 } },
+        outputs = { { "soda", count = 1 }, { "L:bucket", count = 1 } } },
+    { id = "hydrogen", station = "frame", node = "science.electrolysis", tools = { { "electrolysis_cell", wear = 0 } }, ticks = 400,
+        inputs = { { "L:water_bucket", count = 1 }, { "glass_jar", count = 1 } },
+        outputs = { { "hydrogen", count = 1 }, { "L:bucket", count = 1 } } },
+    { id = "silvered_plate", station = "frame", node = "science.electrolysis", tools = { { "electrolysis_cell", wear = 0 } }, ticks = 400,
+        inputs = { { "C:iron_plate", count = 1 }, { "C:silver_ingot", count = 1 } }, outputs = { { "silvered_plate", count = 2 } } },
+    { id = "electromagnet", station = "workbench", node = "science.electromagnet",
+        inputs = { { glyph = "coil", material = "copper_stock", count = 1 }, { "C:iron_bar", count = 1 }, { "cell", count = 1 } },
+        outputs = { { "electromagnet", count = 1 } } },
+    { id = "dynamo_armature", station = "workbench", node = "science.dynamo",
+        inputs = { { glyph = "coil", material = "copper_stock", count = 2 }, { glyph = "wheel", material = "steel_stock", count = 1 },
+            { "C:iron_bar", count = 2 } },
+        outputs = { { "dynamo_armature", count = 1 } } },
+    { id = "motor", station = "workbench", node = "science.electric_motor",
+        inputs = { { glyph = "coil", material = "copper_stock", count = 2 }, { "bearing", count = 2 }, { "C:iron_bar", count = 2 } },
+        outputs = { { "motor", count = 1 } } },
+    { id = "telegraph", station = "workbench", node = "science.telegraph",
+        inputs = { { glyph = "coil", material = "copper_stock", count = 1 }, { "C:iron_plate", count = 1 }, { "C:iron_hinge", count = 1 } },
+        outputs = { { "telegraph", count = 1 } } },
+    { id = "carbon_rod", station = "furnace", node = "science.arc_lamp", heat = 3, ticks = 600,
+        inputs = { { "coke", units = 27 } }, outputs = { { "carbon_rod", count = 4 } } },
+    { id = "lamp", station = "workbench", node = "science.arc_lamp",
+        inputs = { { "C:glass", count = 1 }, { "carbon_rod", count = 2 }, { "copper_stock", count = 1 } },
+        outputs = { { "lamp", count = 1 } } },
+
+    -- Punched cards (Jacquard): the same bar, chosen into something else by
+    -- the card that lies in the frame with it.
+    { id = "trip_nails", station = "frame", node = "science.jacquard_cards", ticks = 200,
+        tools = { { "trip_hammer", wear = 0 }, { glyph = "card_1", material = "#plank", count = 1 } },
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_nails", count = 1 } } },
+    { id = "trip_chain", station = "frame", node = "science.jacquard_cards", ticks = 200,
+        tools = { { "trip_hammer", wear = 0 }, { glyph = "card_2", material = "#plank", count = 1 } },
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_chain", count = 1 } } },
+    { id = "trip_hinge", station = "frame", node = "science.jacquard_cards", ticks = 200,
+        tools = { { "trip_hammer", wear = 0 }, { glyph = "card_3", material = "#plank", count = 1 } },
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_hinge", count = 1 } } },
+    { id = "steam_nails", station = "frame", node = "science.jacquard_cards", ticks = 40,
+        tools = { { "steam_hammer", wear = 0 }, { glyph = "card_1", material = "#plank", count = 1 } },
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_nails", count = 1 } } },
+    { id = "steam_chain", station = "frame", node = "science.jacquard_cards", ticks = 40,
+        tools = { { "steam_hammer", wear = 0 }, { glyph = "card_2", material = "#plank", count = 1 } },
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_chain", count = 1 } } },
+    { id = "steam_hinge", station = "frame", node = "science.jacquard_cards", ticks = 40,
+        tools = { { "steam_hammer", wear = 0 }, { glyph = "card_3", material = "#plank", count = 1 } },
+        inputs = { { "C:iron_bar", count = 1 } }, outputs = { { "C:iron_hinge", count = 1 } } },
+
+    -- Relics, at the assembly jig, from carved parts (brief §7.5).
+    { id = "difference_engine", station = "frame", node = "science.difference_engine", relic = true, ticks = 2400,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "gear", material = "steel_stock", count = 12 }, { glyph = "rod", material = "steel_stock", count = 4 },
+            { "frame_plate", count = 1 }, { "C:bronze_ingot", count = 4 } },
+        outputs = { { "difference_engine", count = 1 } } },
+    { id = "automaton_spring", station = "frame", node = "science.clockwork_automaton", relic = true, ticks = 1200,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "gear", material = "steel_stock", count = 4 }, { glyph = "rod", material = "steel_stock", count = 2 },
+            { glyph = "coil", material = "copper_stock", count = 1 }, { "clockwork", count = 2 }, { "C:leather", count = 1 } },
+        outputs = { { "automaton_spring", count = 1 } } },
+    { id = "automaton_key", station = "workbench", node = "science.clockwork_automaton",
+        inputs = { { "C:iron_bar", count = 1 }, { "C:bronze_ingot", count = 1 } }, outputs = { { "automaton_key", count = 1 } } },
+}
+
+C.tier5_studies = {
+    { id = "study_engine_part", name = "An engine cylinder", inputs = { { "cylinder", count = 1 } }, ticks = 4800, insight = 120 },
+    { id = "study_cell", name = "A cell", inputs = { { "cell", count = 1 } }, ticks = 2400, insight = 80 },
+    { id = "study_difference_engine", name = "The Difference Engine", inputs = { { "difference_engine", count = 1 } },
+        ticks = 12000, insight = 250 },
+    { id = "study_automaton", name = "An automaton", inputs = { { "automaton_spring", count = 1 } }, ticks = 12000, insight = 250 },
+}
+
+C.tier5_firsts = {
+    steam_plate = "steam_hammer", bessemer_steel = "bessemer", decarburise_pig = "puddling",
+    turn_screw = "screw_cutting", soda = "electrolysis", hydrogen = "electrolysis", silvered_plate = "electroplating",
+    trip_nails = "punched_cards", difference_engine = "difference_engine", automaton_spring = "automaton",
+}
+C.tier5_toys = { photograph = 10, blueprint = 20, elevator = 5, telegraph = 10, lamp = 10 }
+
+-- Automata (brief §6.6): a clockwork helper. Its hold's first slots are its
+-- program: the cards there, read in order, each an instruction; without the
+-- Analytical Engine only the first is read.
+C.automaton = {
+    hold = 27, program_slots = 4, step = 40,      -- ticks an instruction runs
+    reach = 6,                                     -- blocks it works frames and chests within
+    follow = 3,                                    -- blocks it keeps from its owner
+    model = "engine:humanoid", collider = { width = 1.2, height = 3.6 }, speed = 0.8,
+    per_player = 1,                                -- raised by `science.automata` (the Teleautomaton)
+    -- What each card means, by its number.
+    cards = { [1] = "follow", [2] = "stay", [3] = "feed", [4] = "collect", [5] = "deposit", [6] = "fetch" },
+}
 
 -- Toybox discoveries (brief §6.9): insight for play itself.
 C.toybox = {

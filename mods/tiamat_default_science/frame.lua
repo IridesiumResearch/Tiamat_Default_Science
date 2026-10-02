@@ -55,6 +55,7 @@ if craft then
             local movement = N.movement(name)
             -- An engine gives turning and makes nothing: it does not run.
             if not pos or not movement or C.movements[movement].need == 0 then return 0 end
+            if C.movements[movement].power == "charge" then return tds.grid.speed(pos, F.placer(pos)) end
             return N.speed(pos, F.placer(pos))
         end,
     }

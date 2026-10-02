@@ -33,7 +33,10 @@ FULL = (1 << 27) - 1
 
 # The brief's §7.1: how many distinct orientations each has.
 ORIENTATIONS = {"rod": 3, "plate": 6, "gear": 3, "wheel": 3, "pipe": 3, "coil": 3, "ring": 6,
-                "gnomon": 6, "cairn": 6, "bracket": 24, "nozzle": 6, "rail": 12}
+                "gnomon": 6, "cairn": 6, "bracket": 24, "nozzle": 6, "rail": 12,
+                # The cards: a face (6 ways) turned and mirrored in it (up to 8).
+                "card_1": 24, "card_2": 24, "card_3": 24, "card_4": 12, "card_5": 48,
+                "card_6": 12, "card_7": 24, "card_8": 24}
 
 
 def preset(rule):

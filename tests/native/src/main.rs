@@ -48,6 +48,16 @@ fn main() {
     the_newcomen_engine();
     coke_and_steel();
     tier4_works();
+    punched_cards();
+    puddling_and_bessemer();
+    the_steam_hammer();
+    the_charge_network();
+    dynamo_and_motor();
+    the_safety_elevator();
+    camera_and_blueprint();
+    gravimeter_and_dynamite();
+    relics_and_parts();
+    the_automaton();
     determinism();
     println!("science native check: all passed");
 }
@@ -392,12 +402,12 @@ fn the_book() {
 fn the_tree() {
     let mut r = Rig::new(Setup::default());
     ready(&mut r, 5000);
-    assert_eq!(r.ask("t count"), "43", "Progress validated what ships: tiers 3 and 4");
+    assert_eq!(r.ask("t count"), "68", "Progress validated what ships: tiers 3 to 5");
     // A node that says no `reveal` of its own takes the path's, "near".
     assert_eq!(r.ask("t branch science.water_wheel"), "MECH/nil", "a branch, and the path's reveal");
     let answer = r.ask("t learn science.machine_frame");
     assert!(answer.starts_with("nil") && answer.contains("lies beyond the Fork"), "{answer}");
-    assert!(r.ask("t learn science.watt_engine").starts_with("nil"), "tier 5 is data, not for sale yet");
+    assert!(r.ask("t learn science.polyphase_ac").starts_with("nil"), "tier 6 is data, not for sale yet");
     assert_eq!(insight(&mut r), 5000, "nothing was spent");
     println!("the tree: ok");
 }
@@ -479,7 +489,7 @@ fn tier3_loads() {
     let mut r = Rig::new(Setup::default());
     r.join(PLAYER);
     r.tick(1);
-    assert_eq!(r.ask("t ours"), "90", "4 on the Bench, 49 in tier 3, 31 in tier 4, 6 studies");
+    assert_eq!(r.ask("t ours"), "127", "4 on the Bench, 49 in tier 3, 31 in tier 4, 33 in tier 5, 10 studies");
     for recipe in ["frame", "crush_iron", "pig_iron", "blister_steel", "sand_mould_pipe", "clockwork", "print_treatise"] {
         let answer = r.ask(&format!("t can {MOD}:{recipe}"));
         assert!(!answer.contains("no such"), "{recipe}: {answer}");
@@ -996,6 +1006,317 @@ fn tier4_works() {
     assert_eq!(r.units_in(&furnace, 6, 8, &format!("{MOD}:quicksilver")), 27, "quicksilver");
     assert_eq!(r.units_in(&furnace, 2, 4, &format!("{MOD}:glass_jar")), 27, "and the jar kept");
     println!("tier 4 works: ok");
+}
+
+const CARD_1: u32 = 1_838_598;
+const CARD_3: u32 = 1_838_594;
+const GEAR: u32 = 10_560_552;
+const STEEL: &str = "tiamat_default_science:steel_stock";
+const COPPER: &str = "tiamat_default_science:copper_stock";
+
+/// Every node of tiers 3 to 5, for a player who has done it all.
+const TO_TIER5: &[&str] = &["science.machine_frame", "science.simple_machines", "science.gearing",
+    "science.water_wheel", "science.stamp_mill", "science.trip_hammer", "science.blast_furnace",
+    "science.finery_forge", "science.cast_iron", "science.cementation_steel", "science.glassworks",
+    "science.wire_drawing", "science.saltpetre_works", "science.gunpowder", "science.escapement",
+    "science.coke", "science.crucible_steel", "science.lathe", "science.water_frame", "science.papin_digester",
+    "science.newcomen_engine", "science.lead_chamber", "science.electrostatics", "science.leyden_jar",
+    "science.watt_engine", "science.high_pressure_steam", "science.steam_hammer", "science.puddling",
+    "science.bessemer", "science.maudslay_lathe", "science.interchangeable_parts", "science.jacquard_cards",
+    "science.difference_engine", "science.analytical_engine", "science.clockwork_automaton",
+    "science.voltaic_pile", "science.electrolysis", "science.electromagnet", "science.dynamo",
+    "science.electric_motor", "science.telegraph", "science.arc_lamp", "science.otis_elevator",
+    "science.cinnabar_roasting", "science.daguerreotype", "science.cyanotype", "science.alhazen_optics",
+    "science.telescope", "science.pendulum_clock", "science.newtonian_mechanics", "science.cavendish_balance",
+    "science.lightning_rod", "science.dynamite"];
+
+/// A carved plank wheel at `(x, y, z)` with water on two sides: 8 turns.
+fn wheel_at(r: &mut Rig, x: i32, y: i32, z: i32) {
+    assert!(r.place(PLAYER, x, y, z, PLANK, WHEEL));
+    r.water(x + 1, y, z, 27);
+    r.water(x, y - 1, z, 27);
+}
+
+/// A card in a hammer's frame chooses what the bar becomes.
+fn punched_cards() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    assert!(r.place(PLAYER, 200, 64, 200, "frame", FULL));
+    let frame = frame_at(200, 64, 200);
+    r.put_in(&frame, 1, "trip_hammer", 27);
+    r.put_in(&frame, 2, "tiamat_default_craft:iron_bar", 27);
+    r.put_carved_in(&frame, 3, PLANK, 1, CARD_1);
+    wheel_at(&mut r, 201, 64, 200);
+    r.tick(260);
+    assert_eq!(r.units_in(&frame, 6, 9, "tiamat_default_craft:iron_nails"), 27, "card 1: nails, not a plate");
+    assert_eq!(r.units_in(&frame, 6, 9, "tiamat_default_craft:iron_plate"), 0);
+    // Card 3: hinges. And the card is kept.
+    r.put_carved_in(&frame, 3, PLANK, 1, CARD_3);
+    r.put_in(&frame, 2, "tiamat_default_craft:iron_bar", 27);
+    r.tick(260);
+    assert_eq!(r.units_in(&frame, 6, 9, "tiamat_default_craft:iron_hinge"), 27, "card 3: a hinge");
+    assert!(r.stacks_in(&frame).iter().any(|(_, _, sh)| *sh == Some(CARD_3)), "the card stays in the frame");
+    println!("punched cards: ok");
+}
+
+/// Puddled iron on coke's heat; Bessemer steel in a blast, through the converter.
+fn puddling_and_bessemer() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    assert!(r.place(PLAYER, 210, 64, 210, "furnace", FULL));
+    let puddle = furnace_at(210, 64, 210);
+    r.put_in(&puddle, 1, &format!("{MOD}:coke"), 27 * 10);
+    r.put_in(&puddle, 2, &format!("{MOD}:pig_iron"), 27);
+    assert_eq!(r.ask("t ignite 210 64 210"), "true");
+    r.tick(1300);
+    assert_eq!(r.units_in(&puddle, 6, 8, "tiamat_default_craft:iron_bar"), 54, "two bars from one pig");
+
+    assert!(r.place(PLAYER, 220, 64, 220, "furnace", FULL));
+    let bessemer = furnace_at(220, 64, 220);
+    r.put_in(&bessemer, 1, &format!("{MOD}:coke"), 27 * 10);
+    r.put_in(&bessemer, 2, &format!("{MOD}:pig_iron"), 27 * 3);
+    r.put_in(&bessemer, 3, "converter", 27);
+    r.put_in(&bessemer, 5, "blowing_engine", 27);
+    wheel_at(&mut r, 221, 64, 220);
+    assert_eq!(r.ask("t ignite 220 64 220"), "true");
+    r.tick(1300);
+    assert_eq!(r.units_in(&bessemer, 6, 8, &format!("{MOD}:steel_ingot")), 81, "three steel from three pigs");
+    println!("puddling and the converter: ok");
+}
+
+/// Watt's engine gives 32 turns, which only steel carries: a steam hammer's need.
+fn the_steam_hammer() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    assert!(r.place(PLAYER, 230, 64, 230, "furnace", FULL));
+    let furnace = furnace_at(230, 64, 230);
+    r.put_in(&furnace, 1, "tiamat_default_craft:charcoal", 27 * 20);
+    r.put_in(&furnace, 5, "boiler", 27);
+    assert_eq!(r.ask("t ignite 230 64 230"), "true");
+    assert!(r.place(PLAYER, 231, 64, 230, "copper_stock", 134_142_975));
+    assert!(r.place(PLAYER, 232, 64, 230, "frame", FULL));
+    r.put_in(&frame_at(232, 64, 230), 1, "cylinder", 27);
+    assert!(r.place(PLAYER, 233, 64, 230, "frame", FULL));
+    let hammer = frame_at(233, 64, 230);
+    r.put_in(&hammer, 1, "steam_hammer", 27);
+    r.put_in(&hammer, 2, "tiamat_default_craft:iron_bar", 27);
+    r.tick(40);
+    assert_eq!(r.ask("t net 233 64 230"), "48/32/2", "Newcomen's 16, Watt's twice it, strong steam three times");
+    r.tick(60);
+    assert_eq!(r.units_in(&hammer, 6, 9, "tiamat_default_craft:iron_plate"), 27, "a plate in two seconds");
+    println!("the steam hammer: ok");
+}
+
+/// A pile charges the wire; lamps light; cells fill; keys carry words.
+fn the_charge_network() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    // A pile in a frame, with acid; copper wire along x; a lamp; a frame of cells; two keys.
+    assert!(r.place(PLAYER, 240, 64, 240, "frame", FULL));
+    let pile = frame_at(240, 64, 240);
+    r.put_in(&pile, 1, "voltaic_pile", 27);
+    r.put_in(&pile, 2, "oil_of_vitriol", 27 * 4);
+    for x in 241..=250 {
+        assert!(r.place(PLAYER, x, 64, 240, COPPER, ROD));
+    }
+    assert!(r.place(PLAYER, 245, 65, 240, "lamp", FULL));
+    assert!(r.place(PLAYER, 251, 64, 240, "frame", FULL));
+    let bank = frame_at(251, 64, 240);
+    r.put_in(&bank, 2, "cell", 27);
+    r.tick(80);
+    let lit = r.material("lamp_lit");
+    assert_eq!(r.world.blocks.lock().unwrap().get(&(245, 65, 240)).map(|b| b.0), Some(lit), "the lamp is lit");
+    let cell = r.slot_of(&bank, 2).expect("the cell");
+    assert!(cell.2.as_deref().is_some_and(|d| d.starts_with("e=")), "the surplus fills the cell: {cell:?}");
+
+    // Two telegraph keys on the same wire: words go from one to the other.
+    assert!(r.place(PLAYER, 246, 63, 240, "frame", FULL));
+    r.put_in(&frame_at(246, 63, 240), 1, "telegraph", 27);
+    assert!(r.place(PLAYER, 250, 63, 240, "frame", FULL));
+    r.put_in(&frame_at(250, 63, 240), 1, "telegraph", 27);
+    let other = rig::OTHER;
+    r.join(other);
+    r.tick(40);
+    r.stand_at(246.5, 64.0, 241.5);
+    {
+        let mut map = r.entities.0.lock().unwrap();
+        map.get_mut(&2).unwrap().transform = rig_transform(250.5, 64.0, 241.5);
+    }
+    r.heard(other);
+    assert_eq!(r.ask("wire hello from the pile"), "Sent.");
+    assert!(r.heard(other).iter().any(|l| l == "(by wire) hello from the pile"), "the far key's listener hears");
+    println!("the charge network: ok");
+}
+
+fn rig_transform(x: f64, y: f64, z: f64) -> tiamat_core::ent::Transform {
+    tiamat_core::ent::Transform::from_world(x, y, z)
+}
+
+/// A water wheel turns a dynamo; the wire carries its charge to a motor,
+/// which turns a stamp mill on a shaft of its own.
+fn dynamo_and_motor() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    // The dynamo's side: a wheel on four wet sides (16 turns) beside the dynamo's frame.
+    assert!(r.place(PLAYER, 260, 64, 260, PLANK, WHEEL));
+    r.water(259, 64, 260, 27);
+    r.water(260, 63, 260, 27);
+    r.water(260, 64, 259, 27);
+    r.water(260, 65, 260, 27);
+    assert!(r.place(PLAYER, 261, 64, 260, "frame", FULL));
+    r.put_in(&frame_at(261, 64, 260), 1, "dynamo_armature", 27);
+    // Copper to the motor, two blocks over.
+    assert!(r.place(PLAYER, 262, 64, 260, COPPER, ROD));
+    assert!(r.place(PLAYER, 263, 64, 260, "frame", FULL));
+    r.put_in(&frame_at(263, 64, 260), 1, "motor", 27);
+    // The motor's own shaft: a plank rod to the mill.
+    assert!(r.place(PLAYER, 263, 65, 260, PLANK, ROD));
+    assert!(r.place(PLAYER, 263, 66, 260, "frame", FULL));
+    let mill = frame_at(263, 66, 260);
+    r.put_in(&mill, 1, "stamps", 27);
+    r.put_in(&mill, 2, "tiamat_default_world:gold_ore", 20);
+    r.tick(80);
+    assert_eq!(r.ask("t net 263 66 260"), "16/8/3", "the motor turns its shaft: 16, against the stamps' 8");
+    r.tick(240);
+    assert_eq!(r.units_in(&mill, 6, 9, &format!("{MOD}:crushed_gold")), 27, "water, to charge, to turning, to gold");
+    println!("the dynamo and the motor: ok");
+}
+
+/// Two landings on a steel rail, wound by a turning drum at its foot.
+fn the_safety_elevator() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    const RAIL: u32 = 1_313_285;
+    const BRACKET: u32 = 79;
+    for y in 64..=74 {
+        assert!(r.place(PLAYER, 270, y, 270, STEEL, RAIL));
+    }
+    assert!(r.place(PLAYER, 271, 65, 270, STEEL, BRACKET), "the lower landing");
+    assert!(r.place(PLAYER, 271, 72, 270, STEEL, BRACKET), "the upper landing");
+    r.heard(PLAYER);
+    r.hold(PLAYER, "crank_handle");
+    r.inventory.held.lock().unwrap().remove(&PLAYER);
+    assert!(r.use_at(PLAYER, 271, 65, 270));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str),
+        Some("The winding drum at the foot of the rail is not turning."));
+    assert!(r.place(PLAYER, 270, 63, 270, "frame", FULL));
+    r.put_in(&frame_at(270, 63, 270), 1, "winding_drum", 27);
+    wheel_at(&mut r, 270, 63, 271);
+    r.tick(40);
+    let before = insight(&mut r);
+    assert!(r.use_at(PLAYER, 271, 65, 270));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Up you go."));
+    assert_eq!(insight(&mut r) - before, 5);
+    assert!(r.use_at(PLAYER, 271, 72, 270));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Down you go."), "from the top, back to the bottom");
+    println!("the safety elevator: ok");
+}
+
+/// A photograph of a hut, and the hut built again from it, paid for.
+fn camera_and_blueprint() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    for (x, y, z) in [(280, 64, 280), (281, 64, 280), (280, 65, 280), (281, 65, 281)] {
+        r.put_block(x, y, z, "tiamat_default_world:stone");
+    }
+    r.give(PLAYER, "camera", 27);
+    r.give(PLAYER, "silvered_plate", 27);
+    r.hold(PLAYER, "camera");
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 280, 64, 280));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("One corner. Now the other."));
+    assert!(r.use_at(PLAYER, 281, 65, 281));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Caught: 4 blocks."));
+    assert_eq!(r.units(PLAYER, "silvered_plate"), 0, "the plate is spent");
+    let name = format!("photo_{}_1", &rig::hex(PLAYER)[..8]);
+    r.hold_detailed(PLAYER, "photograph", &format!("p={name}"));
+    r.put_block(290, 63, 290, "tiamat_default_world:stone");
+    assert!(r.use_at(PLAYER, 290, 63, 290));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("You need 4 more of stone."), "nothing for nothing");
+    r.give(PLAYER, "tiamat_default_world:stone", 27 * 4);
+    assert!(r.use_at(PLAYER, 290, 63, 290));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The blueprint is building."));
+    assert_eq!(r.units(PLAYER, "tiamat_default_world:stone"), 0, "paid in its blocks");
+    let stone = r.material("tiamat_default_world:stone");
+    assert_eq!(r.world.blocks.lock().unwrap().get(&(291, 65, 291)).map(|b| b.0), Some(stone), "built again");
+    println!("the camera and the blueprint: ok");
+}
+
+/// The gravimeter finds gold; dynamite loosens even obsidian.
+fn gravimeter_and_dynamite() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    r.stand_at(300.5, 64.0, 300.5);
+    r.put_block(300, 52, 300, "tiamat_default_world:gold_ore");
+    r.give(PLAYER, "gravimeter", 27);
+    r.hold(PLAYER, "gravimeter");
+    r.heard(PLAYER);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The balance tips down: gold ore, 12 blocks off."));
+
+    r.put_block(310, 64, 310, "tiamat_default_world:obsidian");
+    r.put_block(312, 64, 310, "tiamat_default_world:obsidian");
+    r.give(PLAYER, "dynamite", 27);
+    r.hold(PLAYER, "dynamite");
+    assert!(r.use_at(PLAYER, 310, 64, 310));
+    r.tick(45);
+    let obsidian = r.material("tiamat_default_world:obsidian");
+    let left = r.world.blocks.lock().unwrap().values().filter(|b| b.0 == obsidian && b.1 != 0).count();
+    assert_eq!(left, 0, "hard rock loosened, two blocks out");
+    println!("the gravimeter and dynamite: ok");
+}
+
+/// The Difference Engine at the jig, and a quarter of its parts given back.
+fn relics_and_parts() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    assert!(r.place(PLAYER, 320, 64, 320, "frame", FULL));
+    let jig = frame_at(320, 64, 320);
+    r.put_in(&jig, 1, "assembly_jig", 27);
+    r.put_carved_in(&jig, 2, STEEL, 12, GEAR);
+    r.put_carved_in(&jig, 3, STEEL, 4, ROD);
+    r.put_in(&jig, 4, "frame_plate", 27);
+    r.put_in(&jig, 5, "tiamat_default_craft:bronze_ingot", 27 * 4);
+    assert!(r.place(PLAYER, 321, 64, 320, PLANK, WHEEL));
+    r.water(322, 64, 320, 27);
+    r.water(321, 63, 320, 27);
+    r.water(321, 64, 319, 27);
+    r.water(321, 65, 320, 27);
+    let before = insight(&mut r);
+    r.tick(2500);
+    assert_eq!(r.units_in(&jig, 6, 9, &format!("{MOD}:difference_engine")), 27, "the Difference Engine");
+    let back: Vec<_> = r.stacks_in(&jig).into_iter().filter(|(_, _, sh)| sh.is_some()).collect();
+    // A carving's units are its cells: a gear is 7, a rod 3.
+    assert!(back.contains(&(STEEL.to_owned(), 3 * 7, Some(GEAR))), "three gears of twelve back: {back:?}");
+    assert!(back.contains(&(STEEL.to_owned(), 3, Some(ROD))), "and one rod of four: {back:?}");
+    assert_eq!(insight(&mut r) - before, 10, "an invention: the Difference Engine");
+    println!("relics and interchangeable parts: ok");
+}
+
+/// An automaton wound up, with a card for its program: it feeds a frame.
+fn the_automaton() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, TO_TIER5);
+    r.put_block(330, 63, 330, "tiamat_default_world:stone");
+    r.give(PLAYER, "automaton_spring", 27);
+    r.hold(PLAYER, "automaton_spring");
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 330, 63, 330));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Tick, tick, tick: your automaton wakes."));
+    r.give(PLAYER, "automaton_spring", 27);
+    assert!(r.use_at(PLAYER, 330, 63, 330));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("You have as many automata as you can keep."));
+
+    // Card 3 in its first slot: feed. Iron ore in its hold, a frame beside it.
+    let hold = format!("{MOD}:hold:1");
+    const CARD_FEED: u32 = 1_838_594;   // card_3
+    r.put_carved_in(&hold, 1, PLANK, 1, CARD_FEED);
+    r.put_in(&hold, 5, "tiamat_default_world:iron_ore", 27);
+    assert!(r.place(PLAYER, 332, 64, 330, "frame", FULL));
+    let frame = frame_at(332, 64, 330);
+    r.tick(100);
+    assert_eq!(r.units_in(&frame, 2, 5, "tiamat_default_world:iron_ore"), 27, "fed from its hold");
+    println!("the automaton: ok");
 }
 
 /// Two runs of the same play leave the same storage behind.

@@ -28,7 +28,7 @@ local W = ui and ui.widgets
 -- Pictures ride in the dialog's own tree, so they cost none of the
 -- server's 512 registered pictures: a content hash is enough.
 local pictures = {}
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items }) do
     for _, spec in ipairs(list) do
         local ok, hash = pcall(game.content_hash, "textures/" .. spec.id .. ".png")
         if ok then pictures[spec.id] = hash end
@@ -83,15 +83,34 @@ local HOW = {
     ["science.vacuum_pump"] = "Use the hemispheres with two horses near.",
     ["science.balloon"] = "Hold the balloon with charcoal in your pack.",
     ["science.coke"] = "Bake coal in the furnace. Coke burns hot enough for the finery without a blast.",
+    ["science.jacquard_cards"] = "Carve a plank face with holes: a card. Put card 1, 2 or 3 in a hammer's "
+        .. "frame and it makes nails, chain or hinges instead of plates.",
+    ["science.voltaic_pile"] = "Copper stock carries charge. A pile in a frame, with oil of vitriol in its "
+        .. "inputs, charges the wire; cells in frames store it.",
+    ["science.dynamo"] = "A dynamo in a frame on a turning shaft and on copper wire turns turning into charge.",
+    ["science.electric_motor"] = "A motor in a frame on charged wire turns the shafts it touches.",
+    ["science.arc_lamp"] = "Place a lamp touching charged copper: it lights.",
+    ["science.telegraph"] = "Two telegraph keys in frames on one charged wire. Stand by one and say 'wire' "
+        .. "and your words.",
+    ["science.electromagnet"] = "Hold it with a charged cell in your pack.",
+    ["science.otis_elevator"] = "A steel rail column, steel brackets beside it for landings, a frame with a "
+        .. "winding drum at its foot. Use a landing to ride.",
+    ["science.daguerreotype"] = "Use the camera on two corners of a building, with a silvered plate in your pack.",
+    ["science.cyanotype"] = "Use a photograph on the ground, carrying its blocks, to build it again.",
+    ["science.cavendish_balance"] = "Use the gravimeter anywhere: it tips toward gold, lead and diamond.",
+    ["science.maudslay_lathe"] = "Put the assembly jig in a frame: relics are built there from carved parts.",
+    ["science.clockwork_automaton"] = "Use the spring on the ground. Its first hold slot is its card: 1 follow, "
+        .. "2 stay, 3 feed frames, 4 collect from frames, 5 fill a chest, 6 empty a chest.",
+    ["science.analytical_engine"] = "Your automata read four cards, one after another: a program.",
 }
 
 --- The name a player reads for a config id: this mod's item's own name, or
 --- the other mod's id made readable ("C:bark_strip" -> "bark strip").
 local names = {}
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items }) do
     for _, spec in ipairs(list) do names[spec.id] = spec.name end
 end
-for _, spec in ipairs({ C.frame, C.furnace, C.copper_stock, C.steel_stock }) do names[spec.id] = spec.name end
+for _, spec in ipairs({ C.frame, C.furnace, C.copper_stock, C.steel_stock, C.lamp }) do names[spec.id] = spec.name end
 
 local function name_of(id)
     if names[id] then return names[id] end
@@ -190,7 +209,8 @@ end
 
 local function recipes_of(id)
     local list = {}
-    for _, source in ipairs({ A.recipes, tds.mechanica and tds.mechanica.recipes or {}, tds.tier4 and tds.tier4.recipes or {} }) do
+    for _, source in ipairs({ A.recipes, tds.mechanica and tds.mechanica.recipes or {}, tds.tier4 and tds.tier4.recipes or {},
+        tds.tier5 and tds.tier5.recipes or {} }) do
         for _, r in ipairs(source[id] or {}) do list[#list + 1] = r end
     end
     return list

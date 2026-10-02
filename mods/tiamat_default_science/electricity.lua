@@ -33,9 +33,14 @@ local progress = U.exports("tiamat_default_progress")
 local JAR = I.ids.leyden_jar
 local FULL = C.electric.jar
 
---- The charge a stack carries: 0 for an empty jar or anything else.
+local CELL = I.ids.cell
+
+-- What each kind of charged thing holds at most.
+local HOLDS = { [JAR] = FULL, [CELL] = C.grid.cell }
+
+--- The charge a stack carries: 0 for an empty jar or cell, or anything else.
 function E.charge_of(stack)
-    if not (stack and stack.material == JAR and stack.detail) then return 0 end
+    if not (stack and HOLDS[stack.material] and stack.detail) then return 0 end
     return math.tointeger(tonumber(string.match(stack.detail, "e=(%d+)") or "0")) or 0
 end
 
@@ -50,34 +55,61 @@ local function free_slot(stacks, from, to)
     return nil
 end
 
---- Puts up to `amount` charge into the jars in `slots` of a container, the
---- first jar first. A pile of empty jars gives up one to be charged, which
---- goes to a free slot among `spare_from..spare_to`. Answers what was added.
-function E.fill_container(name, slots, amount, spare_from, spare_to)
+local function rewrite(name, stack, e)
+    if game.container_take(name, { material = stack.material, count = 1, slot = stack.slot, detail = stack.detail }) < U.UNITS then
+        return false
+    end
+    game.container_give(name, { material = stack.material, count = 1, slot = stack.slot, detail = e > 0 and detail(e) or nil })
+    return true
+end
+
+--- Puts up to `amount` charge into the jars (or, with `material`, the cells)
+--- in `slots` of a container, the first first. A pile of empty ones gives up
+--- one to be charged, which goes to a free slot among `spare_from..spare_to`.
+--- Answers what was added.
+function E.fill_container(name, slots, amount, spare_from, spare_to, material)
+    material = material or JAR
+    local full = HOLDS[material]
     local added = 0
     for _, stack in ipairs(game.container(name) or {}) do
         if added >= amount then break end
         local in_range = false
         for _, s in ipairs(slots) do if s == stack.slot then in_range = true end end
-        if in_range and stack.material == JAR then
+        if in_range and stack.material == material then
             local e = E.charge_of(stack)
-            if e < FULL then
-                local give = math.min(FULL - e, amount - added)
+            if e < full then
+                local give = math.min(full - e, amount - added)
                 if stack.units > U.UNITS then
-                    -- Several empty jars: charge one of them, beside the rest.
+                    -- Several empty ones: charge one of them, beside the rest.
                     local spare = free_slot(game.container(name), spare_from, spare_to)
-                    if spare and game.container_take(name, { material = JAR, count = 1, slot = stack.slot }) >= U.UNITS then
-                        game.container_give(name, { material = JAR, count = 1, slot = spare, detail = detail(give) })
+                    if spare and game.container_take(name, { material = material, count = 1, slot = stack.slot }) >= U.UNITS then
+                        game.container_give(name, { material = material, count = 1, slot = spare, detail = detail(give) })
                         added = added + give
                     end
-                elseif game.container_take(name, { material = JAR, count = 1, slot = stack.slot, detail = stack.detail }) >= U.UNITS then
-                    game.container_give(name, { material = JAR, count = 1, slot = stack.slot, detail = detail(e + give) })
+                elseif rewrite(name, stack, e + give) then
                     added = added + give
                 end
             end
         end
     end
     return added
+end
+
+--- Takes up to `amount` charge out of the cells in `slots` of a container.
+--- Answers what was taken.
+function E.drain_container(name, slots, amount)
+    local taken = 0
+    for _, stack in ipairs(game.container(name) or {}) do
+        if taken >= amount then break end
+        local in_range = false
+        for _, s in ipairs(slots) do if s == stack.slot then in_range = true end end
+        if in_range and stack.material == CELL then
+            local e = E.charge_of(stack)
+            local take = math.min(e, amount - taken)
+            if take > 0 and rewrite(name, stack, e - take) then taken = taken + take end
+        end
+    end
+    return taken
 end
 
 local INPUTS = { 2, 3, 4, 5 }

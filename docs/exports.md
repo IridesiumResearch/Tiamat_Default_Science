@@ -57,6 +57,18 @@ All are namespaced `tiamat_default_science:` by the engine.
   `bearing`; and the tools `steel_pick`, `steel_axe`, `steel_spade`,
   `steel_chisel` (tier 3, engine tools) and `steel_hammer` (in `#hammer`; the
   chisel in `#chisel`). The block `steel_stock`.
+- **Tier 5 items:** the movements `steam_hammer`, `assembly_jig`,
+  `winding_drum`, `voltaic_pile`, `electrolysis_cell`, `dynamo_armature`,
+  `motor` and `telegraph`; `converter`, `screw`, `spring`, `camera`,
+  `photograph` (its plan's name in its detail, `p=<name>`), `silvered_plate`,
+  `gravimeter`, `dynamite`, `soda`, `hydrogen`, `cell` (charge in its detail,
+  `e=<0..1000>`), `electromagnet`, `carbon_rod`, `difference_engine`,
+  `automaton_spring`, `automaton_key`. The blocks `lamp` and `lamp_lit`.
+- **Glyphs, tier 5:** the punched cards `card_1` to `card_8`, which recipes
+  name as tools and automata read as instructions.
+- **Entities:** automata, the engine's `engine:humanoid` named
+  "Automaton <serial>", each with a hold container
+  `tiamat_default_science:hold:<serial>` (27 slots).
 - **Groups it adds to:** `#quicksilver`, `#oil_of_vitriol`, `#saltpeter` (each
   this mod's own reagent, so they trade across the Fork), `#furnace_carbon`
   (Craft's charcoal and this mod's coke).
@@ -92,20 +104,25 @@ All are namespaced `tiamat_default_science:` by the engine.
   (group `stars`), `.specimen:*` (`specimens`), `.weather:*` (`weather`) and
   `.climate:*` (`climate`); the toys `.spark`, `.magdeburg`, `.balloon`,
   `.franklin` and `.lightning` (group `inventions`).
+- **Into Progress, tier 5:** the studies `study_engine_part`, `study_cell`,
+  `study_difference_engine`, `study_automaton`; the discovery family
+  `tiamat_default_science.spectrum:*` (group `stars`); the inventions
+  `.photograph`, `.blueprint`, `.elevator`, `.telegraph`, `.lamp`.
 - **World option:** `blasting` (default on): whether mining charges loosen
   rock.
 - **Into the interface:** the shape-crafter presets `gnomon`, `cairn`,
   `gear`, `wheel`, `pipe`, `coil` and `ring`, each shown to a player who
   holds its node.
-- **Dialog:** `theatrum`, the Theatrum Machinarum.
+- **Dialogs:** `theatrum`, the Theatrum Machinarum; `hold`, an automaton's hold.
 - **Action:** `theatrum` (default key N), which opens the Theatrum for a
   player who carries one.
 
 ## Commands it accepts
 
 Chat words, said by a player and swallowed. For anyone: `science` (how far
-along the Tinker's Bench the speaker is) and `science book` (opens the
-Theatrum for a player who carries one). A sentence that only begins with
+along the Tinker's Bench the speaker is), `science book` (opens the
+Theatrum for a player who carries one) and `wire <message>` (sends it down
+the telegraph whose key the speaker stands by). A sentence that only begins with
 the word is chat.
 
 ## Data it stores or sends
@@ -117,6 +134,10 @@ the word is chat.
 - `rod:<x,y,z,domain>` — who placed the copper lightning rod there; forgotten
   when a bolt finds it gone.
 - `mark:<player UUID>` — the block that player's chronometer last marked.
+- `lamp:<x,y,z,domain>` — who placed the arc lamp there.
+- `photos:<player UUID>` — how many photographs that player has taken; each
+  is a plan, `photo_<mark>_<n>`, in this mod's plans.
+- `automata` — the last automaton serial; `automaton:<serial>` — its maker.
 - Particles: a compass's needle, to its holder alone; a kite over whoever
   flies it, to everyone within 64 blocks.
 
@@ -130,4 +151,4 @@ for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`
 by name, so it is asked before a fire's box opens); the interface's `add_preset` and
 `widgets`; Weather's `wind`, `weather_at`, `weather_for`, `warmth`,
 `on_lightning`, `fires_near` and `extinguish`; World's `biome_under`; Life's
-`add_food` and `set_ability`.
+`add_food`, `set_ability` and `pull_drops`.

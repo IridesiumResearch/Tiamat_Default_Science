@@ -3,7 +3,7 @@
 
 # Tiamat Default Science — the brief
 
-*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3; where the build of tiers 3 and 4 departs from the text is §2.4 and §2.5. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
+*Draft 2, 2026-09-29: the designer's build prompt (draft 1, 2026-09-28), with every engine and sibling fact re-checked against the stubs, the engine's source and the sibling repositories on 2026-09-29 and corrected in place; what changed and why is §2.1, what was decided with the designer that day is §2.2, and the sibling asks answered on 2026-09-30 — every one — and the engine's, landed the same day, are §2.3; where the build of tiers 3, 4 and 5 departs from the text is §2.4, §2.5 and §2.6. It replaces draft 0 of this file. Draft 1 was: a brief for an AI coding assistant and the person supervising it. Design and plan only. Companion to `Tiamat_default_magic-PROMPT.md` (its sibling on the other side of the Fork), to the shipped briefs of `tiamat_default_craft` and `tiamat_default_progress`, and to the long plan `schism_design.md`. Read, in this order: the engine's `api/AGENTS.md` and `api/stubs/game.lua`; the `docs/exports.md` of World, Life, UI, Craft, Progress and Weather; then this. Every engine and sibling fact below was checked against those files on 2026-09-28. **Where they disagree with this text, they win**, and the disagreement goes in `docs/engine-asks.md` or `docs/sibling-asks.md`.*
 
 *Not "tech": the id is `tiamat_default_science`, the path id `science`. Schism's `schism_tech` is superseded by this brief.*
 
@@ -254,6 +254,31 @@ Tier 4 is built (step 5 of §17). As for tier 3 (§2.4), where building it found
 | Steel tools forged | Made at the workbench from steel ingots, a haft and a hammer | Craft's anvil forges Craft's iron; this is the same shape of recipe Craft uses for hafting |
 | Crucible steel, the crucible in the tool slot | The crucible in an input slot (Craft looks for tools there too) | The furnace's tool slot holds the blowing engine the heat needs |
 | The water frame: cloth from wool three times over | Three wool, three cloth (Craft's own is three wool, one cloth) | The same, said in Craft's units |
+
+
+### 2.6 Built for 0.4.0 — where tier 5 departs from this text
+
+Tier 5 is built (step 6 of §17). The two questions §2.3 left open for this step were settled here, and are the designer's to overrule:
+
+| The text | What was built | Why |
+|---|---|---|
+| A card's 9-bit pattern is a number, and the number picks a frame's recipe (`n mod #recipes`) (§6.6) | Eight card glyphs (`card_1`..`card_8`, `glyph_table.lua`): a plank face with holes in one of eight patterns, no two alike however turned. A recipe names a card as a tool; Craft makes the most particular recipe the slots allow, so a card in the frame chooses its recipe. The trip hammer and the steam hammer make plates, and with card 1, 2 or 3 nails, chain or hinges | Craft chooses the recipe, not this mod; a card that is a tool is a choice Craft already knows how to make |
+| Interchangeable parts: every relic takes a quarter fewer parts (a second, cheaper recipe) | A refund: when the jig makes a relic for a player who holds the node, a quarter of each kind of carved part (at least one) comes back into the frame, as the carving it was | Craft prefers the more particular recipe, so a cheaper one would lose to the dear one; a refund cannot |
+| Card decks (`card_deck`, built at the jig): programs for automata | An automaton's program is the cards in the first four slots of its hold, read in order; without the Analytical Engine only the first is read | A deck item's contents would be a detail Craft cannot write; the hold already holds cards |
+| The automaton carries "from chest n to frame n", chests and frames numbered by its key | Six instructions — follow, stay, feed, collect, deposit, fetch — each on the frames and chests within 6 blocks of where it stands, one stack every two seconds | Numbering every chest is bookkeeping a child should not need; standing it between the chest and the frame is the program |
+| The automaton's model (§10.1) | The engine's own `engine:humanoid`, until the `automaton` model ships | A model is art, and art is the last thing |
+| Charge travels through copper rods (wire) | Copper stock in any carving is wire; a frame or a lamp joins a network only through wire (two frames side by side are not wired) | A pipe or a coil is still copper; touching is not wiring |
+| The voltaic pile: a cell slowly drained | A pile is a movement: in a frame with oil of vitriol in its inputs it gives 2 charge a second, drinking one in five minutes. Cells in frames on the network store what is spare | Charge from acid, as Volta's was; a cell that empties is a store, which is what cells are |
+| The telegraph: `t <message>` | `wire <message>` | `t` is too short a word to own in chat |
+| The steam hammer: every anvil recipe in one blow | A frame movement needing 32 turns (steel shafts or two engines' worth), plates in two seconds, and `craft.anvil_strikes` −10 on the node | The anvil's blows are Craft's to count; this mod's own hammer is the frame |
+| Puddling, pig iron stirred to wrought iron | 1 pig → 2 bars at heat 3 (coke's), chosen over the finery for whoever knows it | Furnace recipes are made first-by-id; the id is ordered to say which wins |
+| The Bessemer converter: a tool in a blasting furnace | The converter in an input slot | The tool slot holds the blowing engine the blast needs |
+| The safety elevator: a platform between landings | Using a landing (a steel bracket beside a steel rail) moves you to the next landing up, or from the top back to the bottom, while a winding drum at the rail's foot turns | The engine has no platform that carries a player; `move_player` is honest about that |
+| The daguerreotype: a camera marks a box | Used on two corners of a box no more than 16 on a side, spending a silvered plate: a photograph carrying the plan's name | As written |
+| Blueprints: a blueprint item | The photograph itself, used by a player who knows Blueprints, builds the plan there — paid in its blocks, all or nothing | A blueprint would be the photograph again |
+| Electrolysis: water to hydrogen, brine to soda, electroplating | Salt and a water bucket → soda; a water bucket and a jar → hydrogen (which lifts a balloon longer); iron plate and silver → silvered plates, for the camera | Each in a frame on the charge network |
+| The dynamo armature at the jig | At the workbench, as the motor and the telegraph key are | Their nodes do not need the Screw-Cutting Lathe |
+| Maxwell's equations | A node with no recipe of its own: the gate to Wireless and the aether | Some knowledge is a door, not a device |
 
 ---
 

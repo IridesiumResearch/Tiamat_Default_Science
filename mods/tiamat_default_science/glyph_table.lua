@@ -25,4 +25,16 @@ return {
     { id = "bracket", mask = 79, reading = "steel elevator landing" },
     { id = "nozzle", mask = 6061591, reading = "copper boiler nozzle" },
     { id = "rail", mask = 1313285, reading = "steel elevator rail" },
+    -- Punched cards (brief §6.6, Jacquard): a plank face with holes punched
+    -- in it. Eight patterns, no two alike however turned, and none the plate,
+    -- ring, rail or bracket. A recipe names a card as a tool, which makes it
+    -- the more particular, so Craft makes it when the card is there.
+    { id = "card_1", mask = 1838598, card = 1, reading = "a card: one corner punched" },
+    { id = "card_2", mask = 1838597, card = 2, reading = "a card: one edge punched" },
+    { id = "card_3", mask = 1838594, card = 3, reading = "a card: two corners on one side punched" },
+    { id = "card_4", mask = 790022, card = 4, reading = "a card: two opposite corners punched" },
+    { id = "card_5", mask = 1838596, card = 5, reading = "a card: a corner and its edge punched" },
+    { id = "card_6", mask = 1314309, card = 6, reading = "a card: two opposite edges punched" },
+    { id = "card_7", mask = 1837574, card = 7, reading = "a card: the middle and a corner punched" },
+    { id = "card_8", mask = 1576450, card = 8, reading = "a card: three corners punched" },
 }

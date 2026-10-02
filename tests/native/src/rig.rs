@@ -30,6 +30,7 @@ use tiamat_core::{
     hud::{self, Values},
     identity::PlayerUuid,
     inventory::{self, Shape, Stack, StackKey, stack_capacity},
+    plan::{self, Plan, PlanError},
     light::{Light, LightSource},
     particle::{self, BadgeRequest, EmitRequest},
     proto,
@@ -544,6 +545,61 @@ impl WorldEdit for World {
     }
 }
 
+// --- Plans: captured from the block map, stamped back into it -----------------------
+
+pub struct Plans {
+    pub world: Arc<World>,
+    pub saved: Mutex<HashMap<(String, String), Plan>>,
+}
+
+impl plan::Access for Plans {
+    fn capture(&self, _: &str, from: BlockPos, to: BlockPos) -> Result<Plan, PlanError> {
+        let size = [(to.x - from.x + 1) as u16, (to.y - from.y + 1) as u16, (to.z - from.z + 1) as u16];
+        let mut plan = Plan::new(size)?;
+        let names: HashMap<MaterialId, String> =
+            self.world.names.lock().unwrap().iter().map(|(k, v)| (*v, k.clone())).collect();
+        let blocks = self.world.blocks.lock().unwrap();
+        for x in from.x..=to.x {
+            for y in from.y..=to.y {
+                for z in from.z..=to.z {
+                    if let Some((m, occ)) = blocks.get(&(x, y, z))
+                        && *occ != 0
+                        && let Some(name) = names.get(m)
+                    {
+                        plan.set([(x - from.x) as u16, (y - from.y) as u16, (z - from.z) as u16], name, *occ)?;
+                    }
+                }
+            }
+        }
+        Ok(plan)
+    }
+    fn save(&self, mod_id: &str, name: &str, plan: &Plan) -> bool {
+        self.saved.lock().unwrap().insert((mod_id.into(), name.into()), plan.clone());
+        true
+    }
+    fn load(&self, mod_id: &str, name: &str) -> Option<Plan> {
+        self.saved.lock().unwrap().get(&(mod_id.into(), name.into())).cloned()
+    }
+    fn names(&self, mod_id: &str) -> Vec<String> {
+        self.saved.lock().unwrap().keys().filter(|(m, _)| m == mod_id).map(|(_, n)| n.clone()).collect()
+    }
+    fn forget(&self, mod_id: &str, name: &str) -> bool {
+        self.saved.lock().unwrap().remove(&(mod_id.into(), name.into())).is_some()
+    }
+    /// Stamped at once: the rig has no ticks to pace it across.
+    fn stamp(&self, _: &str, at: BlockPos, plan: Plan) -> bool {
+        let palette = plan.palette().to_vec();
+        let names = self.world.names.lock().unwrap().clone();
+        for cell in plan.cells() {
+            if let Some(m) = names.get(&palette[cell.material as usize]) {
+                self.world.put_carved(at.x + cell.at[0] as i32, at.y + cell.at[1] as i32, at.z + cell.at[2] as i32,
+                    *m, cell.occupancy);
+            }
+        }
+        true
+    }
+}
+
 // --- Entities: the player's body --------------------------------------------------
 
 #[derive(Clone)]
@@ -714,6 +770,7 @@ impl Rig {
         vm.set_fluid_access(world.clone());
         vm.set_light_source(world.clone());
         vm.set_world_edit(world.clone());
+        vm.set_plan_access(Arc::new(Plans { world: world.clone(), saved: Mutex::new(HashMap::new()) }));
 
         if let Some(mode) = &setup.mode {
             vm.set_world_options(&[("tiamat_default_life:mode".to_owned(), WorldOptionValue::Choice(mode.clone()))]);
@@ -767,6 +824,19 @@ impl Rig {
         for _ in 0..n {
             let faults = self.vm.tick(1).expect("the tick itself");
             assert!(faults.is_empty(), "mod faulted in tick: {faults:?}");
+            // Each mod's own entities, stepped as the server steps them.
+            for mod_id in self.vm.entity_steppers() {
+                let ids: Vec<u64> = {
+                    let map = self.entities.0.lock().unwrap();
+                    let mut ids: Vec<u64> = map.iter().filter(|(_, e)| e.source == mod_id).map(|(id, _)| *id).collect();
+                    ids.sort();
+                    ids
+                };
+                if !ids.is_empty() {
+                    let fault = self.vm.entity_step(&mod_id, &ids, 1).expect("the entity step itself");
+                    assert!(fault.is_none(), "mod faulted in an entity step: {fault:?}");
+                }
+            }
         }
         self.assert_healthy("ticks");
     }
@@ -987,6 +1057,26 @@ impl Rig {
         let mut body = Entity::at(Transform::from_world(x, y, z), "tiamat_default_life");
         body.model = Some(model.to_owned());
         ent::Access::spawn(&self.entities, body);
+    }
+
+    /// A carved stack straight into a container's slot: `count` items of
+    /// `id`, cut to `shape` — each item as many units as the cells it keeps.
+    pub fn put_carved_in(&self, name: &str, slot: usize, id: &str, count: u32, shape: u32) {
+        let mut stack = Stack::new(self.material(id), count * shape.count_ones()).unwrap();
+        stack.shape = Shape::new(shape);
+        self.boxes.set(name, slot, Some(stack));
+    }
+
+    /// Every stack in a container, as `(qualified id, units, shape occupancy)`.
+    pub fn stacks_in(&self, name: &str) -> Vec<(String, u32, Option<u32>)> {
+        let all = self.boxes.slots.lock().unwrap().get(name).cloned().unwrap_or_default();
+        all.into_iter()
+            .flatten()
+            .filter_map(|st| {
+                let id = self.materials.iter().find(|(_, m)| **m == st.material).map(|(k, _)| k.clone())?;
+                Some((id, st.units, st.shape.map(|sh| sh.occupancy())))
+            })
+            .collect()
     }
 
     /// One of this mod's stored values, as debug text.

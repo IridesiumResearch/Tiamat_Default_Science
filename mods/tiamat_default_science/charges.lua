@@ -25,14 +25,14 @@ local ALLOWED = { ["tiamat_default_world"] = true }
 local pending = {}          -- charges set and burning: { pos, at }
 
 --- Whether a block may be blasted loose: the world's own rock, or Craft's
---- rock cracked by fire, and never anything hard.
-function CH.loosens(material)
+--- rock cracked by fire; anything `hard` only by dynamite (`hard_too`).
+function CH.loosens(material, hard_too)
     local id = material and game.block_of(material)
     if not id then return false end
     local mod, name = string.match(id, "^([^:]+):(.+)$")
     local rock = ALLOWED[mod] or (mod == "tiamat_default_craft" and string.sub(name, 1, 8) == "cracked_")
     if not rock then return false end
-    if U.tagged(material, "hard") then return false end
+    if U.tagged(material, "hard") and not hard_too then return false end
     return U.tagged(material, "stone") or U.tagged(material, "ore") or U.tagged(material, "cracked")
 end
 
@@ -56,15 +56,15 @@ local function cells(occupancy)
 end
 
 --- The charge at `pos` goes off: every block it may loosen within the
---- radius comes loose, whole.
-function CH.blast(pos)
-    local r = C.charge.radius
+--- radius comes loose, whole. Dynamite reaches further, and through hard rock.
+function CH.blast(pos, dynamite)
+    local r = dynamite and C.dynamite.radius or C.charge.radius
     for dy = r, -r, -1 do
         for dx = -r, r do
             for dz = -r, r do
                 local at_pos = { x = pos.x + dx, y = pos.y + dy, z = pos.z + dz, domain = pos.domain }
                 local at = game.get_block(at_pos)
-                if at and at.material and at.cells == nil and CH.loosens(at.material) then
+                if at and at.material and at.cells == nil and CH.loosens(at.material, dynamite) then
                     local units = cells(at.occupancy)
                     if units > 0 and game.set_block(at_pos, "engine:air") then
                         drop(at_pos, at.material, units)
@@ -78,15 +78,19 @@ function CH.blast(pos)
         spread = 4, area = { x = 1, y = 1, z = 1 }, gravity = 2, collide = true, radius = 64 }
 end
 
+local DYNAMITE = I.ids.dynamite
+
 tds.on_use(function(e)
-    if not (e.x and e.held and e.held.material == CHARGE) then return nil end
+    local held = e.held and e.held.material
+    if not (e.x and (held == CHARGE or held == DYNAMITE)) then return nil end
     if game.world_option(game.mod_id .. ":blasting") == false then
         return "Blasting is off in this world."
     end
     local pos = U.block_of(e)
-    if not CH.loosens(e.material) then return "A charge only loosens rock." end
-    if game.take(e.player, { material = CHARGE, count = 1 }) < U.UNITS then return nil end
-    pending[#pending + 1] = { pos = pos, at = tds.now() + C.charge.fuse }
+    local dynamite = held == DYNAMITE
+    if not CH.loosens(e.material, dynamite) then return "A charge only loosens rock." end
+    if game.take(e.player, { material = held, count = 1 }) < U.UNITS then return nil end
+    pending[#pending + 1] = { pos = pos, at = tds.now() + C.charge.fuse, dynamite = dynamite }
     return "The fuse is lit. Stand back!"
 end)
 
@@ -94,7 +98,8 @@ tds.on_tick(1, function(now)
     local i = 1
     while i <= #pending do
         if pending[i].at <= now then
-            CH.blast(table.remove(pending, i).pos)
+            local p = table.remove(pending, i)
+            CH.blast(p.pos, p.dynamite)
         else
             i = i + 1
         end

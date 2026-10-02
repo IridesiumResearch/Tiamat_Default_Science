@@ -221,6 +221,7 @@ function N.supply(net)
         if until_tick and until_tick > now then s = s + C.sources.crank end
         local m = N.movement(U.station_name("frame", pos))
         if m and C.movements[m].engine then s = s + N.engine(pos, m) end
+        if m and C.movements[m].motor and tds.grid then s = s + tds.grid.motor_turns(pos) end
     end
     for _, pos in ipairs(net.wheels) do s = s + N.wheel(pos) end
     local run = net.wood and C.network.wood_run or C.network.steel_run
@@ -250,7 +251,8 @@ function N.demand(net)
     local d = 0
     for _, pos in ipairs(net.frames) do
         local m = N.movement(U.station_name("frame", pos))
-        if m then d = d + C.movements[m].need end
+        -- An electric movement runs on charge, not on this network's turning.
+        if m and C.movements[m].power ~= "charge" then d = d + C.movements[m].need end
     end
     return d
 end

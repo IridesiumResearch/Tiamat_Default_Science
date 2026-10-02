@@ -43,6 +43,10 @@ tds.tier4 = load("tier4")               -- tier 4's recipes, groups, steel tools
 tds.instruments = load("instruments")   -- the sundial, the glass, the compass, the kite, the staff, the needle
 tds.philosophy = load("philosophy")     -- the telescope, the microscope, the weather glasses, the chronometer
 tds.electricity = load("electricity")   -- the Leyden jar, the friction globe, the lightning rod
+tds.tier5 = load("tier5")               -- tier 5's recipes, studies, cards and interchangeable parts
+tds.grid = load("grid")                 -- the charge network: piles, cells, dynamos, motors, lamps
+tds.workshop = load("workshop")         -- the elevator, the camera, blueprints, the telegraph, the magnet
+tds.automata = load("automata")         -- the clockwork automaton and its cards
 load("charges")                         -- mining charges
 load("printing")                        -- treatises, printed and read
 tds.primer = load("primer")             -- the Theatrum Machinarum
