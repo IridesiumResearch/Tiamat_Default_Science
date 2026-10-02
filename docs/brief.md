@@ -742,6 +742,8 @@ At a frame with the `assembly_jig` movement. Each relic is carved parts + items:
 
 Every machine, network and structure beyond these is carved from World's blocks, Craft's `plank`/`glass`, or the three stocks.
 
+**Models and wholeness** (engine `feat/model-blocks`, 2026-10-02: `model`, `whole` and `shape` on `register_block`). The Antikythera Mechanism (a case with its dials; its cells the lower two layers), the frame (an open iron cage) and the arc lamp (a post and a glass head, dark and lit; its cells the post's column) are drawn as models (`tools/make_models.py`), and a model block is whole. The furnace is whole without a model: a brick cube, and a station a chisel must not take a corner off. The three stocks are never whole — carving them is what they are for. An engine without the fields registers the same blocks as plain cubes, logged once each.
+
 ---
 
 ## 9. Items

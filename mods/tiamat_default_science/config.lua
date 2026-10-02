@@ -162,6 +162,9 @@ C.antikythera = {
     id = "antikythera", name = "The Antikythera Mechanism",
     description = "Bronze gears in a wooden case. Use it, holding the Keystone's knowledge, to take the path of natural philosophy.",
     hardness = 1.8, tags = { "metal" },
+    -- A model block: drawn as the Mechanism, dug whole. Its cells are the
+    -- case, the lower two layers.
+    model = "antikythera", shape = { "### ### ###", "### ### ###", "... ... ..." },
 }
 
 -- The tiers of `tree.lua` registered with Progress: those whose content is
@@ -271,6 +274,7 @@ C.furnace = {
     id = "furnace", name = "Furnace", lit = "furnace_lit",
     description = "A brick furnace. With a blowing engine and a turning shaft, a blast furnace.",
     hardness = 2.5, tags = { "stone" }, light = { r = 13, g = 7, b = 2 },
+    whole = true,                   -- a brick cube to look at, and a station: dug in one piece, never carved
     blast_heat = 5, blast_need = 8,          -- the blowing engine blasts at heat 5 while its network turns 8
 }
 
@@ -278,6 +282,7 @@ C.frame = {
     id = "frame", name = "Machine frame",
     description = "Put a movement in its tool slot, and turn it: a crank, a water wheel, a windmill.",
     hardness = 2.0, tags = { "metal" },
+    model = "frame",                -- an open cage; its cells the whole block, for shafts to touch
 }
 
 C.copper_stock = {
@@ -683,7 +688,13 @@ C.lamp = {
     id = "lamp", lit = "lamp_lit", name = "Arc lamp",
     description = "Lit while its copper's network has charge to spare.",
     hardness = 1.0, tags = { "metal", "glass" }, light = { r = 15, g = 15, b = 14 },
+    -- A lamp on a post: drawn as its model, its cells the post's column.
+    model = "lamp", lit_model = "lamp_lit", shape = { "... .#. ...", "... .#. ...", "... .#. ..." },
 }
+
+-- The models model blocks are drawn as (`tools/make_models.py`). In cells,
+-- three to the block; a PNG beside each.
+C.models = { "antikythera", "frame", "lamp", "lamp_lit" }
 
 -- The charge network (brief §6.2): copper stock, any carving of it, carries
 -- charge between frames and lamps. Units a second.

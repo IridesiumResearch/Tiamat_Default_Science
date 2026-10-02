@@ -64,6 +64,11 @@ All are namespaced `tiamat_default_science:` by the engine.
   `gravimeter`, `dynamite`, `soda`, `hydrogen`, `cell` (charge in its detail,
   `e=<0..1000>`), `electromagnet`, `carbon_rod`, `difference_engine`,
   `automaton_spring`, `automaton_key`. The blocks `lamp` and `lamp_lit`.
+- **Models:** `antikythera`, `frame`, `lamp` and `lamp_lit`
+  (`models/<id>.glb`, a PNG beside each), which the blocks of the same names
+  are drawn as. Those blocks and the furnace are `whole` — dug in one piece
+  by any tool, never carved — where the engine knows the field; the copper
+  and steel stock are not, being made to be carved.
 - **Glyphs, tier 5:** the punched cards `card_1` to `card_8`, which recipes
   name as tools and automata read as instructions.
 - **Entities:** automata, the engine's `engine:humanoid` named
