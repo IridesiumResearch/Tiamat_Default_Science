@@ -10,12 +10,12 @@ smallest change that would answer it. Newest first within each mod. The
 design reasons are in `docs/brief.md` §14 and §2.1; where magic wants the
 same thing, its ask is named beside ours so the two are answered once.
 
-Where they stand on 2026-09-30. Struck through is answered or withdrawn;
+Where they stand on 2026-10-05. Struck through is answered or withdrawn;
 the answer is under each.
 
 | Mod | Answered | Open |
 |---|---|---|
-| Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | — |
+| Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | C-S8 |
 | Life (`87a95f6`; L-S7 2026-10-05) | L-S2, L-S3, L-S4, L-S5, L-S6, L-S7 | — |
 | World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
 | The interface (`ae8954a`) | U-S1 | — |
@@ -23,6 +23,19 @@ the answer is under each.
 | Weather (`2f437fe`) | Wx-S1, Wx-S2, Wx-S3, Wx-S4 | — |
 
 ## Tiamat Default Craft
+
+**C-S8, a station's domain when it is placed.** *Wanted:* a station placed
+off the overworld named with its domain, `<domain>@x,y,z`, as a use there
+already names it (`stations.lua`'s `pos_of_use`). *Why:* the place event
+carries no domain (engine ask E-S4), so `ensure` on place names the box as
+if it stood in the overworld. A frame on a world at a star, or in the Deep,
+then does not know where it is, and a terraformer there greens nothing;
+and an overworld station at the same coordinates would share its box.
+*Stands in:* nothing; tier 7's terraformer and atmosphere processor wait
+on it, and are tested with the box named as it will be. *Smallest change:*
+keep each player's domain from `register_on_player_move`, as this mod does,
+and name the box with it on place, until E-S4 puts it on the event. Asked
+2026-10-05.
 
 ~~**C-S7, unattended perform.**~~ *Wanted:* the exported `perform` accepts
 `{ unattended = true }`, as Craft's own auto stations use internally.

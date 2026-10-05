@@ -10,6 +10,21 @@ marked, as the record; the open ones are copied, without the history, to the
 engine's `docs/engine-asks/tiamat_default_science.md`, so the engine side
 finds every mod's open asks in one place.
 
+## E-S4, the domain on place and dig events — open, asked 2026-10-05
+
+*Wanted:* `domain` on the place event (`register_on_place`) and the dig
+events (`register_on_dig_start`, `register_on_dig_complete`), as the use
+event already carries it. *Why:* a block placed or dug off the overworld
+cannot be told from one at the same coordinates in the overworld. A mod
+has to keep each player's domain from `register_on_player_move` and trust
+that the move was heard first. This mod does (`tds.domain_of`). Craft does
+not, so a station placed on a world at a star, or in the Deep, is named
+as if it stood in the overworld (sibling ask C-S8): a terraformer's frame
+does not know it is on a body, and two frames, one in each domain at the
+same coordinates, would share one box. *Stands in:* this mod's own
+`domain_of` for its own records. *Smallest change:* the field, filled
+where the use event's is.
+
 ## E-S3, actions that fire — answered 2026-09-30
 
 *Wanted:* `register_on_action` delivering presses. *Why:* the stubs say

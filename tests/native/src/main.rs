@@ -70,6 +70,8 @@ fn main() {
     the_diamond_drill();
     gravitic_drones();
     worlds_generated();
+    wells_and_stasis();
+    terraforming();
     determinism();
     println!("science native check: all passed");
 }
@@ -1802,6 +1804,91 @@ fn gravitic_drones() {
         .expect("the drone");
     assert!(drone.collider.is_none(), "no body to fall with");
     println!("gravitic drones: ok");
+}
+
+/// An attractor draws Life's dropped stacks in; a stasis field stops this
+/// mod's automata where they stand.
+fn wells_and_stasis() {
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    movement_at(&mut r, 1000, 64, 1000, "aether_cell");
+    movement_at(&mut r, 1000, 64, 1002, "aether_cell");
+    for z in 1000..=1002 {
+        let _ = r.place(PLAYER, 1001, 64, z, COPPER, ROD);
+    }
+    movement_at(&mut r, 1002, 64, 1001, "attractor");
+    assert_ne!(r.ask("t drop 1006 64 1001"), "nil", "Life drops a stone");
+    let before = insight(&mut r);
+    r.tick(60);
+    assert_eq!(insight(&mut r) - before, 10, "the attractor draws it: a gravity well");
+
+    movement_at(&mut r, 1000, 64, 1010, "aether_cell");
+    assert!(r.place(PLAYER, 1001, 64, 1010, COPPER, ROD));
+    movement_at(&mut r, 1002, 64, 1010, "stasis");
+    r.put_block(1004, 63, 1010, STONE);
+    r.give(PLAYER, "automaton_spring", 27);
+    r.hold(PLAYER, "automaton_spring");
+    assert!(r.use_at(PLAYER, 1004, 63, 1010));
+    let before = insight(&mut r);
+    r.tick(60);
+    assert_eq!(insight(&mut r) - before, 10, "the field holds the automaton: stasis");
+    println!("wells and stasis: ok");
+}
+
+/// A terraformer on a body greens it a column at a time; a body green
+/// enough lives, and an atmosphere processor gives it a sky.
+fn terraforming() {
+    use tiamat_core::storage::{Access as _, Value};
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    r.open_world(11);
+    let body = format!("{MOD}:body_rust/40_1");
+    r.places.0.lock().unwrap().push(body.clone());
+    // Stand on the body: what is placed now is placed there.
+    r.move_to(PLAYER, 1100, 31, 1100, &body);
+    for x in 1092..=1107 {
+        for z in 1092..=1107 {
+            r.put_block(x, 30, z, "tiamat_default_world:rust_red_sandstone");
+        }
+    }
+    // Craft names a station placed here without its domain until it answers
+    // C-S8 (engine ask E-S4), so the boxes are made as it will name them.
+    let on_body = |x: i32, y: i32, z: i32| format!("tiamat_default_craft:{MOD}:frame:{body}@{x},{y},{z}");
+    // And as Craft's own `ensure` would, with who placed it.
+    let made = |r: &Rig, name: &str| {
+        tiamat_core::inventory::Containers::ensure(&*r.boxes, name, 9);
+        r.storage.set("tiamat_default_craft", &format!("placer:{name}"), Some(Value::Text(rig::hex(PLAYER))));
+    };
+    for (x, z, movement) in [(1102, 1100, "dynamo_armature"), (1100, 1100, "terraformer")] {
+        assert!(r.place(PLAYER, x, 31, z, "frame", FULL));
+        made(&r, &on_body(x, 31, z));
+        r.put_in(&on_body(x, 31, z), 1, movement, 27);
+    }
+    assert!(r.place(PLAYER, 1103, 31, 1100, CAVORITE, WHEEL));
+    assert!(r.place(PLAYER, 1103, 32, 1100, STEEL, ROD));
+    assert!(r.place(PLAYER, 1103, 33, 1100, CAVORITE, WHEEL));
+    assert!(r.place(PLAYER, 1101, 31, 1100, COPPER, ROD));
+    r.tick(220);
+    let grass = r.material("tiamat_default_world:grass");
+    let green = r.world.blocks.lock().unwrap().iter().filter(|(k, b)| k.1 == 30 && b.0 == grass).count();
+    assert!(green >= 15, "a column every ten ticks: {green}");
+    assert!(block_is(&r, 1092, 29, 1092, "tiamat_default_world:dirt"), "earth under the grass");
+
+    // Nearly living: the last columns tip it.
+    r.storage.set(MOD, &format!("green:{body}"), Some(Value::Number(2456.0)));
+    let before = insight(&mut r);
+    r.tick(20);
+    assert_eq!(insight(&mut r) - before, 500, "a barren world, living");
+    r.move_to(PLAYER, 1096, 31, 1096, &body);
+    assert!(r.place(PLAYER, 1101, 31, 1101, COPPER, ROD));
+    assert!(r.place(PLAYER, 1100, 31, 1101, "frame", FULL));
+    made(&r, &on_body(1100, 31, 1101));
+    r.put_in(&on_body(1100, 31, 1101), 1, "atmosphere_processor", 27);
+    let before = insight(&mut r);
+    r.tick(60);
+    assert_eq!(insight(&mut r) - before, 100, "and a sky remade");
+    assert_eq!(r.stored(&format!("sky:{body}")).as_deref(), Some("Flag(true)"), "once, kept with the world");
+    println!("terraforming: ok");
 }
 
 /// The solid blocks in one generated chunk of `domain`.

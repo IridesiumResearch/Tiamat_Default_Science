@@ -23,6 +23,7 @@
 --   t ground <x> <z>     the world's ground height there, as generated
 --   t ignite <x> <y> <z> Craft lights the station there, for the speaker
 --   t progress <ticks> <container>  Craft's add_progress on a container
+--   t drop <x> <y> <z>   Life drops a block of stone there, as a dug block falls
 
 local p = game.exports("tiamat_default_progress")
 local c = game.exports("tiamat_default_craft")
@@ -110,6 +111,12 @@ game.register_on_chat(function(e)
     elseif word == "progress" then
         local ticks, name = string.match(rest, "^(%d+) (.+)$")
         say = tostring(c.add_progress(name, math.tointeger(tonumber(ticks))))
+    elseif word == "drop" then
+        local life = game.exports("tiamat_default_life")
+        local x, y, z = string.match(rest, "^(-?%d+) (-?%d+) (-?%d+)$")
+        local id = life and life.drop({ x = tonumber(x) + 0.5, y = tonumber(y) + 0.5, z = tonumber(z) + 0.5 },
+            { material = "tiamat_default_world:stone", count = 1 })
+        say = tostring(id)
     elseif word == "glyph_of" then
         say = tostring(c.glyph_of(math.tointeger(tonumber(rest))))
     end
