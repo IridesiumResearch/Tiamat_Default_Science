@@ -50,6 +50,10 @@ tds.automata = load("automata")         -- the clockwork automaton and its cards
 tds.charges = load("charges")           -- mining charges, dynamite, and what loosens
 tds.tier6 = load("tier6")               -- tier 6's recipes, chrome steel, studies, cavorite's class
 load("electric_age")                    -- the Tesla coil's arcs, wireless, X-rays, the earthquake machine, the drill
+tds.tier7 = load("tier7")               -- tier 7's recipes, relics, studies and discoveries
+tds.gravity = load("gravity")           -- plating, soles, the levitator, wells and the stasis field
+tds.bodies = load("bodies")             -- the worlds at the stars, terraforming, and the Deep
+tds.fold = load("fold")                 -- wormhole gates, the Core, the Fold, recall and the Unified Field
 load("printing")                        -- treatises, printed and read
 tds.primer = load("primer")             -- the Theatrum Machinarum
 tds.tree = load("tree")                 -- the science tree, tiers 3 to 7, as data

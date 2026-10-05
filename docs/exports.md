@@ -77,6 +77,15 @@ All are namespaced `tiamat_default_science:` by the engine.
   `chrome_hammer` (Craft's tier 4) and `diamond_drill` (a pick, tier 5). The
   block `cavorite` (light 2, 1, 4), in this mod's dig class
   `tiamat_default_science:reinforced` (pick or chisel, tier 3).
+- **Tier 7 items:** `cavorite_soles` and `levitator` (worn, in Life's worn
+  slots), the movements `attractor`, `repulsor`, `stasis`, `terraformer` and
+  `atmosphere_processor`; `fold_key`, `strange_matter`, `recall_beacon`,
+  `unified_field_engine`. The blocks `wormhole` (passable, transparent, light
+  6, 4, 12; placed and taken away by this mod alone) and `horizon_glass`.
+  The models `core_ring` and `shade`, worn by entities.
+- **Domains:** the templates `body_ice`, `body_rust`, `body_regolith`,
+  `body_basalt` and `body_glass`, each instanced as `<template>/<star>_<size>`
+  at its star's place, with a sky of its own; and `deep`, the misfold.
 - **Glyphs, tier 5:** the punched cards `card_1` to `card_8`, which recipes
   name as tools and automata read as instructions.
 - **Entities:** automata, the engine's `engine:humanoid` named
@@ -124,12 +133,20 @@ All are namespaced `tiamat_default_science:` by the engine.
 - **Into Progress, tier 6:** the studies `study_radium`, `study_aetherium`,
   `study_cavorite`; the inventions `.radio`, `.tesla`, `.xray`, `.quake`,
   `.aether`, `.wardenclyffe`.
-- **World option:** `blasting` (default on): whether mining charges loosen
-  rock.
+- **Into Progress, tier 7:** the studies `study_strange_matter`,
+  `study_fold_key`; the discovery family `tiamat_default_science.body:*`
+  (group `bodies`, 100 each); the inventions `.plating`, `.levitate`,
+  `.well`, `.stasis`, `.core`, `.wormhole`, `.recall`, `.drone`, `.deep`,
+  `.living`, `.atmosphere`.
+- **Into Life:** the ability sources `tiamat_default_science:plating`,
+  `:soles`, `:levitator` and `:body`.
+- **World options:** `blasting` (default on): whether mining charges loosen
+  rock. `the_deep` (default on): whether a Core may fold blind.
 - **Into the interface:** the shape-crafter presets `gnomon`, `cairn`,
   `gear`, `wheel`, `pipe`, `coil` and `ring`, each shown to a player who
   holds its node.
-- **Dialogs:** `theatrum`, the Theatrum Machinarum; `hold`, an automaton's hold.
+- **Dialogs:** `theatrum`, the Theatrum Machinarum; `hold`, an automaton's hold;
+  `unified`, the Unified Field Engine's places.
 - **Action:** `theatrum` (default key N), which opens the Theatrum for a
   player who carries one.
 
@@ -156,6 +173,14 @@ the word is chat.
 - `photos:<player UUID>` — how many photographs that player has taken; each
   is a plan, `photo_<mark>_<n>`, in this mod's plans.
 - `automata` — the last automaton serial; `automaton:<serial>` — its maker.
+- `gate:<x,y,z,domain>` — a paired gate's twin, axis and owner;
+  `pending:<player UUID>` — the gate they marked; `gates:<player UUID>` — how
+  many pairs they hold open.
+- `origin:<player UUID>` — the Core they last folded from;
+  `visited:<player UUID>` — the stars whose worlds they have been to.
+- `return:<domain>` — a body's return gate. `green:<domain>`,
+  `living:<domain>`, `sky:<domain>` — how much of a body is green, whether it
+  lives, whether its sky was remade.
 - Particles: a compass's needle, to its holder alone; a kite over whoever
   flies it, to everyone within 64 blocks.
 
@@ -168,5 +193,6 @@ Not exports, listed so the direction is clear: Progress's `register_node`,
 for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`
 by name, so it is asked before a fire's box opens); the interface's `add_preset` and
 `widgets`; Weather's `wind`, `weather_at`, `weather_for`, `warmth`,
-`on_lightning`, `fires_near` and `extinguish`; World's `biome_under`; Life's
-`add_food`, `set_ability` and `pull_drops`.
+`on_lightning`, `fires_near`, `extinguish` and `add_overlay`; World's
+`biome_under` and its blocks by name; Life's `add_food`, `set_ability`,
+`pull_drops`, `set_alight`, `push`, `freeze` and its `worn` view.

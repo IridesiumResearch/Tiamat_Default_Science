@@ -120,6 +120,9 @@ local function life_kind(ent)
     return nil
 end
 
+T6.life_kind = life_kind
+T6.HOSTILE = HOSTILE
+
 local arcs = 0
 
 local function top_of(coil)
@@ -278,18 +281,28 @@ end)
 
 local DRILL = I.ids.diamond_drill
 
+local drilling = {}         -- player -> true while a dig they began with the drill runs
+
+-- Asked as a dig begins, with the drill in hand: and remembered, because by
+-- the time the block comes off Craft has worn the drill and rewritten its stack.
 tds.on_dig_start(function(e)
     local held = game.held(e.player)
-    if held and held.material == DRILL and not T6.can_spend(e.player, C.drill.cost) then
-        return "The drill's cell is flat."
+    drilling[e.player] = nil
+    if held and held.material == DRILL then
+        if not T6.can_spend(e.player, C.drill.cost) then return "The drill's cell is flat." end
+        drilling[e.player] = true
     end
     return nil
 end)
 
 tds.on_dig(function(e)
-    local held = e.player and game.held(e.player)
-    if held and held.material == DRILL then T6.spend(e.player, C.drill.cost) end
+    if e.player and drilling[e.player] then
+        drilling[e.player] = nil
+        T6.spend(e.player, C.drill.cost)
+    end
 end)
+
+tds.on_leave(function(e) drilling[e.player] = nil end)
 
 -- The aetherometer ------------------------------------------------------------------------------
 

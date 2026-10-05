@@ -251,6 +251,12 @@ DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass, "n
         "aetherometer": part((170, 140, 230)), "cavorite": flat((70, 50, 110)),
         "chrome_pick": bar((200, 210, 225)), "chrome_axe": bar((200, 210, 225)), "chrome_spade": bar((200, 210, 225)),
         "chrome_chisel": bar((200, 210, 225)), "chrome_hammer": bar((200, 210, 225)), "diamond_drill": bar((180, 230, 240)),
+        # tier 7
+        "cavorite_soles": part((70, 50, 110)), "levitator": part((150, 120, 220)), "attractor": part((70, 50, 110)),
+        "repulsor": part((110, 50, 70)), "stasis": part((120, 200, 230)), "fold_key": bar((150, 120, 220)),
+        "terraformer": part((80, 140, 70)), "atmosphere_processor": part((140, 190, 230)),
+        "strange_matter": heap((40, 30, 50)), "recall_beacon": part((150, 120, 220)),
+        "unified_field_engine": part((230, 220, 255)), "wormhole": flat((40, 25, 80)), "horizon_glass": flat((30, 25, 40)),
         }
 
 

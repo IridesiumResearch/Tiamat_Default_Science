@@ -64,6 +64,12 @@ fn main() {
     xrays_and_earthquakes();
     the_arc_furnace();
     wardenclyffe();
+    gravity();
+    the_core_and_the_fold();
+    gates_and_recall();
+    the_diamond_drill();
+    gravitic_drones();
+    worlds_generated();
     determinism();
     println!("science native check: all passed");
 }
@@ -408,12 +414,11 @@ fn the_book() {
 fn the_tree() {
     let mut r = Rig::new(Setup::default());
     ready(&mut r, 5000);
-    assert_eq!(r.ask("t count"), "87", "Progress validated what ships: tiers 3 to 6");
+    assert_eq!(r.ask("t count"), "102", "Progress validated what ships: tiers 3 to 7, the whole tree");
     // A node that says no `reveal` of its own takes the path's, "near".
     assert_eq!(r.ask("t branch science.water_wheel"), "MECH/nil", "a branch, and the path's reveal");
     let answer = r.ask("t learn science.machine_frame");
     assert!(answer.starts_with("nil") && answer.contains("lies beyond the Fork"), "{answer}");
-    assert!(r.ask("t learn science.fold_to_stars").starts_with("nil"), "tier 7 is data, not for sale yet");
     assert_eq!(insight(&mut r), 5000, "nothing was spent");
     println!("the tree: ok");
 }
@@ -495,7 +500,7 @@ fn tier3_loads() {
     let mut r = Rig::new(Setup::default());
     r.join(PLAYER);
     r.tick(1);
-    assert_eq!(r.ask("t ours"), "153", "4 on the Bench, 49 in tier 3, 31 in tier 4, 33 in tier 5, 23 in tier 6, 13 studies");
+    assert_eq!(r.ask("t ours"), "167", "4 on the Bench, 49 in tier 3, 31 in tier 4, 33 in tier 5, 23 in tier 6, 12 in tier 7, 15 studies");
     for recipe in ["frame", "crush_iron", "pig_iron", "blister_steel", "sand_mould_pipe", "clockwork", "print_treatise"] {
         let answer = r.ask(&format!("t can {MOD}:{recipe}"));
         assert!(!answer.contains("no such"), "{recipe}: {answer}");
@@ -1506,11 +1511,325 @@ fn wardenclyffe() {
     assert!(block_is(&r, 802, 64, 800, &format!("{MOD}:lamp_lit")), "the receiver's lamp, lit from the tower");
     assert_eq!(insight(&mut r) - before, 50 + 10, "Wardenclyffe, and the first lamp lit");
 
+    // A gap in the column and it is no tower: air is not "anything".
+    r.world.blocks.lock().unwrap().remove(&(x, 90, z));
+    r.tick(60);
+    assert!(block_is(&r, 802, 64, 800, &format!("{MOD}:lamp")), "a hollow tower sends nothing");
+    r.put_block(x, 90, z, STONE);
+    r.tick(60);
+    assert!(block_is(&r, 802, 64, 800, &format!("{MOD}:lamp_lit")), "mended, it sends again");
+
     // Topple the crown and the tower is only a coil: the receiver goes dark.
     r.world.blocks.lock().unwrap().remove(&(x, 108, z));
     r.tick(60);
     assert!(block_is(&r, 802, 64, 800, &format!("{MOD}:lamp")), "no tower, nothing sent");
     println!("Wardenclyffe: ok");
+}
+
+/// Every node of tier 7.
+const TIER7: &[&str] = &["science.gravity_plating", "science.gravity_well", "science.levitator",
+    "science.gravity_engine", "science.stasis_field", "science.the_core", "science.wormhole_gates",
+    "science.fold_to_stars", "science.terraforming", "science.atmosphere_processor", "science.the_deep",
+    "science.strange_matter", "science.recall_beacon", "science.gravitic_drones", "science.unified_field"];
+
+fn tier7_scientist(r: &mut Rig) {
+    let all: Vec<&str> = TO_TIER5.iter().chain(TIER6.iter()).chain(TIER7.iter()).copied().collect();
+    scientist(r, &all);
+}
+
+const CAVORITE: &str = "tiamat_default_science:cavorite";
+
+/// The gravity the engine was last told for the player, through Life.
+fn gravity_now() -> f32 {
+    rig::ABILITIES.lock().unwrap().iter().rev().find(|(p, _)| *p == PLAYER)
+        .and_then(|(_, a)| *a).map_or(1.0, |a| a.gravity)
+}
+
+fn flying_now() -> bool {
+    rig::ABILITIES.lock().unwrap().iter().rev().find(|(p, _)| *p == PLAYER)
+        .and_then(|(_, a)| *a).is_some_and(|a| a.fly)
+}
+
+fn near(a: f32, b: f32) -> bool {
+    (a - b).abs() < 0.001
+}
+
+/// A plate under your feet, soles on them, and a harness on your back.
+fn gravity() {
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    assert!(r.place(PLAYER, 700, 62, 700, CAVORITE, PLATE));
+    r.move_to(PLAYER, 700, 64, 700, "overworld");
+    r.tick(2);
+    assert!(near(gravity_now(), 0.17), "on the plate, the Moon's: {}", gravity_now());
+    r.move_to(PLAYER, 703, 64, 700, "overworld");
+    r.tick(2);
+    assert!(near(gravity_now(), 1.0), "off it, the world's: {}", gravity_now());
+
+    r.wear(PLAYER, "cavorite_soles");
+    r.tick(40);
+    assert!(near(gravity_now(), 0.5), "soles: half: {}", gravity_now());
+    r.move_to(PLAYER, 700, 64, 700, "overworld");
+    r.tick(2);
+    assert!(near(gravity_now(), 0.085), "soles on a plate: they multiply: {}", gravity_now());
+    r.undress(PLAYER);
+    r.move_to(PLAYER, 703, 64, 700, "overworld");
+
+    r.wear(PLAYER, "levitator");
+    r.tick(40);
+    assert!(!flying_now(), "no cell, no flight");
+    r.give_detailed(PLAYER, "cell", "e=100");
+    r.tick(40);
+    assert!(flying_now(), "the levitator flies on charge");
+    let details = r.details_of(PLAYER, "cell");
+    assert!(details.iter().any(|d| d.as_deref().is_some_and(|d| d != "e=100")), "and the cell pays: {details:?}");
+    println!("gravity: ok");
+}
+
+/// Wires a frame's foot into the line under it.
+fn wire_line(r: &mut Rig, xs: std::ops::RangeInclusive<i32>, y: i32, z: i32) {
+    for x in xs {
+        let _ = r.place(PLAYER, x, y, z, COPPER, ROD);
+    }
+}
+
+/// A gravity engine and four Tesla coils, on one wire round a Core whose
+/// throat is at (810, 70, 800).
+fn build_core(r: &mut Rig) {
+    // The wire: along z = 800 and across at x = 808 and x = 812, at y = 63.
+    wire_line(r, 800..=812, 63, 800);
+    for z in 798..=802 {
+        let _ = r.place(PLAYER, 808, 63, z, COPPER, ROD);
+        let _ = r.place(PLAYER, 812, 63, z, COPPER, ROD);
+    }
+    // The gravity engine: a dynamo beside a cavorite wheel, a steel rod and a wheel.
+    movement_at(r, 800, 64, 800, "dynamo_armature");
+    assert!(r.place(PLAYER, 801, 64, 800, CAVORITE, WHEEL));
+    assert!(r.place(PLAYER, 801, 65, 800, STEEL, ROD));
+    assert!(r.place(PLAYER, 801, 66, 800, CAVORITE, WHEEL));
+    // Four coils at the corners.
+    for (x, z) in [(808, 798), (812, 798), (808, 802), (812, 802)] {
+        movement_at(r, x, 64, z, "tesla_coil");
+        for y in 65..=67 {
+            assert!(r.place(PLAYER, x, y, z, COPPER, COIL));
+        }
+        assert!(r.place(PLAYER, x, 68, z, STEEL, RING));
+    }
+    // The three rings, five across, round (810, 70, 800).
+    for a in -2i32..=2 {
+        for b in -2i32..=2 {
+            if a.abs().max(b.abs()) == 2 {
+                for (x, y, z) in [(810 + a, 70 + b, 800), (810, 70 + b, 800 + a), (810 + a, 70, 800 + b)] {
+                    if !r.world.blocks.lock().unwrap().contains_key(&(x, y, z)) {
+                        assert!(r.place(PLAYER, x, y, z, CAVORITE, RING));
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// The Core turned; the Fold to a star and home through the return gate;
+/// and a blind fold into the Deep, its strange matter, and the fall home.
+fn the_core_and_the_fold() {
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    r.open_world(11);
+    build_core(&mut r);
+    r.give(PLAYER, "fold_key", 27);
+    r.hold(PLAYER, "fold_key");
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 810, 68, 800));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str),
+        Some("The rings are still. The Core wants four Tesla coils alight near it."), "not reckoned yet");
+    r.tick(60);
+    let before = insight(&mut r);
+    assert!(r.use_at(PLAYER, 810, 68, 800));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The rings begin to turn, and the light goes out of the sky."));
+    assert!(block_is(&r, 810, 70, 800, &format!("{MOD}:wormhole")), "the throat opens");
+    let rings = r.entities.0.lock().unwrap().values().filter(|e| e.model.as_deref() == Some("tiamat_default_science:core_ring")).count();
+    assert_eq!(rings, 3, "three rings turn");
+
+    // Look at a star, near the Core, and use the key at the sky.
+    r.stand_at(810.5, 64.0, 805.5);
+    let star = r.look_at_star(40);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The rings stop dead, and the stars turn over."));
+    let (_, domain, _) = rig::TRANSFERS.lock().unwrap().last().cloned().expect("a transfer");
+    assert!(domain.starts_with("tiamat_default_science:body_") && domain.contains(&format!("/{star}_")), "{domain}");
+    assert!(r.places.0.lock().unwrap().contains(&domain), "the body was made");
+    assert_eq!(insight(&mut r) - before, 100 + 100, "the Core turned, and a world at a star");
+
+    // On the body: its own weight, and a gate home beside where folds land.
+    r.put_block(2, 30, 0, STONE);
+    r.move_to(PLAYER, 0, 40, 0, &domain);
+    r.tick(2);
+    assert!(gravity_now() < 1.0, "a body is lighter: {}", gravity_now());
+    assert!(block_is(&r, 2, 32, 0, &format!("{MOD}:wormhole")), "the return gate");
+    r.move_to(PLAYER, 2, 32, 0, &domain);
+    let (_, home, at) = rig::TRANSFERS.lock().unwrap().last().cloned().expect("home");
+    assert_eq!(home, "overworld");
+    assert_eq!(at, [810.5, 69.0, 800.5], "back at the Core");
+    r.move_to(PLAYER, 810, 69, 800, "overworld");
+    r.tick(2);
+    assert!(near(gravity_now(), 1.0), "and your own weight again");
+
+    // A blind fold: the key at the turning Core's ring again.
+    r.tick(60);
+    assert!(r.use_at(PLAYER, 810, 68, 800));
+    assert!(r.use_at(PLAYER, 810, 68, 800));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The rings stop dead. This is not anywhere."));
+    let (_, deep, _) = rig::TRANSFERS.lock().unwrap().last().cloned().expect("the Deep");
+    assert_eq!(deep, "tiamat_default_science:deep");
+    r.move_to(PLAYER, 0, 1, 0, &deep);
+    r.tick(45);
+    let shades = r.entities.0.lock().unwrap().values().filter(|e| e.model.as_deref() == Some("tiamat_default_science:shade")).count();
+    assert_eq!(shades, 3, "the shades stand off");
+    r.put_block(3, 0, 0, "tiamat_default_world:morphic_rock");
+    r.give(PLAYER, "chrome_pick", 27);
+    r.hold(PLAYER, "chrome_pick");
+    assert!(r.dig_complete_event(PLAYER, (3, 0, 0)), "a chrome pick digs it");
+    assert_eq!(r.units(PLAYER, "strange_matter"), 27, "strange matter, from the Deep's rock");
+    let before = insight(&mut r);
+    r.move_to(PLAYER, 0, -70, 0, &deep);
+    assert_eq!(r.units(PLAYER, "strange_matter"), 0, "what you carried stays behind");
+    let (_, back, _) = rig::TRANSFERS.lock().unwrap().last().cloned().expect("back");
+    assert_eq!(back, "overworld");
+    assert_eq!(insight(&mut r) - before, 100, "the Deep, and back");
+    r.move_to(PLAYER, 810, 69, 800, "overworld");
+    r.tick(2);
+    let shades = r.entities.0.lock().unwrap().values().filter(|e| e.model.as_deref() == Some("tiamat_default_science:shade")).count();
+    assert_eq!(shades, 0, "the shades are gone");
+    println!("the Core and the Fold: ok");
+}
+
+/// Builds an upright ring of cavorite ring blocks across x, its bottom middle
+/// at `(x, y, z)`.
+fn gate(r: &mut Rig, x: i32, y: i32, z: i32) {
+    for a in -1..=1 {
+        for b in 0..=2 {
+            if !(a == 0 && b == 1) {
+                assert!(r.place(PLAYER, x + a, y + b, z, CAVORITE, RING));
+            }
+        }
+    }
+}
+
+/// Two gates paired, open beside a coil; through one and out of the other;
+/// the recall beacon home; the Unified Field to the far gate.
+fn gates_and_recall() {
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    gate(&mut r, 900, 64, 900);
+    gate(&mut r, 920, 64, 900);
+    movement_at(&mut r, 910, 64, 905, "aether_cell");
+    assert!(r.place(PLAYER, 911, 64, 905, COPPER, ROD));
+    movement_at(&mut r, 912, 64, 905, "tesla_coil");
+    for y in 65..=67 {
+        assert!(r.place(PLAYER, 912, y, 905, COPPER, COIL));
+    }
+    assert!(r.place(PLAYER, 912, 68, 905, STEEL, RING));
+    r.give(PLAYER, "fold_key", 27);
+    r.hold(PLAYER, "fold_key");
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 900, 64, 900));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The gate is marked. Use the key on its twin."));
+    assert!(r.use_at(PLAYER, 920, 64, 900));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The two gates know each other now."));
+    r.tick(60);
+    assert!(block_is(&r, 900, 65, 900, &format!("{MOD}:wormhole")), "open beside a live coil");
+    assert!(block_is(&r, 920, 65, 900, &format!("{MOD}:wormhole")), "both");
+    let before = insight(&mut r);
+    r.move_to(PLAYER, 900, 65, 900, "overworld");
+    assert_eq!(rig::MOVES.lock().unwrap().last().map(|m| m.1), Some([920.5, 65.0, 901.5]), "out of the twin");
+    assert_eq!(insight(&mut r) - before, 50, "through a wormhole");
+
+    // The recall beacon: to the nearest of your own gates.
+    r.give(PLAYER, "recall_beacon", 27);
+    r.hold(PLAYER, "recall_beacon");
+    r.stand_at(930.5, 64.0, 950.5);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("A pocket fold, and you are home."));
+    assert_eq!(rig::MOVES.lock().unwrap().last().map(|m| m.1), Some([920.5, 65.0, 901.5]), "the nearer gate");
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The beacon is still gathering itself."));
+
+    // The Unified Field: a list of places, and 256 charge to go.
+    r.give(PLAYER, "unified_field_engine", 27);
+    r.hold(PLAYER, "unified_field_engine");
+    assert!(r.use_at_nothing(PLAYER));
+    let (form, tree) = r.last_dialog().expect("the field's places");
+    assert!(form.ends_with(":unified") && tree.contains("Gate at 900, 65, 900"), "{form} {tree}");
+    r.press(PLAYER, MOD, "unified", "go:1");
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The engine needs a charged cell: 256 charge."));
+    r.give_detailed(PLAYER, "cell", "e=1000");
+    assert!(r.use_at_nothing(PLAYER));
+    r.press(PLAYER, MOD, "unified", "go:1");
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The field folds, and you are there."));
+    assert!(r.details_of(PLAYER, "cell").contains(&Some("e=744".to_owned())), "256 charge spent");
+    println!("gates and recall: ok");
+}
+
+/// The diamond drill will not start on a flat cell, and pays a charge a block.
+fn the_diamond_drill() {
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    r.put_block(950, 64, 950, STONE);
+    r.give(PLAYER, "diamond_drill", 27);
+    r.hold(PLAYER, "diamond_drill");
+    let (allowed, why) = r.dig_start_event(PLAYER, (950, 64, 950));
+    assert!(!allowed && why.as_deref() == Some("The drill's cell is flat."), "{allowed} {why:?}");
+    r.give_detailed(PLAYER, "cell", "e=10");
+    let (allowed, _) = r.dig_start_event(PLAYER, (950, 64, 950));
+    assert!(allowed, "a charged cell, and it starts");
+    assert!(r.dig_complete_event(PLAYER, (950, 64, 950)), "the drill digs stone");
+    let cells = r.details_of(PLAYER, "cell");
+    assert!(cells.contains(&Some("e=9".to_owned())), "a charge a block: {cells:?}");
+    println!("the diamond drill: ok");
+}
+
+/// An automaton wound by one who knows gravitic automata flies.
+fn gravitic_drones() {
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    r.put_block(960, 63, 960, STONE);
+    r.give(PLAYER, "automaton_spring", 27);
+    r.hold(PLAYER, "automaton_spring");
+    r.heard(PLAYER);
+    assert!(r.use_at(PLAYER, 960, 63, 960));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Tick, tick, tick: your automaton wakes, and rises."));
+    let drone = r.entities.0.lock().unwrap().values().find(|e| matches!(&e.nametag, Some(tiamat_core::ent::Nametag::Text(t)) if t == "Automaton 1")).cloned()
+        .expect("the drone");
+    assert!(drone.collider.is_none(), "no body to fall with");
+    println!("gravitic drones: ok");
+}
+
+/// The solid blocks in one generated chunk of `domain`.
+fn solid_in(r: &mut Rig, domain: &str, (x, y, z): (i32, i32, i32)) -> usize {
+    use tiamat_core::{block::BlockView, script::ScriptVm, MaterialId};
+    let (chunk, _) = r.vm.generate_chunk(domain, r.seed, tiamat_core::ChunkPos::new(x, y, z), MaterialId::AIR)
+        .unwrap_or_else(|e| panic!("{domain} would not generate: {e:?}"));
+    chunk.blocks().filter(|(_, b)| !matches!(&b, BlockView::Uniform(m) if *m == MaterialId::AIR)).count()
+}
+
+/// The generators run: a body has ground round its middle and nothing past
+/// its edge; the Deep has the fragment folds arrive on.
+fn worlds_generated() {
+    let mut r = Rig::new(Setup::default());
+    ready(&mut r, 0);
+    r.open_world(11);
+    for kind in ["ice", "rust", "regolith", "basalt", "glass"] {
+        let body = format!("{MOD}:body_{kind}/40_1");
+        let ground: usize = (0..=2).map(|y| solid_in(&mut r, &body, (0, y, 0))).sum();
+        assert!(ground > 0, "{kind}: ground at the middle");
+        assert!(ground < 3 * 4096, "{kind}: and sky over it");
+        assert_eq!(solid_in(&mut r, &body, (100, 1, 0)), 0, "{kind}: nothing past the edge (1,000 blocks)");
+    }
+    assert!(solid_in(&mut r, &format!("{MOD}:body_rust/40_3"), (100, 1, 0)) > 0, "a larger body reaches further");
+    let deep = format!("{MOD}:deep");
+    assert!(solid_in(&mut r, &deep, (0, -1, 0)) > 0, "the Deep's fragment, where folds arrive");
+    assert_eq!(solid_in(&mut r, &deep, (0, 5, 0)), 0, "and nothing far above it");
+    println!("worlds generated: ok");
 }
 
 /// Two runs of the same play leave the same storage behind.

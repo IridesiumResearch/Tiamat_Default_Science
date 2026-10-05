@@ -163,7 +163,7 @@ function Q.is_coil(pos)
     return glyph_at(up(pos, 4), B.steel_stock, "ring")
 end
 
-local AIR = U.material("engine:air")
+local AIR = game.AIR
 
 --- Whether the coil at `pos` is Wardenclyffe: `height` blocks of anything
 --- standing on its ring, the topmost copper, and `root` copper under it.
@@ -179,6 +179,32 @@ function Q.is_tower(pos)
         if not (at and at.material == B.copper_stock) then return false end
     end
     return true
+end
+
+--- Whether the dynamo frame at `pos` stands beside a gravity engine: two
+--- cavorite wheels on a steel rod between them, upright, in a block beside it.
+function Q.is_gravity_engine(pos)
+    for _, side in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do
+        local at = { x = pos.x + side[1], y = pos.y, z = pos.z + side[2], domain = pos.domain }
+        if glyph_at(at, B.cavorite, "wheel") and glyph_at(up(at, 1), B.steel_stock, "rod")
+            and glyph_at(up(at, 2), B.cavorite, "wheel") then
+            return true
+        end
+    end
+    return false
+end
+
+local engines, engines_next = {}, {}   -- gravity engines turning, as `live` is for coils
+
+--- Whether a gravity engine turned at the last reckoning within `reach` of `pos`.
+function Q.engine_near(pos, reach)
+    for _, c in pairs(engines) do
+        if c.domain == pos.domain and math.abs(c.x - pos.x) <= reach and math.abs(c.y - pos.y) <= reach
+            and math.abs(c.z - pos.z) <= reach then
+            return true
+        end
+    end
+    return false
 end
 
 local live = {}              -- coil key -> its position, while its network carries it
@@ -238,7 +264,13 @@ local function reckon(net, bonus, broadcast)
                     game.container_take(name, { material = ACID, count = 1 })
                 end
             elseif spec.dynamo then
-                supply = supply + C.grid.dynamo * N.speed(pos, U.placer(pos)) // 100
+                local placer = U.placer(pos)
+                if placer and progress and progress.has(placer, "science.gravity_engine") and Q.is_gravity_engine(pos) then
+                    supply = supply + C.gravity_engine.charge
+                    engines_next[U.key(pos)] = pos
+                else
+                    supply = supply + C.grid.dynamo * N.speed(pos, placer) // 100
+                end
             elseif spec.source then
                 supply = supply + spec.source
             elseif spec.motor then
@@ -352,7 +384,7 @@ tds.on_tick(C.grid.period, function()
         end
     end
     -- Towers first: what they spare is what the receivers are sent.
-    live_next = {}
+    live_next, engines_next = {}, {}
     local by_domain = receivers()
     local sent = {}              -- domain -> charge to share among its receivers
     local rest = {}
@@ -379,7 +411,7 @@ tds.on_tick(C.grid.period, function()
         end
         reckon(net, bonus, false)
     end
-    live = live_next
+    live, engines = live_next, engines_next
 end)
 
 return Q

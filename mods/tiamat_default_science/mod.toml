@@ -7,11 +7,13 @@
 # the furnace and the iron ladder; and tier 4, natural philosophy — the
 # instruments, the Leyden jar and the lightning rod, the Newcomen engine and
 # steel; tier 5, the Industrial Revolution — charge on copper, cards and
-# automata, steel in bulk; and tier 6, the electrical age and the aether —
-# Tesla's coil and tower, wireless, X-rays, radium, cavorite (§17, steps 1 to 7).
+# automata, steel in bulk; tier 6, the electrical age and the aether —
+# Tesla's coil and tower, wireless, X-rays, radium, cavorite; and tier 7,
+# beyond the event horizon — gravity, the Core, gates, the Fold to the stars
+# and the Deep (§17, steps 1 to 8).
 id = "tiamat_default_science"
 name = "Tiamat Default Science"
-version = "0.5.0"
+version = "1.0.0"
 description = "Natural philosophy: machines, steam, electricity, Tesla — and past the aether, gravity and the Fold."
 license = "GPL-3.0-only"
 # Without any of these there is nothing to build with: the world's rock and
@@ -38,4 +40,10 @@ optional_depends = ["tiamat_default_ui", "tiamat_weather"]
 id = "blasting"
 name = "Blasting charges"
 description = "May mining charges loosen rock? Off: black powder is for study only."
+default = 1
+
+[[world_option]]
+id = "the_deep"
+name = "The Deep"
+description = "May a Core fold blind, into a void of drifting rock and strange matter? Off: every fold reaches a star."
 default = 1

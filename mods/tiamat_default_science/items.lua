@@ -23,7 +23,7 @@ local function register(spec)
     }
 end
 
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items, C.tier6_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items, C.tier6_items, C.tier7_items }) do
     for _, spec in ipairs(list) do register(spec) end
 end
 

@@ -79,7 +79,7 @@ end
 
 local G = tds.glyphs
 local RELICS = {}           -- qualified recipe id -> its config entry
-for _, list in ipairs({ C.tier5_recipes, C.tier6_recipes }) do
+for _, list in ipairs({ C.tier5_recipes, C.tier6_recipes, C.tier7_recipes }) do
     for _, r in ipairs(list) do
         if r.relic then RELICS[U.id(r.id)] = r end
     end

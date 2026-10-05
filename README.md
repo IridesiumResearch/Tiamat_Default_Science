@@ -72,6 +72,16 @@ diamond drill and bakelite. Then the Aether Drift, where the world leaves
 history: aetherium, the aether cell, and cavorite. Its departures from the
 brief are §2.7.
 
+Step 8: **tier 7, beyond the event horizon** (1.0.0), and the whole tree.
+Gravity plating, cavorite soles and the levitator; gravity wells and the
+stasis field; the gravity engine. The Core — three rings of cavorite turning
+round a throat — and wormhole gates. The Fold: look at a star by a turning
+Core, use the key, and arrive at a world made for that star, ice or rust or
+basalt by the star's colour, barren until a terraformer greens it and an
+atmosphere processor gives it a sky. The Deep, where a blind fold goes;
+strange matter, the recall beacon, flying automata, and the Unified Field
+Engine. Its departures from the brief are §2.8.
+
 ## What is here
 
 | File | What |

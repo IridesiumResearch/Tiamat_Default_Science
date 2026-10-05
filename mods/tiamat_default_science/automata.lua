@@ -17,6 +17,10 @@
 -- a program, which is what Lovelace saw in Babbage's cards. No card is
 -- "follow". It works the frames and chests within `reach` of where it stands.
 --
+-- **Gravitic automata** (tier 7): one wound by a maker who knows them has no
+-- body to fall with. It flies — following its maker a few blocks over their
+-- head — and works frames and chests further off.
+--
 -- **Who it is** rides in its nametag ("Automaton 12"): an entity's id is
 -- not promised to survive a restart, and its nametag is. The serial keys its
 -- maker and its hold (`tiamat_default_science:hold:<serial>`).
@@ -47,6 +51,11 @@ function AU.serial(id)
     return n and math.tointeger(tonumber(n))
 end
 
+--- Whether the automata `maker` winds fly.
+local function drones(maker)
+    return maker ~= nil and progress ~= nil and progress.has(maker, "science.gravitic_drones") == true
+end
+
 --- How many automata `uuid` may have at once.
 local function allowed(uuid)
     local extra = 0
@@ -71,9 +80,10 @@ tds.on_use(function(e)
     local serial = (game.storage.get("automata") or 0) + 1
     game.storage.set("automata", serial)
     local pos = U.block_of(e)
+    local flies = drones(e.player)
     local id = game.spawn_entity{
         pos = { x = pos.x + 0.5, y = pos.y + 1, z = pos.z + 0.5 },
-        model = A.model, nametag = "Automaton " .. serial, collider = A.collider, speed = A.speed,
+        model = A.model, nametag = "Automaton " .. serial, collider = not flies and A.collider or nil, speed = A.speed,
     }
     if not id then
         game.give(e.player, { material = SPRING, count = 1 })
@@ -81,6 +91,10 @@ tds.on_use(function(e)
     end
     game.storage.set(owner_key(serial), e.player)
     game.make_container(hold_of(serial), A.hold)
+    if flies then
+        tds.tier7.toy(e.player, "drone")
+        return "Tick, tick, tick: your automaton wakes, and rises."
+    end
     return "Tick, tick, tick: your automaton wakes."
 end)
 
@@ -162,39 +176,51 @@ local function move_one(from, a, b, to, c, d)
     return false
 end
 
-local function nearby(prefix, at, station)
+local function nearby(prefix, at, station, reach)
     local list = {}
     for _, name in ipairs(game.containers(prefix)) do
         local xyz = not station and string.match(name, ":(-?%d+,-?%d+,-?%d+)$")
         local pos = station and U.station_pos(name, station) or (xyz and U.unpack(xyz .. ","))
-        if pos and near(pos, at, A.reach) then list[#list + 1] = name end
+        if pos and near(pos, at, reach) then list[#list + 1] = name end
     end
     return list
 end
 
 --- One instruction, done once, by the automaton `id` standing at `at`.
+local function toward(from, to, step)
+    local d = to - from
+    if d > step then return from + step elseif d < -step then return from - step end
+    return to
+end
+
 function AU.run(id, serial, maker, word, at)
     local hold = hold_of(serial)
+    local flies = drones(maker)
+    local reach = flies and C.drone.reach or A.reach
     if word == "follow" then
         local body = maker and tds.online[maker] and game.player_entity(maker)
         local me = body and game.entity(body)
-        if me and math.abs(me.pos.x - at.x) + math.abs(me.pos.z - at.z) > A.follow then
+        if me and flies then
+            local s = C.drone.step
+            game.set_entity(id, { pos = { x = toward(at.x, me.pos.x, s), y = toward(at.y, me.pos.y + C.drone.above, s),
+                z = toward(at.z, me.pos.z, s) } })
+        elseif me and math.abs(me.pos.x - at.x) + math.abs(me.pos.z - at.z) > A.follow then
             game.steer_entity(id, me.pos, "walk")
         end
     elseif word == "feed" then
-        for _, frame in ipairs(nearby(FRAMES, at, "frame")) do
+        for _, frame in ipairs(nearby(FRAMES, at, "frame", reach)) do
             if move_one(hold, FIRST_CARGO, A.hold, frame, 2, 5) then return end
         end
     elseif word == "collect" then
-        for _, frame in ipairs(nearby(FRAMES, at, "frame")) do
+        for _, frame in ipairs(nearby(FRAMES, at, "frame", reach)) do
             if move_one(frame, 6, 9, hold, FIRST_CARGO, A.hold) then return end
         end
     elseif word == "deposit" then
-        for _, chest in ipairs(nearby(CHESTS, at)) do
+        for _, chest in ipairs(nearby(CHESTS, at, nil, reach)) do
             if move_one(hold, FIRST_CARGO, A.hold, chest, 1, 27) then return end
         end
     elseif word == "fetch" then
-        for _, chest in ipairs(nearby(CHESTS, at)) do
+        for _, chest in ipairs(nearby(CHESTS, at, nil, reach)) do
             if move_one(chest, 1, 27, hold, FIRST_CARGO, A.hold) then return end
         end
     end

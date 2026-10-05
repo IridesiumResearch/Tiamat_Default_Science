@@ -38,11 +38,12 @@ use tiamat_core::{
     modload::WorldOptionValue,
 
     script::{
-        ActionEvent, ChatEvent, DialogEvent, EngineVm, JoinEvent, LeaveEvent, PlaceEvent, ScriptVm, UseAim, UseEvent,
-        VmLimits,
+        ActionEvent, ChatEvent, DialogEvent, DigEvent, EngineVm, JoinEvent, LeaveEvent, MoveEvent, PlaceEvent, ScriptVm,
+        UseAim, UseEvent, VmLimits,
         WorldEdit,
     },
-    sight::{self, Looked, Reading, Sighting, Skip, Surface},
+    sight::{self, Gaze, Looked, Reading, Sighting, Skip, Surface},
+    dig::Brush,
     sound::{self, LoopRequest, PlayRequest},
     storage,
     ui::host::{self as uihost, ShowRequest},
@@ -443,6 +444,8 @@ pub struct World {
     pub roofed: Mutex<bool>,
     /// Every registered fluid's number, as the server numbers them.
     pub fluid_ids: Mutex<HashMap<String, FluidId>>,
+    /// Which way the player looks, when a test has said.
+    pub gazed: Mutex<Option<[f32; 3]>>,
 }
 
 impl World {
@@ -469,6 +472,10 @@ impl World {
 impl sight::Access for World {
     fn line_of_sight(&self, _: &str, _: [f64; 3], _: [f64; 3]) -> Sighting {
         Sighting::Clear
+    }
+    fn gaze(&self, uuid: [u8; 32]) -> Option<Gaze> {
+        let direction = (*self.gazed.lock().unwrap())?;
+        (uuid == PLAYER).then(|| Gaze { domain: "overworld".into(), direction })
     }
     fn looking_at(&self, uuid: [u8; 32]) -> Option<Looked> {
         let (x, y, z) = (*self.aimed.lock().unwrap())?;
@@ -660,7 +667,8 @@ impl ent::Access for Entities {
         near.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
         near.into_iter().map(|(id, _)| EntityId(id)).collect()
     }
-    fn move_player(&self, _: [u8; 32], _: [f64; 3]) -> bool {
+    fn move_player(&self, player: [u8; 32], to: [f64; 3]) -> bool {
+        MOVES.lock().unwrap().push((player, to));
         true
     }
     fn select_slot(&self, _: [u8; 32], _: u16) -> bool {
@@ -669,11 +677,52 @@ impl ent::Access for Entities {
     fn shove_player(&self, _: [u8; 32], _: [f32; 3]) -> bool {
         true
     }
-    fn transfer(&self, _: EntityId, _: &str, _: [f64; 3]) -> bool {
-        false
-    }
-    fn set_abilities(&self, _: [u8; 32], _: Option<Abilities>) -> bool {
+    /// Recorded, and accepted: the move itself is the server's.
+    fn transfer(&self, id: EntityId, domain: &str, to: [f64; 3]) -> bool {
+        TRANSFERS.lock().unwrap().push((id.0, domain.to_owned(), to));
         true
+    }
+    fn set_abilities(&self, player: [u8; 32], abilities: Option<Abilities>) -> bool {
+        ABILITIES.lock().unwrap().push((player, abilities));
+        true
+    }
+}
+
+/// Every `set_player_abilities` the mods made, in order: gravity reaches the
+/// engine through Life, and this is where it lands. Shared across rigs, so a
+/// test reads what was pushed after it began.
+pub static ABILITIES: Mutex<Vec<([u8; 32], Option<Abilities>)>> = Mutex::new(Vec::new());
+
+/// Every `transfer_entity` the mods asked for: entity, domain, place.
+pub static TRANSFERS: Mutex<Vec<(u64, String, [f64; 3])>> = Mutex::new(Vec::new());
+
+/// Every `move_player` the mods asked for, in order.
+pub static MOVES: Mutex<Vec<([u8; 32], [f64; 3])>> = Mutex::new(Vec::new());
+
+/// The domains made at run time: `template/key`, as the server names them.
+#[derive(Default)]
+pub struct Places(pub Mutex<Vec<String>>);
+
+impl tiamat_core::domain::Access for Places {
+    fn create(&self, template: &str, key: &str) -> Option<String> {
+        let id = format!("{template}/{key}");
+        let mut all = self.0.lock().unwrap();
+        if !all.contains(&id) {
+            all.push(id.clone());
+        }
+        Some(id)
+    }
+    fn set_sky(&self, id: &str, _: Option<tiamat_core::domain::DomainSky>) -> bool {
+        self.exists(id)
+    }
+    fn destroy(&self, id: &str) -> bool {
+        let mut all = self.0.lock().unwrap();
+        let before = all.len();
+        all.retain(|d| d != id);
+        all.len() != before
+    }
+    fn exists(&self, id: &str) -> bool {
+        self.0.lock().unwrap().iter().any(|d| d == id)
     }
 }
 
@@ -735,6 +784,8 @@ pub struct Rig {
     pub world: Arc<World>,
     pub entities: Entities,
     pub materials: HashMap<String, MaterialId>,
+    pub places: Arc<Places>,
+    pub seed: u64,
 }
 
 impl Rig {
@@ -756,6 +807,8 @@ impl Rig {
         let particles = Arc::new(Particles::default());
         let world = Arc::new(World::default());
         let entities = Entities::new();
+        let places = Arc::new(Places::default());
+        vm.set_domain_access(places.clone());
 
         vm.set_storage_access(storage.clone());
         vm.set_entity_access(Arc::new(entities.clone()));
@@ -808,7 +861,7 @@ impl Rig {
         let materials: HashMap<String, MaterialId> = vm.registered_blocks().into_iter().collect();
         *world.names.lock().unwrap() = materials.clone();
         *tools.known.lock().unwrap() = materials.keys().cloned().collect();
-        Rig { vm, storage, inventory, boxes, huds, dialogs, sounds, particles, world, entities, materials }
+        Rig { vm, storage, inventory, boxes, huds, dialogs, sounds, particles, world, entities, materials, places, seed: 0 }
     }
 
     pub fn material(&self, id: &str) -> MaterialId {
@@ -998,6 +1051,63 @@ impl Rig {
     /// climate answer only then.
     pub fn open_world(&mut self, seed: u64) {
         self.vm.set_world_seed(seed);
+        self.seed = seed;
+    }
+
+    /// The player looks straight at the `n`th star of the catalog, at the hour
+    /// it is: the sky renderer's arithmetic, so `star_in_view` names it.
+    /// Answers the star's id.
+    pub fn look_at_star(&self, n: usize) -> u32 {
+        let catalog = tiamat_core::sky::star_catalog(self.seed);
+        let star = &catalog[n];
+        let observer = tiamat_core::sky::world_position(self.seed);
+        let time = *self.sounds.time.lock().unwrap();
+        let direction = star.direction_from(observer).expect("a direction");
+        let seen = tiamat_core::sky::wheeled(direction, tiamat_core::sky::turn(time));
+        *self.world.gazed.lock().unwrap() = Some(seen);
+        star.id
+    }
+
+    /// The player's feet cross into `(x, y, z)` of `domain`.
+    pub fn move_to(&mut self, player: [u8; 32], x: i32, y: i32, z: i32, domain: &str) {
+        let out = self.vm.player_move(&MoveEvent {
+            player,
+            domain: domain.to_owned(),
+            block: BlockPos { x, y, z },
+            from: Some(BlockPos { x, y: y + 1, z }),
+        });
+        assert!(out.faults.is_empty(), "faulted in a move: {:?}", out.faults);
+    }
+
+    /// A whole-block dig beginning at `(x, y, z)`: whether the mods allow it,
+    /// and what they said.
+    pub fn dig_start_event(&mut self, player: [u8; 32], (x, y, z): (i32, i32, i32)) -> (bool, Option<String>) {
+        let Reading::Single { material, .. } = sight::Access::block_at(&*self.world, "", BlockPos { x, y, z }) else {
+            panic!("mixed")
+        };
+        let out = self.vm.dig_start(&DigEvent {
+            player,
+            target: tiamat_core::SubNodePos { x: x * 3 + 1, y: y * 3 + 1, z: z * 3 + 1 },
+            material,
+            brush: Brush::Block,
+        });
+        assert!(out.faults.is_empty(), "faulted in a dig start: {:?}", out.faults);
+        (out.allowed, out.reason)
+    }
+
+    /// A whole-block dig of `(x, y, z)` coming off: the mods hear it.
+    pub fn dig_complete_event(&mut self, player: [u8; 32], (x, y, z): (i32, i32, i32)) -> bool {
+        let Reading::Single { material, .. } = sight::Access::block_at(&*self.world, "", BlockPos { x, y, z }) else {
+            panic!("mixed")
+        };
+        let out = self.vm.dig_complete(&DigEvent {
+            player,
+            target: tiamat_core::SubNodePos { x: x * 3 + 1, y: y * 3 + 1, z: z * 3 + 1 },
+            material,
+            brush: Brush::Block,
+        });
+        assert!(out.faults.is_empty(), "faulted in a dig: {:?}", out.faults);
+        out.allowed
     }
 
     /// The day's hour, as a fraction: 0 midnight, 0.5 noon.
@@ -1044,6 +1154,17 @@ impl Rig {
     }
 
     /// A stack of `id` with a `detail`, put in a player's pack and held.
+    /// One of `id` into a player's worn slots (Life's view).
+    pub fn wear(&self, player: [u8; 32], id: &str) {
+        let material = self.material(id);
+        inventory::Access::give(&*self.inventory, player, "tiamat_default_life:worn", None, Stack::new(material, 27).unwrap());
+    }
+
+    /// Takes everything out of a player's worn slots.
+    pub fn undress(&self, player: [u8; 32]) {
+        self.inventory.views.lock().unwrap().remove(&(player, "tiamat_default_life:worn".into()));
+    }
+
     /// A whole block's worth of `id`, carrying `detail`, into a player's pack.
     pub fn give_detailed(&self, player: [u8; 32], id: &str, detail: &str) {
         let material = self.material(id);

@@ -4,7 +4,7 @@
 
 A model block (the engine's `model` on `register_block`) is drawn as its
 model in place of its cells: the Antikythera Mechanism, the machine frame,
-the arc lamp dark and lit. Each is a few boxes — rigid, self-contained .glb
+the arc lamp dark and lit, and the Core's ring and the Deep's shade (entities). Each is a few boxes — rigid, self-contained .glb
 with no image inside it (the engine refuses one that embeds its picture) and
 a PNG beside it, drawn on with the boxes' UVs. Units are cells, three to a
 block; the origin at the bottom centre of the block, so a block spans x and z
@@ -154,7 +154,32 @@ def lamp(lit):
     return boxes, halves(IRON, GLASS_LIT if lit else GLASS_DARK)
 
 
-MODELS = {"antikythera": antikythera, "frame": frame, "lamp": lambda: lamp(False), "lamp_lit": lambda: lamp(True)}
+CAVORITE = (70, 50, 110)
+VOID = (12, 10, 16)
+
+
+def core_ring():
+    """One of the Core's three rings: a square hoop five blocks across, as
+    the rings of cavorite blocks are; the entity turns it."""
+    r, t = 7.5, 0.6
+    boxes = [
+        ((-r, -t, -r), (r, t, -r + 2 * t), LEFT), ((-r, -t, r - 2 * t), (r, t, r), LEFT),
+        ((-r, -t, -r), (-r + 2 * t, t, r), LEFT), ((r - 2 * t, -t, -r), (r, t, r), LEFT),
+    ]
+    return boxes, halves(CAVORITE, (150, 120, 220))
+
+
+def shade():
+    """A tall still silhouette, a little taller than a person."""
+    boxes = [
+        ((-0.7, 0.0, -0.4), (0.7, 5.4, 0.4), LEFT),           # the body
+        ((-0.45, 5.4, -0.35), (0.45, 6.3, 0.35), LEFT),       # the head
+    ]
+    return boxes, halves(VOID, VOID)
+
+
+MODELS = {"antikythera": antikythera, "frame": frame, "lamp": lambda: lamp(False), "lamp_lit": lambda: lamp(True),
+          "core_ring": core_ring, "shade": shade}
 
 
 def main():

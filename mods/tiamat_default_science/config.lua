@@ -169,7 +169,7 @@ C.antikythera = {
 
 -- The tiers of `tree.lua` registered with Progress: those whose content is
 -- built, so nobody buys a node that does nothing yet (the rest is data).
-C.shipped_tier = 6
+C.shipped_tier = 7
 
 -- Tier 3: Mechanica (brief §5.1, §6) ------------------------------------------------
 
@@ -253,6 +253,12 @@ C.movements = {
     resonator = { need = 16, power = "charge" },        -- rings orichalcum into aetherium, a Tesla coil within reach
     radium_cell = { need = 0, source = 1 },             -- gives charge for ever
     aether_cell = { need = 0, source = 10 },
+    -- Tier 7.
+    attractor = { need = 16, power = "charge" },        -- draws dropped things in
+    repulsor = { need = 16, power = "charge" },         -- thrusts what hunts you away
+    stasis = { need = 16, power = "charge" },           -- holds everything near it still
+    terraformer = { need = 128, power = "charge" },     -- greens a body, a column at a time
+    atmosphere_processor = { need = 64, power = "charge" },   -- remakes a living body's sky
 }
 
 -- The turning network (brief §6.2). Parts are carved plank rods, gears and
@@ -702,7 +708,7 @@ C.lamp = {
 
 -- The models model blocks are drawn as (`tools/make_models.py`). In cells,
 -- three to the block; a PNG beside each.
-C.models = { "antikythera", "frame", "lamp", "lamp_lit" }
+C.models = { "antikythera", "frame", "lamp", "lamp_lit", "core_ring", "shade" }
 
 -- The charge network (brief §6.2): copper stock, any carving of it, carries
 -- charge between frames and lamps. Units a second.
@@ -1007,6 +1013,151 @@ C.oscillator = { half = 1, depth = 12, cost = 50 }   -- 3 × 3 × 12: at most 10
 C.drill = { cost = 1 }
 C.resonator = { coil_reach = 8 }
 C.helium_balloon = { ticks = 12000, speed = 100 }  -- ten minutes, at a walk; the jar comes back
+
+-- Tier 7: beyond the event horizon (brief §5.5, §6.7, §6.8) -----------------------------------
+
+C.tier7_items = {
+    { id = "cavorite_soles", name = "Cavorite soles", description = "Worn: you weigh half as much, anywhere." },
+    { id = "levitator", name = "Levitator harness", description = "Worn, with a charged cell in the pack: flight." },
+    { id = "attractor", name = "Attractor", description = "A movement on charge: dropped things within 8 are drawn to the frame." },
+    { id = "repulsor", name = "Repulsor", description = "A movement on charge: what hunts you is thrust away from the frame." },
+    { id = "stasis", name = "Stasis field", description = "A movement on charge: creatures near the frame hang still." },
+    { id = "fold_key", name = "Fold key", description = "Turns the Core, opens gates, and folds space." },
+    { id = "terraformer", name = "Terraformer", description = "A movement on charge: greens the barren ground of a body around its frame." },
+    { id = "atmosphere_processor", name = "Atmosphere processor", description = "A movement on charge: gives a living body a sky." },
+    { id = "strange_matter", name = "Strange matter", description = "From the Deep. It is heavier than it looks, and colder." },
+    { id = "recall_beacon", name = "Recall beacon", description = "Use it: a pocket fold to your nearest gate, once an hour." },
+    { id = "unified_field_engine", name = "Unified Field Engine", description = "Use it: fold to any gate or body you know." },
+}
+
+C.wormhole = {
+    id = "wormhole", name = "Wormhole", description = "A throat in space. Step in.",
+    hardness = 100, light = { r = 6, g = 4, b = 12 },
+}
+C.horizon_glass = {
+    id = "horizon_glass", name = "Horizon glass", description = "Glass from strange matter: darker inside than out.",
+    hardness = 3.0, tags = { "glass" },
+}
+
+C.tier7_recipes = {
+    { id = "cavorite_soles", station = "workbench", node = "science.gravity_plating",
+        inputs = { { glyph = "plate", material = "cavorite", count = 2 }, { "C:leather", count = 2 } },
+        outputs = { { "cavorite_soles", count = 1 } } },
+    { id = "attractor", station = "workbench", node = "science.gravity_well",
+        inputs = { { glyph = "wheel", material = "cavorite", count = 1 }, { glyph = "coil", material = "copper_stock", count = 2 },
+            { "motor", count = 1 } },
+        outputs = { { "attractor", count = 1 } } },
+    { id = "repulsor", station = "workbench", node = "science.gravity_well",
+        inputs = { { glyph = "ring", material = "cavorite", count = 1 }, { glyph = "coil", material = "copper_stock", count = 2 },
+            { "motor", count = 1 } },
+        outputs = { { "repulsor", count = 1 } } },
+    { id = "stasis", station = "workbench", node = "science.stasis_field",
+        inputs = { { glyph = "ring", material = "cavorite", count = 2 }, { "crookes_tube", count = 1 }, { "cell", count = 1 } },
+        outputs = { { "stasis", count = 1 } } },
+    { id = "levitator", station = "frame", node = "science.levitator", relic = true, ticks = 2400,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "plate", material = "cavorite", count = 4 }, { glyph = "coil", material = "copper_stock", count = 1 },
+            { "C:leather", count = 4 }, { "cell", count = 1 } },
+        outputs = { { "levitator", count = 1 } } },
+    { id = "fold_key", station = "frame", node = "science.the_core", relic = true, ticks = 2400,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "ring", material = "cavorite", count = 1 }, { glyph = "rod", material = "cavorite", count = 1 },
+            { "aetherium_ingot", count = 9 }, { "radium_grain", count = 1 } },
+        outputs = { { "fold_key", count = 1 } } },
+    { id = "fold_key_strange", station = "frame", node = "science.the_core", relic = true, ticks = 2400,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "ring", material = "cavorite", count = 1 }, { glyph = "rod", material = "cavorite", count = 1 },
+            { "strange_matter", count = 9 }, { "radium_grain", count = 1 } },
+        outputs = { { "fold_key", count = 1 } } },
+    { id = "terraformer", station = "workbench", node = "science.terraforming",
+        inputs = { { "steel_ingot", count = 4 }, { "motor", count = 1 }, { "aetherium_ingot", count = 1 } },
+        outputs = { { "terraformer", count = 1 } } },
+    { id = "atmosphere_processor", station = "workbench", node = "science.atmosphere_processor",
+        inputs = { { "steel_ingot", count = 4 }, { "helium", count = 2 }, { "aetherium_ingot", count = 2 } },
+        outputs = { { "atmosphere_processor", count = 1 } } },
+    { id = "horizon_glass", station = "furnace", node = "science.strange_matter", heat = 5, ticks = 1200,
+        inputs = { { "strange_matter", count = 1 }, { "C:glass", units = 27 * 4 } }, outputs = { { "horizon_glass", count = 4 } } },
+    { id = "recall_beacon", station = "workbench", node = "science.recall_beacon",
+        inputs = { { glyph = "ring", material = "cavorite", count = 1 }, { "aetherium_ingot", count = 1 },
+            { "radium_grain", count = 1 }, { "cell", count = 1 } },
+        outputs = { { "recall_beacon", count = 1 } } },
+    { id = "unified_field_engine", station = "frame", node = "science.unified_field", relic = true, ticks = 6000,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "ring", material = "cavorite", count = 3 }, { glyph = "wheel", material = "cavorite", count = 1 },
+            { "strange_matter", count = 27 }, { "aether_cell", count = 1 }, { "fold_key", count = 1 } },
+        outputs = { { "unified_field_engine", count = 1 } } },
+}
+
+C.tier7_studies = {
+    { id = "study_strange_matter", name = "Strange matter", inputs = { { "strange_matter", count = 1 } }, ticks = 12000, insight = 800 },
+    { id = "study_fold_key", name = "The fold key", inputs = { { "fold_key", count = 1 } }, ticks = 18000, insight = 1200 },
+}
+
+C.tier7_firsts = {
+    levitator = "levitator", fold_key = "fold_key", fold_key_strange = "fold_key",
+    horizon_glass = "horizon_glass", unified_field_engine = "unified_field",
+}
+C.tier7_toys = {
+    plating = 20, levitate = 20, well = 10, stasis = 10, core = 100, wormhole = 50, recall = 20,
+    drone = 20, deep = 100, living = 500, atmosphere = 100,
+}
+-- Every body first visited is a discovery of its own (`body:<star id>`).
+C.body_family = { insight = 100, group = "bodies", label = "A world at a star: %s" }
+
+-- Gravity (§6.7): each a source of this mod's in Life's `set_ability`, so
+-- Life composes them with its own, and they multiply together.
+C.plating = { reach = 3, gravity = 0.17 }       -- standing within 3 above a cavorite plate: the Moon's
+C.soles = { gravity = 0.5, period = 20 }         -- worn, read once a second
+C.levitator_spec = { cost = 4, speed = 100 }     -- charge a second, from a carried cell
+C.well = { radius = 8, period = 10, pull = 0.4, push = 2 }
+C.stasis_spec = { radius = 6, period = 20, ticks = 40 }
+-- The gravity engine: two cavorite wheels on a steel shaft (wheel, rod, wheel,
+-- standing) beside a frame with the dynamo armature.
+C.gravity_engine = { charge = 512 }
+
+-- The Core (§6.8): three 5 × 5 rings of cavorite ring blocks round a throat,
+-- four live Tesla coils near, and a gravity engine within reach. The key is
+-- used on the ring block under the throat.
+C.core = { coils = 4, coil_reach = 8, engine_reach = 16, spin_ticks = 1200, dark_radius = 64,
+    fold_reach = 16, alignment = 0.9998, model = "core_ring" }
+-- A wormhole gate: an upright 3 × 3 ring of cavorite ring blocks, the key used
+-- on the ring's bottom middle block. Open while a live Tesla coil is near.
+C.gate = { pairs = 8, coil_reach = 16, period = 20 }
+
+-- The bodies (§6.8): a star's warmth chooses its kind, its magnitude its size
+-- and gravity. Materials are the world's.
+C.bodies = {
+    kinds = {
+        { id = "ice", below = 0.2, top = "W:snow", under = "W:ice", deep = "W:stone", height = 24, rough = 6,
+            sky = { 0.55, 0.65, 0.8 }, sun = { 0.8, 0.9, 1.0 } },
+        { id = "rust", below = 0.4, top = "W:rust_red_sandstone", under = "W:ochre_sandstone", deep = "W:stone", height = 28, rough = 10,
+            sky = { 0.7, 0.45, 0.3 }, sun = { 1.0, 0.75, 0.55 } },
+        { id = "regolith", below = 0.6, top = "W:gravel", under = "W:slate", deep = "W:stone", height = 20, rough = 8,
+            sky = { 0.05, 0.05, 0.08 }, sun = { 1.0, 1.0, 0.95 } },
+        { id = "basalt", below = 0.8, top = "W:volcanic_ash", under = "W:dark_basalt", deep = "W:dark_basalt", height = 32, rough = 14,
+            sky = { 0.35, 0.2, 0.18 }, sun = { 1.0, 0.6, 0.4 } },
+        { id = "glass", below = 2.0, top = "W:sand", under = "W:obsidian", deep = "W:obsidian", height = 26, rough = 9,
+            sky = { 0.85, 0.75, 0.55 }, sun = { 1.0, 0.95, 0.8 } },
+    },
+    -- Magnitude below each bound: the body's radius in blocks, and its gravity.
+    sizes = { { below = 0.34, radius = 1000, gravity = 0.4 }, { below = 0.67, radius = 2000, gravity = 0.6 },
+        { below = 2.0, radius = 3000, gravity = 0.8 } },
+    per_player = 16,                 -- bodies a player may fold to
+    arrive = { x = 0.5, y = 80, z = 0.5 },   -- falls from here to the ground, lightly
+}
+
+C.terraform = { period = 10, half = 8, region = 64, living_share = 60,
+    green = { "W:dirt", "W:grass" }, plants = { "W:tall_grass", "W:fern" }, plant_every = 5 }
+
+-- The Deep (§6.8): a misfold. Fragments in a void; fall off and you come back.
+C.deep = { fall = -64, arrive = { x = 0.5, y = 4, z = 0.5 }, platform = 6,
+    rock = { "W:dark_basalt", "W:obsidian", "W:morphic_rock" }, strange = "W:morphic_rock",
+    sky = { 0.06, 0.0, 0.02 }, sun = { 0.35, 0.05, 0.05 } }
+C.shades = { count = 3, far = 24, near = 2, period = 40, push = 8, model = "shade" }
+
+C.recall = { cooldown = 72000 }           -- an hour of ticks
+C.unified = { cost = 256 }
+C.drone = { reach = 16, step = 4, above = 3 }  -- gravitic automata: further, and flying
 
 -- Toybox discoveries (brief §6.9): insight for play itself.
 C.toybox = {

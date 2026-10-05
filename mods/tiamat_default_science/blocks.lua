@@ -68,5 +68,9 @@ B.lamp_lit = block({ id = C.lamp.lit, name = C.lamp.name .. " (lit)", descriptio
     hardness = C.lamp.hardness, tags = C.lamp.tags }, lit)
 -- Cavorite, tier 6: a carvable block with a faint violet glow.
 B.cavorite = block(C.cavorite, { light_emit = C.cavorite.light })
+-- Tier 7: the throat, which this mod alone places and takes away; and glass
+-- from strange matter.
+B.wormhole = block(C.wormhole, { light_emit = C.wormhole.light, passable = true, transparent = true })
+B.horizon_glass = block(C.horizon_glass, { transparent = true })
 
 return B

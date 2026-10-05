@@ -18,6 +18,7 @@ local listed_materials = {}
 local places = {}
 local digs = {}
 local dig_starts = {}
+local moves = {}
 local ticks = {}
 local dialogs = {}
 local actions = {}
@@ -71,6 +72,12 @@ end
 --- (`false`, a string, `""` refuse); the first to answer stops the rest.
 function tds.on_dig_start(fn)
     dig_starts[#dig_starts + 1] = fn
+end
+
+--- Runs `fn(event)` when a player's feet cross into another block: the
+--- engine's move event, after `tds.domain_of` has heard it.
+function tds.on_move(fn)
+    moves[#moves + 1] = fn
 end
 
 function tds.on_place(fn)
@@ -183,6 +190,7 @@ function H.install()
 
     game.register_on_player_move(function(event)
         tds.domain_of[event.player] = event.domain
+        for _, fn in ipairs(moves) do fn(event) end
     end)
 
     game.register_on_player_leave(function(event)
