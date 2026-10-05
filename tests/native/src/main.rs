@@ -1304,6 +1304,8 @@ fn relics_and_parts() {
     assert!(back.contains(&(STEEL.to_owned(), 3 * 7, Some(GEAR))), "three gears of twelve back: {back:?}");
     assert!(back.contains(&(STEEL.to_owned(), 3, Some(ROD))), "and one rod of four: {back:?}");
     assert_eq!(insight(&mut r) - before, 10, "an invention: the Difference Engine");
+    // The node pays every study a fifth more, in Progress's own key (P-S2).
+    assert_eq!(r.ask("t effects progress."), "progress.study_percent=20");
     println!("relics and interchangeable parts: ok");
 }
 
