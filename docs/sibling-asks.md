@@ -16,7 +16,7 @@ the answer is under each.
 | Mod | Answered | Open |
 |---|---|---|
 | Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | C-S8 |
-| Life (`87a95f6`; L-S7 2026-10-05) | L-S2, L-S3, L-S4, L-S5, L-S6, L-S7 | — |
+| Life (`87a95f6`; L-S7 `67df1d5`) | L-S2, L-S3, L-S4, L-S5, L-S6, L-S7 | — |
 | World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
 | The interface (`ae8954a`) | U-S1 | — |
 | Progress (`ef6014b`) | P-S1, P-S2 | — |
@@ -95,7 +95,7 @@ gravity (E-S1, engine `b0996cb`, client-predicted), but it rides on
 `set_player_abilities`, which Life writes and the last writer wins. Gravity
 plating (0.17 above it), cavorite soles (0.5) and light star bodies would
 each set one. *Stands in:* nothing yet; gravity is tier 7. Asked
-2026-09-30. *Answered (Life, 2026-10-05):* `set_ability(uuid, source, { speed_mul, fly, gravity })`, gravity 0..4, every source's multiplied in; a fall hurts by its height times the gravity it fell under. Plating, soles, the levitator and the bodies' own weight are four sources of ours (§2.8).
+2026-09-30. *Answered (Life `67df1d5`):* `set_ability(uuid, source, { speed_mul, fly, gravity })`, gravity 0..4, every source's multiplied in; a fall hurts by its height times the gravity it fell under. Plating, soles, the levitator and the bodies' own weight are four sources of ours (§2.8).
 
 ~~**L-S6, a tether.**~~ *Wanted:* a creature on a `lead` tied to a block, or
 one player leading two. *Why:* the Magdeburg hemispheres are pulled by two
