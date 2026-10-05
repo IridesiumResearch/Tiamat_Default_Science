@@ -88,8 +88,10 @@ Engine. Its departures from the brief are §2.8.
 |---|---|
 | `mods/tiamat_default_science/` | The mod. `init.lua` decides load order; `config.lua` holds every number; the rest is one file a system. |
 | `tools/make_textures.py` | Draws the placeholder textures. Standard library only; the same bytes on every machine. |
+| `tools/make_models.py`, `tools/make_sounds.py` | Build the placeholder models and the Core's hum, the same way. |
 | `tools/check_tree.py` | Proves the tree sound from `tree.lua`, prints the pacing table (brief §13), and with `--write` writes `docs/history.md`. |
 | `tools/glyphs.py` | Proves the glyph table sound, and that no glyph meets magic's or the interface's shapes. |
+| `tools/pacing.py` | Writes `docs/pacing.md`: the tree's cost per tier against §13's targets, and with `--log <server log>` a real session's insight hour by hour against them, with the `config.lua` numbers that pay each source. Step 9 of the build. |
 | `tests/native/` | The mod run in the engine's real script VM, beside the REAL sibling mods, with a fake server around it. |
 | `docs/brief.md` | The design, and §2.1: what was checked and what changed. |
 | `docs/exports.md` | What other mods may call, and every id this mod registers. |
