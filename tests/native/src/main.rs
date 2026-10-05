@@ -1874,17 +1874,11 @@ fn terraforming() {
             r.put_block(x, 30, z, "tiamat_default_world:rust_red_sandstone");
         }
     }
-    // Craft names a station placed here without its domain until it answers
-    // C-S8 (engine ask E-S4), so the boxes are made as it will name them.
+    // Craft names a station placed here with its domain (C-S8).
     let on_body = |x: i32, y: i32, z: i32| format!("tiamat_default_craft:{MOD}:frame:{body}@{x},{y},{z}");
-    // And as Craft's own `ensure` would, with who placed it.
-    let made = |r: &Rig, name: &str| {
-        tiamat_core::inventory::Containers::ensure(&*r.boxes, name, 9);
-        r.storage.set("tiamat_default_craft", &format!("placer:{name}"), Some(Value::Text(rig::hex(PLAYER))));
-    };
     for (x, z, movement) in [(1102, 1100, "dynamo_armature"), (1100, 1100, "terraformer")] {
         assert!(r.place(PLAYER, x, 31, z, "frame", FULL));
-        made(&r, &on_body(x, 31, z));
+        assert!(r.boxes.exists(&on_body(x, 31, z)), "Craft names the frame on the body");
         r.put_in(&on_body(x, 31, z), 1, movement, 27);
     }
     assert!(r.place(PLAYER, 1103, 31, 1100, CAVORITE, WHEEL));
@@ -1905,7 +1899,6 @@ fn terraforming() {
     r.move_to(PLAYER, 1096, 31, 1096, &body);
     assert!(r.place(PLAYER, 1101, 31, 1101, COPPER, ROD));
     assert!(r.place(PLAYER, 1100, 31, 1101, "frame", FULL));
-    made(&r, &on_body(1100, 31, 1101));
     r.put_in(&on_body(1100, 31, 1101), 1, "atmosphere_processor", 27);
     let before = insight(&mut r);
     r.tick(60);
@@ -1917,7 +1910,6 @@ fn terraforming() {
 /// On an ice world the terraformer melts every fourth column's ice into the
 /// world's water, and greens the rest.
 fn ice_melts() {
-    use tiamat_core::storage::{Access as _, Value};
     let mut r = Rig::new(Setup::default());
     tier7_scientist(&mut r);
     r.open_world(11);
@@ -1933,9 +1925,6 @@ fn ice_melts() {
     let on_body = |x: i32, y: i32, z: i32| format!("tiamat_default_craft:{MOD}:frame:{body}@{x},{y},{z}");
     for x in [1200, 1201, 1202, 1203] {
         assert!(r.place(PLAYER, x, 31, 1200, "frame", FULL));
-        let name = on_body(x, 31, 1200);
-        tiamat_core::inventory::Containers::ensure(&*r.boxes, &name, 9);
-        r.storage.set("tiamat_default_craft", &format!("placer:{name}"), Some(Value::Text(rig::hex(PLAYER))));
     }
     // The terraformer, and enough aether cells beside it to carry 128.
     r.put_in(&on_body(1200, 31, 1200), 1, "terraformer", 27);
@@ -1945,10 +1934,7 @@ fn ice_melts() {
     for x in 1200..=1203 {
         for z in 1201..=1205 {
             assert!(r.place(PLAYER, x, 31, z, "frame", FULL));
-            let name = on_body(x, 31, z);
-            tiamat_core::inventory::Containers::ensure(&*r.boxes, &name, 9);
-            r.storage.set("tiamat_default_craft", &format!("placer:{name}"), Some(Value::Text(rig::hex(PLAYER))));
-            r.put_in(&name, 1, "aether_cell", 27);
+            r.put_in(&on_body(x, 31, z), 1, "aether_cell", 27);
         }
         assert!(r.place(PLAYER, x, 32, 1200, COPPER, ROD));
     }

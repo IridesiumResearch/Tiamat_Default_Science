@@ -15,7 +15,7 @@ the answer is under each.
 
 | Mod | Answered | Open |
 |---|---|---|
-| Craft (`1d22935`, 0.5.0) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7 | C-S8 |
+| Craft (`1d22935`, 0.5.0; C-S8 `b1c39e4`) | C-S1, C-S2, C-S3, C-S5, C-S6, C-S7, C-S8 | — |
 | Life (`87a95f6`; L-S7 `67df1d5`) | L-S2, L-S3, L-S4, L-S5, L-S6, L-S7 | — |
 | World (`1d50d64`) | W-S1, W-S2, W-M1 | — |
 | The interface (`ae8954a`) | U-S1 | — |
@@ -24,7 +24,7 @@ the answer is under each.
 
 ## Tiamat Default Craft
 
-**C-S8, a station's domain when it is placed.** *Wanted:* a station placed
+~~**C-S8, a station's domain when it is placed.**~~ *Wanted:* a station placed
 off the overworld named with its domain, `<domain>@x,y,z`, as a use there
 already names it (`stations.lua`'s `pos_of_use`). *Why:* the place event
 carries no domain (engine ask E-S4), so `ensure` on place names the box as
@@ -35,7 +35,10 @@ and an overworld station at the same coordinates would share its box.
 on it, and are tested with the box named as it will be. *Smallest change:*
 keep each player's domain from `register_on_player_move`, as this mod does,
 and name the box with it on place, until E-S4 puts it on the event. Asked
-2026-10-05.
+2026-10-05. *Answered (Craft `b1c39e4`):* a station placed off the overworld
+is named `<domain>@x,y,z`, from the crosshair's domain or the last the
+placer's feet were in; placement checks read it too. The terraformer's and
+the ice's tests now place their frames as a player would.
 
 ~~**C-S7, unattended perform.**~~ *Wanted:* the exported `perform` accepts
 `{ unattended = true }`, as Craft's own auto stations use internally.
