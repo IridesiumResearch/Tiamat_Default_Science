@@ -10,7 +10,7 @@ marked, as the record; the open ones are copied, without the history, to the
 engine's `docs/engine-asks/tiamat_default_science.md`, so the engine side
 finds every mod's open asks in one place.
 
-## E-S4, the domain on place and dig events — open, asked 2026-10-05
+## E-S4, the domain on place and dig events — landed 2026-10-05 (engine e1becf0a)
 
 *Wanted:* `domain` on the place event (`register_on_place`) and the dig
 events (`register_on_dig_start`, `register_on_dig_complete`), as the use
@@ -24,6 +24,13 @@ does not know it is on a body, and two frames, one in each domain at the
 same coordinates, would share one box. *Stands in:* this mod's own
 `domain_of` for its own records. *Smallest change:* the field, filled
 where the use event's is.
+
+*Landed (engine `e1becf0a`):* `domain` on the place event and both dig
+events, `"overworld"` or a domain's id, as the use event carries it. This
+mod reads it (`U.where(e)`) for every record it keeps of a placed or dug
+block: a frame's placer, an arc lamp's, a lightning rod's, a cairn, and
+strange matter dug in the Deep. Craft named its stations by the placer's
+domain in the meantime (C-S8) and switches to the field now.
 
 ## E-S3, actions that fire — answered 2026-09-30
 

@@ -33,13 +33,13 @@ F.placer = U.placer
 
 tds.on_place(function(e)
     if e.material == B.frame then
-        game.storage.set(placer_key({ x = e.x, y = e.y, z = e.z, domain = U.place(tds.domain_of[e.player]) }), e.player)
+        game.storage.set(placer_key({ x = e.x, y = e.y, z = e.z, domain = U.where(e) }), e.player)
     end
 end)
 
 tds.on_dig(function(e)
     if e.material == B.frame and e.brush == "block" then
-        local pos = { x = e.x // 3, y = e.y // 3, z = e.z // 3, domain = U.place(tds.domain_of[e.player]) }
+        local pos = { x = e.x // 3, y = e.y // 3, z = e.z // 3, domain = U.where(e) }
         game.storage.set(placer_key(pos), nil)
     end
 end)

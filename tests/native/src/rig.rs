@@ -790,6 +790,9 @@ pub struct Rig {
     pub materials: HashMap<String, MaterialId>,
     pub places: Arc<Places>,
     pub seed: u64,
+    /// The domain each player's feet were last moved into: what their place
+    /// and dig events say they are in.
+    pub here: HashMap<[u8; 32], String>,
 }
 
 impl Rig {
@@ -865,7 +868,7 @@ impl Rig {
         let materials: HashMap<String, MaterialId> = vm.registered_blocks().into_iter().collect();
         *world.names.lock().unwrap() = materials.clone();
         *tools.known.lock().unwrap() = materials.keys().cloned().collect();
-        Rig { vm, storage, inventory, boxes, huds, dialogs, sounds, particles, world, entities, materials, places, seed: 0 }
+        Rig { vm, storage, inventory, boxes, huds, dialogs, sounds, particles, world, entities, materials, places, seed: 0, here: HashMap::new() }
     }
 
     pub fn material(&self, id: &str) -> MaterialId {
@@ -1037,6 +1040,7 @@ impl Rig {
     pub fn place(&mut self, player: [u8; 32], x: i32, y: i32, z: i32, id: &str, occupancy: u32) -> bool {
         let out = self.vm.place(&PlaceEvent {
             player,
+            domain: self.where_is(player),
             block: BlockPos { x, y, z },
             material: self.material(id),
             occupancy,
@@ -1072,8 +1076,14 @@ impl Rig {
         star.id
     }
 
+    /// The domain a player is in: the last they were moved into, else the overworld.
+    pub fn where_is(&self, player: [u8; 32]) -> String {
+        self.here.get(&player).cloned().unwrap_or_else(|| "overworld".to_owned())
+    }
+
     /// The player's feet cross into `(x, y, z)` of `domain`.
     pub fn move_to(&mut self, player: [u8; 32], x: i32, y: i32, z: i32, domain: &str) {
+        self.here.insert(player, domain.to_owned());
         let out = self.vm.player_move(&MoveEvent {
             player,
             domain: domain.to_owned(),
@@ -1091,6 +1101,7 @@ impl Rig {
         };
         let out = self.vm.dig_start(&DigEvent {
             player,
+            domain: self.where_is(player),
             target: tiamat_core::SubNodePos { x: x * 3 + 1, y: y * 3 + 1, z: z * 3 + 1 },
             material,
             brush: Brush::Block,
@@ -1106,6 +1117,7 @@ impl Rig {
         };
         let out = self.vm.dig_complete(&DigEvent {
             player,
+            domain: self.where_is(player),
             target: tiamat_core::SubNodePos { x: x * 3 + 1, y: y * 3 + 1, z: z * 3 + 1 },
             material,
             brush: Brush::Block,

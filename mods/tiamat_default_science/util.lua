@@ -57,6 +57,13 @@ function U.place(domain)
     return domain
 end
 
+--- The domain a place or dig event happened in, as `U.place` gives it: the
+--- event's own (engine E-S4), or, from an engine older than that, the one
+--- the player's feet were last heard in.
+function U.where(e)
+    return U.place(e.domain or tds.domain_of[e.player])
+end
+
 --- The block a use or dig event's cell is in.
 function U.block_of(e)
     return { x = e.x // 3, y = e.y // 3, z = e.z // 3, domain = U.place(e.domain) }

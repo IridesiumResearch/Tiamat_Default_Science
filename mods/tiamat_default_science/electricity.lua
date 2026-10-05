@@ -155,7 +155,7 @@ end
 
 tds.on_place(function(e)
     if e.material == B.copper_stock and G.of(e.occupancy) == "rod" then
-        game.storage.set(rod_key({ x = e.x, y = e.y, z = e.z, domain = U.place(tds.domain_of[e.player]) }), e.player)
+        game.storage.set(rod_key({ x = e.x, y = e.y, z = e.z, domain = U.where(e) }), e.player)
     end
 end)
 

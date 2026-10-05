@@ -133,7 +133,7 @@ local function cairn_key(uuid) return "cairn:" .. uuid end
 --- A cairn placed is its placer's home: the newest one, one a player.
 tds.on_place(function(e)
     if not U.tagged(e.material, C.stone_tag) or G.of(e.occupancy) ~= "cairn" then return end
-    game.storage.set(cairn_key(e.player), U.pack{ x = e.x, y = e.y, z = e.z, domain = U.place(tds.domain_of[e.player]) })
+    game.storage.set(cairn_key(e.player), U.pack{ x = e.x, y = e.y, z = e.z, domain = U.where(e) })
     game.chat_to(e.player, "This cairn marks your home. A compass will point to it.")
 end)
 

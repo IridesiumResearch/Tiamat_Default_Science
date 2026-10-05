@@ -194,6 +194,14 @@ for a mod that wants the block's state then. And a tools mod's `default` hand
 wins over the engine's reference `core_tools:hand` whatever the ids, so it need
 not `conflicts` the fixture out of the set to be the hand.
 
+**Every place, dig and use event says which space it is in** (`e.domain`:
+`"overworld"`, or a domain's id). A block placed on a body at a star is not
+the block at the same coordinates in the overworld, so a mod that records
+placed things — a station, a frame, a box — keys them on the domain and the
+coordinates together, and reads the block back with `game.get_block{ x, y,
+z, domain = e.domain }`. Keeping each player's domain from the move hook and
+trusting the order was the workaround; the field is the fix.
+
 **Right-clicking a block with nothing to place is `register_on_use`**, not a
 cancelled dig. Picking fruit, opening a door, pulling a lever: the event has the
 cell, what it is made of and what is in the hand, `game.get_block` works inside
@@ -1573,13 +1581,19 @@ again for them from `register_on_player_join`.
 **The sky's keyframes are registration-only; the weather over them is not.**
 `register_sky` takes its keyframes in the registration window and the client
 interpolates them from the clock. `game.set_sky_modifier(uuid, { intensity,
-sky, sky_mix, fog_distance, saturation, stars, ease_ticks })` lays a per-player
+sky, sky_mix, fog_distance, saturation, stars, light_floor, ease_ticks })` lays a per-player
 change over them at any time — a storm darkens the sun, closes the horizon in
 and greys the grade, eased on that player's client — and `nil` puts the plain
 sky back. It multiplies and mixes rather than replacing, so it is right at every
 hour; the one field that replaces is `stars` (0 to 1), which stands in for the
 keyframes' star brightness while the modifier is set, so a black sky with
-`stars = 1` is darkness and stars by day as by night. `game.flash{ pos, radius, intensity, colour, attack_ticks, decay_ticks }`
+`stars = 1` is darkness and stars by day as by night. The other field that
+does not multiply is `light_floor` (0 to 1), the least the frame is lit at:
+the sun term is raised to it where the sky reaches and the ambient floor where
+it does not, so a cave is lit too, colours kept (`intensity` cannot — it
+multiplies midnight's 0.08, and a cave has no sun). `0` or nil changes nothing,
+and out of range is an error. A mod composing overlays sends the HIGHEST floor
+any overlay asks: a floor is a floor, not a product. `game.flash{ pos, radius, intensity, colour, attack_ticks, decay_ticks }`
 is lightning: a moment's light on the sun and sky of everyone in reach, with no
 relight. `game.lightning{ from, to, seed, colour, width, branches, ticks,
 radius, player }` draws the bolt itself — a forked line every client builds

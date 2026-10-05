@@ -73,7 +73,7 @@ local function lamp_key(pos) return "lamp:" .. U.key(pos) end
 tds.on_place(function(e)
     if could_belong(e.material) then Q.forget() end
     if e.material == B.lamp then
-        game.storage.set(lamp_key({ x = e.x, y = e.y, z = e.z, domain = U.place(tds.domain_of[e.player]) }), e.player)
+        game.storage.set(lamp_key({ x = e.x, y = e.y, z = e.z, domain = U.where(e) }), e.player)
     end
 end)
 tds.on_dig(function(e)

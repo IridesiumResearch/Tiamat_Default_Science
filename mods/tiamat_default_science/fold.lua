@@ -513,7 +513,7 @@ end)
 -- The Deep's strange matter, and its shades ------------------------------------------------------
 
 tds.on_dig(function(e)
-    if e.brush == "block" and e.material == MORPHIC and tds.domain_of[e.player] == BO.DEEP then
+    if e.brush == "block" and e.material == MORPHIC and U.where(e) == BO.DEEP then
         game.give(e.player, { material = STRANGE, count = 1 })
     end
 end)
