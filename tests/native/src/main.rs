@@ -58,6 +58,12 @@ fn main() {
     gravimeter_and_dynamite();
     relics_and_parts();
     the_automaton();
+    radium_and_lamps();
+    the_tesla_coil();
+    wireless();
+    xrays_and_earthquakes();
+    the_arc_furnace();
+    wardenclyffe();
     determinism();
     println!("science native check: all passed");
 }
@@ -402,12 +408,12 @@ fn the_book() {
 fn the_tree() {
     let mut r = Rig::new(Setup::default());
     ready(&mut r, 5000);
-    assert_eq!(r.ask("t count"), "68", "Progress validated what ships: tiers 3 to 5");
+    assert_eq!(r.ask("t count"), "87", "Progress validated what ships: tiers 3 to 6");
     // A node that says no `reveal` of its own takes the path's, "near".
     assert_eq!(r.ask("t branch science.water_wheel"), "MECH/nil", "a branch, and the path's reveal");
     let answer = r.ask("t learn science.machine_frame");
     assert!(answer.starts_with("nil") && answer.contains("lies beyond the Fork"), "{answer}");
-    assert!(r.ask("t learn science.polyphase_ac").starts_with("nil"), "tier 6 is data, not for sale yet");
+    assert!(r.ask("t learn science.fold_to_stars").starts_with("nil"), "tier 7 is data, not for sale yet");
     assert_eq!(insight(&mut r), 5000, "nothing was spent");
     println!("the tree: ok");
 }
@@ -489,7 +495,7 @@ fn tier3_loads() {
     let mut r = Rig::new(Setup::default());
     r.join(PLAYER);
     r.tick(1);
-    assert_eq!(r.ask("t ours"), "127", "4 on the Bench, 49 in tier 3, 31 in tier 4, 33 in tier 5, 10 studies");
+    assert_eq!(r.ask("t ours"), "153", "4 on the Bench, 49 in tier 3, 31 in tier 4, 33 in tier 5, 23 in tier 6, 13 studies");
     for recipe in ["frame", "crush_iron", "pig_iron", "blister_steel", "sand_mould_pipe", "clockwork", "print_treatise"] {
         let answer = r.ask(&format!("t can {MOD}:{recipe}"));
         assert!(!answer.contains("no such"), "{recipe}: {answer}");
@@ -1317,6 +1323,194 @@ fn the_automaton() {
     r.tick(100);
     assert_eq!(r.units_in(&frame, 2, 5, "tiamat_default_world:iron_ore"), 27, "fed from its hold");
     println!("the automaton: ok");
+}
+
+/// Every node of tier 6, after the rest.
+const TIER6: &[&str] = &["science.incandescent_lamp", "science.polyphase_ac", "science.transformer",
+    "science.induction_motor", "science.tesla_coil", "science.radio", "science.teleautomaton",
+    "science.crookes_tube", "science.x_rays", "science.radioactivity", "science.helium",
+    "science.tesla_oscillator", "science.arc_furnace", "science.diamond_drill", "science.wardenclyffe",
+    "science.bakelite", "science.luminiferous_aether", "science.aether_cell", "science.cavorite"];
+
+fn tier6_scientist(r: &mut Rig) {
+    let all: Vec<&str> = TO_TIER5.iter().chain(TIER6.iter()).copied().collect();
+    scientist(r, &all);
+}
+
+const COIL: u32 = 119_450_567;
+const RING: u32 = 1_837_575;
+
+/// A frame with `movement` in its tool slot.
+fn movement_at(r: &mut Rig, x: i32, y: i32, z: i32, movement: &str) {
+    assert!(r.place(PLAYER, x, y, z, "frame", FULL));
+    r.put_in(&frame_at(x, y, z), 1, movement, 27);
+}
+
+fn block_is(r: &Rig, x: i32, y: i32, z: i32, id: &str) -> bool {
+    let m = r.material(id);
+    r.world.blocks.lock().unwrap().get(&(x, y, z)).map(|b| b.0) == Some(m)
+}
+
+/// A radium cell gives a little charge for ever: enough for a lamp.
+fn radium_and_lamps() {
+    let mut r = Rig::new(Setup::default());
+    tier6_scientist(&mut r);
+    movement_at(&mut r, 400, 64, 400, "radium_cell");
+    assert!(r.place(PLAYER, 401, 64, 400, COPPER, ROD));
+    assert!(r.place(PLAYER, 402, 64, 400, "lamp", FULL));
+    r.tick(60);
+    assert!(block_is(&r, 402, 64, 400, &format!("{MOD}:lamp_lit")), "radium lights a lamp");
+    println!("radium and lamps: ok");
+}
+
+/// A Tesla coil on an aether cell's wire: a lamp nearby lights with no wire,
+/// and a cell carried near it fills.
+fn the_tesla_coil() {
+    let mut r = Rig::new(Setup::default());
+    tier6_scientist(&mut r);
+    movement_at(&mut r, 410, 64, 410, "aether_cell");
+    assert!(r.place(PLAYER, 411, 64, 410, COPPER, ROD));
+    movement_at(&mut r, 412, 64, 410, "tesla_coil");
+    for y in 65..=67 {
+        assert!(r.place(PLAYER, 412, y, 410, COPPER, COIL));
+    }
+    assert!(r.place(PLAYER, 412, 68, 410, STEEL, RING));
+    assert!(r.place(PLAYER, 420, 64, 410, "lamp", FULL));
+    r.give_detailed(PLAYER, "cell", "e=10");
+    r.stand_at(413.5, 64.0, 411.5);
+    r.tick(60);
+    assert!(block_is(&r, 420, 64, 410, &format!("{MOD}:lamp_lit")), "a lamp eight blocks off, lit with no wire");
+    let details = r.details_of(PLAYER, "cell");
+    assert!(!details.contains(&Some("e=10".to_owned())), "the carried cell fills: {details:?}");
+
+    // Without its ring it is only a frame, and the lamp goes dark.
+    r.world.blocks.lock().unwrap().remove(&(412, 68, 410));
+    r.tick(60);
+    assert!(block_is(&r, 420, 64, 410, &format!("{MOD}:lamp")), "no ring, no coil");
+    println!("the Tesla coil: ok");
+}
+
+/// Two wireless sets on charge, far apart and unwired to each other.
+fn wireless() {
+    let mut r = Rig::new(Setup::default());
+    tier6_scientist(&mut r);
+    for (x, z) in [(430, 430), (470, 470)] {
+        movement_at(&mut r, x, 64, z, "aether_cell");
+        assert!(r.place(PLAYER, x + 1, 64, z, COPPER, ROD));
+        movement_at(&mut r, x + 2, 64, z, "radio");
+    }
+    let other = rig::OTHER;
+    r.join(other);
+    r.tick(40);
+    r.stand_at(432.5, 64.0, 431.5);
+    {
+        let mut map = r.entities.0.lock().unwrap();
+        map.get_mut(&2).unwrap().transform = rig_transform(472.5, 64.0, 471.5);
+    }
+    r.heard(other);
+    assert_eq!(r.ask("radio hello over the air"), "Sent.");
+    assert!(r.heard(other).iter().any(|l| l == "(by wireless) hello over the air"), "the far set's listener hears");
+    println!("wireless: ok");
+}
+
+/// The X-ray viewer and the earthquake machine, each paid from a carried cell;
+/// and the aetherometer, which needs nothing.
+fn xrays_and_earthquakes() {
+    let mut r = Rig::new(Setup::default());
+    tier6_scientist(&mut r);
+    r.open_world(7);
+    r.stand_at(500.5, 64.0, 500.5);
+    // Ore five blocks off along every level axis, at eye height: whichever
+    // way the body faces, the viewer sees one of them.
+    for (x, z) in [(505, 500), (495, 500), (500, 505), (500, 495)] {
+        r.put_block(x, 65, z, "tiamat_default_world:iron_ore");
+    }
+    r.give(PLAYER, "xray_viewer", 27);
+    r.hold(PLAYER, "xray_viewer");
+    r.heard(PLAYER);
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The tube is dark: carry a charged cell."));
+    r.give_detailed(PLAYER, "cell", "e=100");
+    assert!(r.use_at_nothing(PLAYER));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("Ore glows through the rock: 1 blocks of it."));
+    assert!(r.details_of(PLAYER, "cell").contains(&Some("e=92".to_owned())), "eight charge spent");
+
+    // A column of stone, three across and twelve deep, shaken loose.
+    for y in 40..=63 {
+        for x in 519..=521 {
+            for z in 519..=521 {
+                r.put_block(x, y, z, STONE);
+            }
+        }
+    }
+    r.give(PLAYER, "oscillator", 27);
+    r.hold(PLAYER, "oscillator");
+    assert!(r.use_at(PLAYER, 520, 63, 520));
+    assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The ground hums, and shudders: 108 blocks shaken loose."));
+    assert!(block_is(&r, 520, 51, 520, STONE), "thirteen down is still rock");
+    assert!(r.details_of(PLAYER, "cell").contains(&Some("e=42".to_owned())), "fifty charge spent");
+
+    r.give(PLAYER, "aetherometer", 27);
+    r.hold(PLAYER, "aetherometer");
+    assert!(r.use_at_nothing(PLAYER));
+    let reading = r.heard(PLAYER).last().cloned().unwrap_or_default();
+    assert!(reading.starts_with("The needle trembles: the aether drifts "), "{reading}");
+    println!("X-rays and earthquakes: ok");
+}
+
+/// Four aether cells feed an arc furnace: chromium and steel to chrome steel.
+fn the_arc_furnace() {
+    let mut r = Rig::new(Setup::default());
+    tier6_scientist(&mut r);
+    for x in 540..=543 {
+        movement_at(&mut r, x, 64, 540, "aether_cell");
+        assert!(r.place(PLAYER, x, 64, 541, COPPER, ROD));
+    }
+    assert!(r.place(PLAYER, 544, 64, 541, COPPER, ROD));
+    movement_at(&mut r, 545, 64, 541, "arc_electrodes");
+    let arc = frame_at(545, 64, 541);
+    r.put_in(&arc, 2, "tiamat_default_world:chromium_ore", 27);
+    r.put_in(&arc, 3, "steel_ingot", 27 * 2);
+    r.tick(1400);
+    assert_eq!(r.units_in(&arc, 6, 9, &format!("{MOD}:chrome_steel_ingot")), 27 * 2, "chrome steel");
+    println!("the arc furnace: ok");
+}
+
+/// Wardenclyffe: a Tesla coil built tall, with a root of copper. A receiver
+/// two hundred blocks away, wired to nothing but its own lamp, lights it.
+fn wardenclyffe() {
+    let mut r = Rig::new(Setup::default());
+    tier6_scientist(&mut r);
+    let (x, z) = (600, 600);
+    movement_at(&mut r, x, 64, z, "tesla_coil");
+    for y in 65..=67 {
+        assert!(r.place(PLAYER, x, y, z, COPPER, COIL));
+    }
+    assert!(r.place(PLAYER, x, 68, z, STEEL, RING));
+    for y in 69..=107 {
+        r.put_block(x, y, z, STONE);
+    }
+    assert!(r.place(PLAYER, x, 108, z, COPPER, ROD));
+    for y in 34..=63 {
+        assert!(r.place(PLAYER, x, y, z, COPPER, ROD));
+    }
+    // Two aether cells on the root.
+    movement_at(&mut r, x + 1, 40, z, "aether_cell");
+    movement_at(&mut r, x - 1, 40, z, "aether_cell");
+    // The receiver, far off.
+    movement_at(&mut r, 800, 64, 800, "receiver");
+    assert!(r.place(PLAYER, 801, 64, 800, COPPER, ROD));
+    assert!(r.place(PLAYER, 802, 64, 800, "lamp", FULL));
+    let before = insight(&mut r);
+    r.tick(60);
+    assert!(block_is(&r, 802, 64, 800, &format!("{MOD}:lamp_lit")), "the receiver's lamp, lit from the tower");
+    assert_eq!(insight(&mut r) - before, 50 + 10, "Wardenclyffe, and the first lamp lit");
+
+    // Topple the crown and the tower is only a coil: the receiver goes dark.
+    r.world.blocks.lock().unwrap().remove(&(x, 108, z));
+    r.tick(60);
+    assert!(block_is(&r, 802, 64, 800, &format!("{MOD}:lamp")), "no tower, nothing sent");
+    println!("Wardenclyffe: ok");
 }
 
 /// Two runs of the same play leave the same storage behind.

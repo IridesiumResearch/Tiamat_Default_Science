@@ -69,6 +69,14 @@ All are namespaced `tiamat_default_science:` by the engine.
   are drawn as. Those blocks and the furnace are `whole` — dug in one piece
   by any tool, never carved — where the engine knows the field; the copper
   and steel stock are not, being made to be carved.
+- **Tier 6 items:** the movements `radio`, `receiver`, `tesla_coil`,
+  `arc_electrodes`, `resonator`, `radium_cell` and `aether_cell`;
+  `crookes_tube`, `xray_viewer`, `oscillator`, `radium_grain`, `helium`,
+  `chrome_steel_ingot`, `bakelite`, `aetherium_ingot`, `aetherometer`; the
+  tools `chrome_pick`, `chrome_axe`, `chrome_spade`, `chrome_chisel`,
+  `chrome_hammer` (Craft's tier 4) and `diamond_drill` (a pick, tier 5). The
+  block `cavorite` (light 2, 1, 4), in this mod's dig class
+  `tiamat_default_science:reinforced` (pick or chisel, tier 3).
 - **Glyphs, tier 5:** the punched cards `card_1` to `card_8`, which recipes
   name as tools and automata read as instructions.
 - **Entities:** automata, the engine's `engine:humanoid` named
@@ -113,6 +121,9 @@ All are namespaced `tiamat_default_science:` by the engine.
   `study_difference_engine`, `study_automaton`; the discovery family
   `tiamat_default_science.spectrum:*` (group `stars`); the inventions
   `.photograph`, `.blueprint`, `.elevator`, `.telegraph`, `.lamp`.
+- **Into Progress, tier 6:** the studies `study_radium`, `study_aetherium`,
+  `study_cavorite`; the inventions `.radio`, `.tesla`, `.xray`, `.quake`,
+  `.aether`, `.wardenclyffe`.
 - **World option:** `blasting` (default on): whether mining charges loosen
   rock.
 - **Into the interface:** the shape-crafter presets `gnomon`, `cairn`,
@@ -126,8 +137,10 @@ All are namespaced `tiamat_default_science:` by the engine.
 
 Chat words, said by a player and swallowed. For anyone: `science` (how far
 along the Tinker's Bench the speaker is), `science book` (opens the
-Theatrum for a player who carries one) and `wire <message>` (sends it down
-the telegraph whose key the speaker stands by). A sentence that only begins with
+Theatrum for a player who carries one), `wire <message>` (sends it down
+the telegraph whose key the speaker stands by) and `radio <message>` (sends
+it from the wireless set the speaker stands by to everyone near every other
+set in the domain). A sentence that only begins with
 the word is chat.
 
 ## Data it stores or sends

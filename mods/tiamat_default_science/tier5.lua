@@ -79,8 +79,10 @@ end
 
 local G = tds.glyphs
 local RELICS = {}           -- qualified recipe id -> its config entry
-for _, r in ipairs(C.tier5_recipes) do
-    if r.relic then RELICS[U.id(r.id)] = r end
+for _, list in ipairs({ C.tier5_recipes, C.tier6_recipes }) do
+    for _, r in ipairs(list) do
+        if r.relic then RELICS[U.id(r.id)] = r end
+    end
 end
 
 -- What a carved part is made of, given back: a group's own first member.

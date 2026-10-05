@@ -232,6 +232,7 @@ end)
 local SOURCE = game.mod_id .. ":balloon"
 local CHARCOAL = U.id("C:charcoal")
 local HYDROGEN = U.id("hydrogen")
+local HELIUM = U.id("helium")
 local JAR = U.id("glass_jar")
 local burning = {}          -- player -> the tick their charcoal burns out
 
@@ -245,9 +246,12 @@ tds.on_tick(C.kite.period, function(now)
         local held = game.held(uuid)
         if held and held.material == I.ids.balloon_pack and life and life.set_ability then
             if not burning[uuid] or burning[uuid] <= now then
-                -- Hydrogen first (tier 5's electrolysis): it lifts longer, and faster.
+                -- Helium first (tier 6), then hydrogen (tier 5's electrolysis): each lifts longer.
                 local lift = nil
-                if game.take(uuid, { material = HYDROGEN, count = 1 }) >= U.UNITS then
+                if game.take(uuid, { material = HELIUM, count = 1 }) >= U.UNITS then
+                    game.give(uuid, { material = JAR, count = 1 })
+                    lift = C.helium_balloon
+                elseif game.take(uuid, { material = HYDROGEN, count = 1 }) >= U.UNITS then
                     game.give(uuid, { material = JAR, count = 1 })
                     lift = C.balloon.hydrogen
                 elseif game.take(uuid, { material = CHARCOAL, count = 1 }) >= U.UNITS then

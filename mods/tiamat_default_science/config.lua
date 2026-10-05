@@ -169,7 +169,7 @@ C.antikythera = {
 
 -- The tiers of `tree.lua` registered with Progress: those whose content is
 -- built, so nobody buys a node that does nothing yet (the rest is data).
-C.shipped_tier = 5
+C.shipped_tier = 6
 
 -- Tier 3: Mechanica (brief §5.1, §6) ------------------------------------------------
 
@@ -245,6 +245,14 @@ C.movements = {
     voltaic_pile = { need = 0, pile = true },           -- gives charge while it has acid
     electrolysis_cell = { need = 8, power = "charge" },
     telegraph = { need = 1, power = "charge" },
+    -- Tier 6.
+    radio = { need = 2, power = "charge" },
+    receiver = { need = 0, power = "charge" },          -- Wardenclyffe's: joins the tower's network, wherever it stands
+    tesla_coil = { need = 8, power = "charge" },        -- the coil's base frame: three copper coils above it, a steel ring on top
+    arc_electrodes = { need = 32, power = "charge" },
+    resonator = { need = 16, power = "charge" },        -- rings orichalcum into aetherium, a Tesla coil within reach
+    radium_cell = { need = 0, source = 1 },             -- gives charge for ever
+    aether_cell = { need = 0, source = 10 },
 }
 
 -- The turning network (brief §6.2). Parts are carved plank rods, gears and
@@ -857,6 +865,148 @@ C.automaton = {
     -- What each card means, by its number.
     cards = { [1] = "follow", [2] = "stay", [3] = "feed", [4] = "collect", [5] = "deposit", [6] = "fetch" },
 }
+
+-- Tier 6: the electrical age, 1870–1905, and the aether (brief §5.4) ----------------------
+
+C.tier6_items = {
+    { id = "radio", name = "Wireless set", description = "A movement on charged wire: 'radio' and your words reach every other set." },
+    { id = "receiver", name = "Receiver", description = "A movement: a frame with it draws from Wardenclyffe's tower, however far." },
+    { id = "tesla_coil", name = "Tesla coil base", description = "A movement: under three copper coils and a steel ring, a frame becomes a Tesla coil." },
+    { id = "arc_electrodes", name = "Arc electrodes", description = "A movement on charged wire: an electric furnace for chromium." },
+    { id = "resonator", name = "Aether resonator", description = "A movement: near a Tesla coil, it rings orichalcum into aetherium." },
+    { id = "crookes_tube", name = "Crookes tube", description = "A glass tube with no air in it, where cathode rays glow." },
+    { id = "xray_viewer", name = "X-ray viewer", description = "Use it with a charged cell: ore glows through the rock ahead of you." },
+    { id = "oscillator", name = "Earthquake machine", description = "Use it on rock with a charged cell: the column under it shakes loose." },
+    { id = "radium_grain", name = "Radium", description = "A grain that glows in the dark, from a great deal of pitchblende." },
+    { id = "radium_cell", name = "Radium cell", description = "A movement: gives a little charge, for ever." },
+    { id = "helium", name = "Jar of helium", description = "Lighter than air: a balloon that floats a long while." },
+    { id = "chrome_steel_ingot", name = "Chrome steel ingot", description = "Steel with chromium in it: harder than any." },
+    { id = "bakelite", name = "Bakelite", description = "The first plastic, from coal tar." },
+    { id = "aetherium_ingot", name = "Aetherium ingot", description = "Orichalcum that rings with the aether. It hums." },
+    { id = "aether_cell", name = "Aether cell", description = "A movement: a great, endless trickle of charge." },
+    { id = "aetherometer", name = "Aetherometer", description = "Use it anywhere: a needle that feels the aether drift." },
+    -- Chrome steel tools (tier 4 of the dig classes), and the diamond drill (tier 5).
+    { id = "chrome_pick", name = "Chrome steel pick", description = "Tier 4. Digs rock.",
+        tool = { type = "pick", tier = 4, uses = 2000 }, speed = 4.4 },
+    { id = "chrome_axe", name = "Chrome steel axe", description = "Tier 4. Digs wood.",
+        tool = { type = "axe", tier = 4, uses = 2000 }, speed = 5.0 },
+    { id = "chrome_spade", name = "Chrome steel spade", description = "Tier 4. Digs earth.",
+        tool = { type = "spade", tier = 4, uses = 2000 }, speed = 5.4 },
+    { id = "chrome_chisel", name = "Chrome steel chisel", description = "Tier 4. Carves one cell at a time.",
+        tool = { type = "chisel", tier = 4, uses = 4000 }, speed = 1.6, brush = "subnode", group = "#chisel" },
+    { id = "chrome_hammer", name = "Chrome steel hammer", description = "Tier 4. For the anvil.",
+        tool = { type = "hammer", tier = 4, uses = 2000 }, group = "#hammer" },
+    { id = "diamond_drill", name = "Diamond drill", description = "Tier 5. Digs any rock, a charge a block from a carried cell.",
+        tool = { type = "pick", tier = 5, uses = 4000 }, speed = 7.0, charged = true },
+}
+
+C.cavorite = {
+    id = "cavorite", name = "Cavorite",
+    description = "Wells' alloy: gravity cannot pass it. Carve it.",
+    hardness = 4.0, tags = { "metal" }, light = { r = 2, g = 1, b = 4 },
+}
+-- Cavorite resists iron: a class of this mod's, broken by steel or better.
+C.reinforced = { id = "reinforced", types = { "pick", "chisel" }, tier = 3,
+    refusals = { tier = "Cavorite turns iron aside. It wants steel." } }
+
+C.tier6_recipes = {
+    { id = "radio", station = "workbench", node = "science.radio",
+        inputs = { { glyph = "coil", material = "copper_stock", count = 2 }, { "glass_bulb", count = 2 }, { "cell", count = 1 } },
+        outputs = { { "radio", count = 1 } } },
+    { id = "receiver", station = "workbench", node = "science.wardenclyffe",
+        inputs = { { glyph = "coil", material = "copper_stock", count = 1 }, { glyph = "plate", material = "copper_stock", count = 1 },
+            { "bakelite", count = 1 } },
+        outputs = { { "receiver", count = 1 } } },
+    { id = "tesla_coil", station = "workbench", node = "science.tesla_coil",
+        inputs = { { "leyden_jar", count = 4 }, { "C:iron_frame", count = 1 }, { glyph = "coil", material = "copper_stock", count = 1 } },
+        outputs = { { "tesla_coil", count = 1 } } },
+    { id = "arc_electrodes", station = "workbench", node = "science.arc_furnace",
+        inputs = { { "carbon_rod", count = 4 }, { "C:brick", count = 4 }, { "copper_stock", count = 2 } },
+        outputs = { { "arc_electrodes", count = 1 } } },
+    { id = "crookes_tube", station = "workbench", node = "science.crookes_tube", tools = { { "air_pump", wear = 0 } },
+        inputs = { { "glass_tube", count = 1 }, { glyph = "rod", material = "copper_stock", count = 2 } },
+        outputs = { { "crookes_tube", count = 1 } } },
+    { id = "xray_viewer", station = "workbench", node = "science.x_rays",
+        inputs = { { "crookes_tube", count = 1 }, { "lens_blank", count = 1 }, { "C:lead_ingot", count = 2 } },
+        outputs = { { "xray_viewer", count = 1 } } },
+    { id = "oscillator", station = "workbench", node = "science.tesla_oscillator",
+        inputs = { { "piston", count = 2 }, { "spring", count = 2 }, { "steel_ingot", count = 2 } },
+        outputs = { { "oscillator", count = 1 } } },
+    { id = "radium_grain", station = "furnace", node = "science.radioactivity", heat = 5, ticks = 6000,
+        inputs = { { "W:pitchblende", units = 729 }, { "#oil_of_vitriol", count = 1 } }, outputs = { { "radium_grain", count = 1 } } },
+    { id = "radium_cell", station = "workbench", node = "science.radioactivity",
+        inputs = { { "radium_grain", count = 1 }, { "cell", count = 1 }, { "C:lead_ingot", count = 2 } },
+        outputs = { { "radium_cell", count = 1 } } },
+    { id = "helium", station = "furnace", node = "science.helium", heat = 5, ticks = 1200,
+        inputs = { { "W:pitchblende", units = 27 }, { "glass_jar", count = 1 } },
+        outputs = { { "helium", count = 1 } } },
+    { id = "chrome_steel", station = "frame", node = "science.arc_furnace", tools = { { "arc_electrodes", wear = 0 } }, ticks = 1200,
+        inputs = { { "W:chromium_ore", units = 27 }, { "steel_ingot", count = 2 } }, outputs = { { "chrome_steel_ingot", count = 2 } } },
+    { id = "chrome_pick", station = "workbench", node = "science.arc_furnace", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "chrome_steel_ingot", count = 3 }, { "C:haft", count = 1 } }, outputs = { { "chrome_pick", count = 1 } } },
+    { id = "chrome_axe", station = "workbench", node = "science.arc_furnace", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "chrome_steel_ingot", count = 3 }, { "C:haft", count = 1 }, { "C:cord", count = 1 } }, outputs = { { "chrome_axe", count = 1 } } },
+    { id = "chrome_spade", station = "workbench", node = "science.arc_furnace", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "chrome_steel_ingot", count = 2 }, { "C:haft", count = 1 } }, outputs = { { "chrome_spade", count = 1 } } },
+    { id = "chrome_chisel", station = "workbench", node = "science.arc_furnace", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "chrome_steel_ingot", count = 1 }, { "C:stick", count = 1 } }, outputs = { { "chrome_chisel", count = 1 } } },
+    { id = "chrome_hammer", station = "workbench", node = "science.arc_furnace", tools = { { "#hammer", wear = 1 } },
+        inputs = { { "chrome_steel_ingot", count = 2 }, { "C:stick", count = 1 } }, outputs = { { "chrome_hammer", count = 1 } } },
+    { id = "diamond_drill", station = "workbench", node = "science.diamond_drill",
+        inputs = { { "W:diamond", units = 27 }, { "chrome_steel_ingot", count = 2 }, { "motor", count = 1 } },
+        outputs = { { "diamond_drill", count = 1 } } },
+    { id = "bakelite", station = "furnace", node = "science.bakelite", heat = 2, ticks = 600,
+        inputs = { { "coal_tar", units = 27 }, { "soda", count = 1 } }, outputs = { { "bakelite", count = 2 } } },
+    { id = "aetherium", station = "frame", node = "science.luminiferous_aether", tools = { { "resonator", wear = 0 } }, ticks = 2400,
+        inputs = { { "W:orichalcum", units = 27 } }, outputs = { { "aetherium_ingot", count = 1 } } },
+    { id = "resonator", station = "workbench", node = "science.luminiferous_aether",
+        inputs = { { glyph = "ring", material = "steel_stock", count = 2 }, { "crookes_tube", count = 1 }, { "C:silver_ingot", count = 2 } },
+        outputs = { { "resonator", count = 1 } } },
+    { id = "aetherometer", station = "workbench", node = "science.luminiferous_aether",
+        inputs = { { "aetherium_ingot", count = 1 }, { "clockwork", count = 1 }, { "C:glass", count = 1 } },
+        outputs = { { "aetherometer", count = 1 } } },
+    { id = "aether_cell", station = "frame", node = "science.aether_cell", relic = true, ticks = 2400,
+        tools = { { "assembly_jig", wear = 0 } },
+        inputs = { { glyph = "ring", material = "steel_stock", count = 1 }, { glyph = "coil", material = "copper_stock", count = 1 },
+            { "aetherium_ingot", count = 4 }, { "radium_grain", count = 1 } },
+        outputs = { { "aether_cell", count = 1 } } },
+    { id = "cavorite", station = "furnace", node = "science.cavorite", heat = 5, ticks = 2400,
+        inputs = { { "aetherium_ingot", count = 1 }, { "C:lead_ingot", count = 1 }, { "helium", count = 1 } },
+        tools = { { "C:crucible", wear = 1 } }, outputs = { { "cavorite", count = 1 }, { "glass_jar", count = 1 } } },
+}
+
+C.tier6_studies = {
+    { id = "study_radium", name = "Radium", inputs = { { "radium_grain", count = 1 } }, ticks = 6000, insight = 400 },
+    { id = "study_aetherium", name = "Aetherium", inputs = { { "aetherium_ingot", count = 1 } }, ticks = 9000, insight = 500 },
+    { id = "study_cavorite", name = "Cavorite", inputs = { { "cavorite", count = 1 } }, ticks = 12000, insight = 800 },
+}
+
+C.tier6_firsts = {
+    chrome_steel = "arc_furnace", radium_grain = "radium", helium = "helium", bakelite = "bakelite",
+    aetherium = "aetherium", aether_cell = "aether_cell", cavorite = "cavorite",
+}
+C.tier6_toys = { radio = 10, tesla = 10, xray = 5, quake = 10, aether = 20, wardenclyffe = 50 }
+
+-- The Tesla coil (brief §6.5): around a coil whose network carries it.
+C.tesla = {
+    lamp_reach = 16,              -- lamps light with no wire
+    arc_reach = 8, arc_every = 100, arc_ticks = 60,
+    charge_reach = 8, charge_rate = 5,     -- carried jars and cells, a second
+    -- Life's creatures that the arcs find: the ones that come for you.
+    hostile = { "wolf", "spider", "scurrier", "cave_troll", "swamp_hag", "ghost" },
+}
+
+-- Wardenclyffe (brief §6.5): a tower over a frame with the tesla_coil base,
+-- `height` blocks of anything above the coil's ring, copper on its crown, and
+-- `root` blocks of copper rods under the frame. One per player.
+C.wardenclyffe = { height = 40, root = 30 }
+
+C.radio = { hear = 16, reach = 4 }
+C.xray = { ahead = 16, half = 2, seconds = 5, cost = 8 }
+C.oscillator = { half = 1, depth = 12, cost = 50 }   -- 3 × 3 × 12: at most 108 stacks dropped
+C.drill = { cost = 1 }
+C.resonator = { coil_reach = 8 }
+C.helium_balloon = { ticks = 12000, speed = 100 }  -- ten minutes, at a walk; the jar comes back
 
 -- Toybox discoveries (brief §6.9): insight for play itself.
 C.toybox = {

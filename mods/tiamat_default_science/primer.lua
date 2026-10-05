@@ -28,7 +28,7 @@ local W = ui and ui.widgets
 -- Pictures ride in the dialog's own tree, so they cost none of the
 -- server's 512 registered pictures: a content hash is enough.
 local pictures = {}
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items, C.tier6_items }) do
     for _, spec in ipairs(list) do
         local ok, hash = pcall(game.content_hash, "textures/" .. spec.id .. ".png")
         if ok then pictures[spec.id] = hash end
@@ -107,7 +107,7 @@ local HOW = {
 --- The name a player reads for a config id: this mod's item's own name, or
 --- the other mod's id made readable ("C:bark_strip" -> "bark strip").
 local names = {}
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items, C.tier6_items }) do
     for _, spec in ipairs(list) do names[spec.id] = spec.name end
 end
 for _, spec in ipairs({ C.frame, C.furnace, C.copper_stock, C.steel_stock, C.lamp }) do names[spec.id] = spec.name end
@@ -210,7 +210,8 @@ end
 local function recipes_of(id)
     local list = {}
     for _, source in ipairs({ A.recipes, tds.mechanica and tds.mechanica.recipes or {}, tds.tier4 and tds.tier4.recipes or {},
-        tds.tier5 and tds.tier5.recipes or {} }) do
+        tds.tier5 and tds.tier5.recipes or {},
+        tds.tier6 and tds.tier6.recipes or {} }) do
         for _, r in ipairs(source[id] or {}) do list[#list + 1] = r end
     end
     return list

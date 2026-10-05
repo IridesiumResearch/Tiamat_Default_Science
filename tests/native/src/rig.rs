@@ -1044,6 +1044,20 @@ impl Rig {
     }
 
     /// A stack of `id` with a `detail`, put in a player's pack and held.
+    /// A whole block's worth of `id`, carrying `detail`, into a player's pack.
+    pub fn give_detailed(&self, player: [u8; 32], id: &str, detail: &str) {
+        let material = self.material(id);
+        let mut stack = Stack::new(material, 27).unwrap();
+        stack.detail = Some(detail.to_owned());
+        self.inventory.put(player, stack);
+    }
+
+    /// The details of what a player carries of `id`.
+    pub fn details_of(&self, player: [u8; 32], id: &str) -> Vec<Option<String>> {
+        let material = self.material(id);
+        self.inventory.stacks(player).into_iter().filter(|s| s.material == material).map(|s| s.detail).collect()
+    }
+
     pub fn hold_detailed(&self, player: [u8; 32], id: &str, detail: &str) {
         let material = self.material(id);
         let mut stack = Stack::new(material, 27).unwrap();

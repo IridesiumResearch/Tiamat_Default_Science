@@ -23,13 +23,13 @@ local function register(spec)
     }
 end
 
-for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items }) do
+for _, list in ipairs({ C.bench_items, C.path_items, C.tier3_items, C.tier4_items, C.tier5_items, C.tier6_items }) do
     for _, spec in ipairs(list) do register(spec) end
 end
 
 -- A tool that digs is an engine tool of the same id as its item; Craft puts
 -- it in the hand of whoever holds the item (`mechanica.lua`, `tier4.lua`).
-for _, list in ipairs({ C.tier3_items, C.tier4_items }) do
+for _, list in ipairs({ C.tier3_items, C.tier4_items, C.tier6_items }) do
     for _, spec in ipairs(list) do
         if spec.speeds or spec.speed then
             game.register_tool{ id = spec.id, name = spec.name, brush = spec.brush or "block",

@@ -55,6 +55,20 @@ local function cells(occupancy)
     return n
 end
 
+--- Loosens the block at `at_pos` if it may be loosened: it falls whole, as
+--- the stack of cells it was. Answers whether it came loose.
+function CH.loosen(at_pos, hard_too)
+    local at = game.get_block(at_pos)
+    if at and at.material and at.cells == nil and CH.loosens(at.material, hard_too) then
+        local units = cells(at.occupancy)
+        if units > 0 and game.set_block(at_pos, "engine:air") then
+            drop(at_pos, at.material, units)
+            return true
+        end
+    end
+    return false
+end
+
 --- The charge at `pos` goes off: every block it may loosen within the
 --- radius comes loose, whole. Dynamite reaches further, and through hard rock.
 function CH.blast(pos, dynamite)
@@ -62,14 +76,7 @@ function CH.blast(pos, dynamite)
     for dy = r, -r, -1 do
         for dx = -r, r do
             for dz = -r, r do
-                local at_pos = { x = pos.x + dx, y = pos.y + dy, z = pos.z + dz, domain = pos.domain }
-                local at = game.get_block(at_pos)
-                if at and at.material and at.cells == nil and CH.loosens(at.material, dynamite) then
-                    local units = cells(at.occupancy)
-                    if units > 0 and game.set_block(at_pos, "engine:air") then
-                        drop(at_pos, at.material, units)
-                    end
-                end
+                CH.loosen({ x = pos.x + dx, y = pos.y + dy, z = pos.z + dz, domain = pos.domain }, dynamite)
             end
         end
     end

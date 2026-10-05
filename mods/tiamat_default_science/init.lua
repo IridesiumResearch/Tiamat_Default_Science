@@ -47,7 +47,9 @@ tds.tier5 = load("tier5")               -- tier 5's recipes, studies, cards and 
 tds.grid = load("grid")                 -- the charge network: piles, cells, dynamos, motors, lamps
 tds.workshop = load("workshop")         -- the elevator, the camera, blueprints, the telegraph, the magnet
 tds.automata = load("automata")         -- the clockwork automaton and its cards
-load("charges")                         -- mining charges
+tds.charges = load("charges")           -- mining charges, dynamite, and what loosens
+tds.tier6 = load("tier6")               -- tier 6's recipes, chrome steel, studies, cavorite's class
+load("electric_age")                    -- the Tesla coil's arcs, wireless, X-rays, the earthquake machine, the drill
 load("printing")                        -- treatises, printed and read
 tds.primer = load("primer")             -- the Theatrum Machinarum
 tds.tree = load("tree")                 -- the science tree, tiers 3 to 7, as data

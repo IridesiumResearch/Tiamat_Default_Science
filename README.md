@@ -62,6 +62,16 @@ electromagnet. The daguerreotype and blueprints, the gravimeter, the
 spectroscope and dynamite. Its departures from the brief, the two design
 questions included, are §2.6.
 
+Step 7: **tier 6, the electrical age and the aether** (0.5.0). Alternating
+current, the transformer and the induction motor; the incandescent lamp;
+the Tesla coil, which lights lamps with no wire, charges what you carry and
+throws arcs at what hunts you; wireless; Wardenclyffe, which sends its spare
+charge to every receiver in the domain. The Crookes tube and X-rays, radium
+and helium, the earthquake machine, the arc furnace and chrome steel, the
+diamond drill and bakelite. Then the Aether Drift, where the world leaves
+history: aetherium, the aether cell, and cavorite. Its departures from the
+brief are §2.7.
+
 ## What is here
 
 | File | What |

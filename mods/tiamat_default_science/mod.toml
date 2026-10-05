@@ -6,11 +6,12 @@
 # tier 3, Mechanica — frames, turning networks, water wheels and windmills,
 # the furnace and the iron ladder; and tier 4, natural philosophy — the
 # instruments, the Leyden jar and the lightning rod, the Newcomen engine and
-# steel; and tier 5, the Industrial Revolution — charge on copper, cards and
-# automata, steel in bulk (§17, steps 1 to 6).
+# steel; tier 5, the Industrial Revolution — charge on copper, cards and
+# automata, steel in bulk; and tier 6, the electrical age and the aether —
+# Tesla's coil and tower, wireless, X-rays, radium, cavorite (§17, steps 1 to 7).
 id = "tiamat_default_science"
 name = "Tiamat Default Science"
-version = "0.4.0"
+version = "0.5.0"
 description = "Natural philosophy: machines, steam, electricity, Tesla — and past the aether, gravity and the Fold."
 license = "GPL-3.0-only"
 # Without any of these there is nothing to build with: the world's rock and

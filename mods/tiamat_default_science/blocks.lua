@@ -66,5 +66,7 @@ local lit = shaped(C.lamp, C.lamp.lit_model)
 lit.light_emit = C.lamp.light
 B.lamp_lit = block({ id = C.lamp.lit, name = C.lamp.name .. " (lit)", description = C.lamp.description,
     hardness = C.lamp.hardness, tags = C.lamp.tags }, lit)
+-- Cavorite, tier 6: a carvable block with a faint violet glow.
+B.cavorite = block(C.cavorite, { light_emit = C.cavorite.light })
 
 return B

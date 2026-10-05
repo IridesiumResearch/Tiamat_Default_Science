@@ -17,6 +17,7 @@ local listed = {}
 local listed_materials = {}
 local places = {}
 local digs = {}
+local dig_starts = {}
 local ticks = {}
 local dialogs = {}
 local actions = {}
@@ -66,6 +67,12 @@ end
 
 --- Runs `fn(event)` before a block is placed. It watches: this mod refuses
 --- no placement, so what `fn` answers is ignored.
+--- Runs `fn(event)` when a dig BEGINS. Answer as the engine's veto does
+--- (`false`, a string, `""` refuse); the first to answer stops the rest.
+function tds.on_dig_start(fn)
+    dig_starts[#dig_starts + 1] = fn
+end
+
 function tds.on_place(fn)
     places[#places + 1] = fn
 end
@@ -137,6 +144,10 @@ function H.install()
         for _, fn in ipairs(places) do fn(event) end
         return nil
     end)
+
+    if #dig_starts > 0 then
+        game.register_on_dig_start(function(event) return first_verdict(dig_starts, event) end)
+    end
 
     game.register_on_dig_complete(function(event)
         for _, fn in ipairs(digs) do fn(event) end

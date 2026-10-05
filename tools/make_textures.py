@@ -242,6 +242,15 @@ DRAW = {"theatrum": theatrum, "lens": lens, "kite": kite, "compass": compass, "n
         "electrolysis_cell": glassware, "electromagnet": part((120, 40, 40)), "dynamo_armature": part(COPPER_C),
         "motor": part((70, 90, 120)), "telegraph": part(BRASS), "carbon_rod": bar((40, 40, 40)),
         "difference_engine": part((230, 190, 60)), "automaton_spring": part(BRASS), "automaton_key": bar(BRASS),
+        # tier 6
+        "radio": part((110, 80, 50)), "receiver": part(COPPER_C), "tesla_coil": part(COPPER_C),
+        "arc_electrodes": bar((40, 40, 40)), "resonator": part((150, 120, 200)), "crookes_tube": glassware,
+        "xray_viewer": part((60, 70, 60)), "oscillator": part(STEEL), "radium_grain": heap((170, 255, 170)),
+        "radium_cell": part((120, 200, 120)), "helium": glassware, "chrome_steel_ingot": bar((200, 210, 225)),
+        "bakelite": bar((120, 60, 20)), "aetherium_ingot": bar((170, 140, 230)), "aether_cell": part((170, 140, 230)),
+        "aetherometer": part((170, 140, 230)), "cavorite": flat((70, 50, 110)),
+        "chrome_pick": bar((200, 210, 225)), "chrome_axe": bar((200, 210, 225)), "chrome_spade": bar((200, 210, 225)),
+        "chrome_chisel": bar((200, 210, 225)), "chrome_hammer": bar((200, 210, 225)), "diamond_drill": bar((180, 230, 240)),
         }
 
 
