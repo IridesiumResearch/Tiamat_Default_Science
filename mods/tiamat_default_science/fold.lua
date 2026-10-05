@@ -171,10 +171,28 @@ tds.on_tick(C.gate.period, function()
                 elseif not open and b and b.material == B.wormhole then
                     game.set_block(mid, "engine:air")
                 end
+                if open then F.carry(mid, record) end
             end
         end
     end
 end)
+
+--- Dropped things at an open gate's throat come out at its twin.
+function F.carry(mid, record)
+    local throat = { x = mid.x + 0.5, y = mid.y + 0.5, z = mid.z + 0.5, domain = mid.domain }
+    local twin = record.twin and gate_record(record.twin)
+    if not twin then return 0 end
+    local out = front_of(record.twin, twin.axis)
+    local n = 0
+    for _, id in ipairs(game.entities_in_radius(throat, C.gate.carries) or {}) do
+        local ent = game.entity(id)
+        if ent and ent.item then
+            game.set_entity(id, { pos = { x = out.x + 0.5, y = out.y + 0.5, z = out.z + 0.5 } })
+            n = n + 1
+        end
+    end
+    return n
+end
 
 --- The nearest gate a player owns, by their domain first: its record and middle.
 function F.nearest_gate(uuid, from)
@@ -228,8 +246,15 @@ local LACKS = {
     engine = "The rings are still. Nothing feeds them: the Core wants a gravity engine near it.",
 }
 
+local ok, why = pcall(game.register_sound, { id = C.core.hum.sound, file = "sounds/" .. C.core.hum.sound .. ".wav" })
+if not ok then game.log("tiamat_default_science: the Core's hum was refused: " .. tostring(why)) end
+
 local spinning = {}         -- Core key -> { mid, stops, rings = { entity ids }, owner }
+
+local function hum_id(key) return "core_" .. string.gsub(key, "[^%w]", "_") end
 local darkened = {}         -- player -> the Core key whose dark is on them
+local flickering = {}       -- player -> the tick their light comes back
+local FLICKER = game.mod_id .. ":shade"
 local SOURCE = game.mod_id .. ":core"
 local RATES = { { 0.05, 0.0 }, { 0.0, 0.07 }, { 0.09, 0.09 } }
 
@@ -242,6 +267,9 @@ local function spin_up(mid, owner)
     end
     spinning[key] = { mid = mid, stops = tds.now() + C.core.spin_ticks, rings = rings, owner = owner }
     game.set_block(mid, WORMHOLE)
+    game.play_loop{ id = hum_id(key), sound = U.id(C.core.hum.sound),
+        pos = { x = mid.x + 0.5, y = mid.y + 0.5, z = mid.z + 0.5, domain = mid.domain },
+        radius = C.core.hum.radius, gain = C.core.hum.gain, fade_ticks = C.core.hum.fade_ticks }
     T7.toy(owner, "core")
 end
 
@@ -249,6 +277,8 @@ local function spin_down(key)
     local core = spinning[key]
     if not core then return end
     for _, id in ipairs(core.rings) do if id then game.despawn_entity(id) end end
+    -- The rings stop dead, and so does the sound.
+    game.stop_loop{ id = hum_id(key), fade_ticks = 0 }
     local b = game.get_block(core.mid)
     if b and b.material == B.wormhole then game.set_block(core.mid, "engine:air") end
     spinning[key] = nil
@@ -267,6 +297,12 @@ function F.turning_near(pos, reach)
 end
 
 tds.on_tick(1, function(now)
+    for _, uuid in ipairs(U.sorted_keys(flickering)) do
+        if now >= flickering[uuid] then
+            flickering[uuid] = nil
+            if weather and weather.add_overlay then weather.add_overlay(uuid, FLICKER, nil) end
+        end
+    end
     for _, key in ipairs(U.sorted_keys(spinning)) do
         local core = spinning[key]
         if now >= core.stops then
@@ -471,6 +507,7 @@ end)
 tds.on_leave(function(e)
     clear_shades(e.player)
     darkened[e.player] = nil
+    flickering[e.player] = nil
 end)
 
 -- The Deep's strange matter, and its shades ------------------------------------------------------
@@ -503,7 +540,11 @@ tds.on_tick(C.shades.period, function()
                     local dx, dz = p.x - s.pos.x, p.z - s.pos.z
                     if math.abs(dx) <= C.shades.near and math.abs(dz) <= C.shades.near then
                         -- It reached you: you are pushed toward the edge, and it is far again.
-                        game.move_player(uuid, { x = p.x + sign(-dx) * C.shades.push, y = p.y, z = p.z + sign(-dz) * C.shades.push })
+                        game.move_player(uuid, { x = p.x + sign(dx) * C.shades.push, y = p.y, z = p.z + sign(dz) * C.shades.push })
+                        if weather and weather.add_overlay then
+                            weather.add_overlay(uuid, FLICKER, { intensity = C.shades.flicker.intensity, ease_ticks = 1 })
+                            flickering[uuid] = tds.now() + C.shades.flicker.ticks
+                        end
                         local o = SHADE_AT[(i - 1) % #SHADE_AT + 1]
                         game.set_entity(id, { pos = { x = p.x + o[1] * C.shades.far, y = p.y, z = p.z + o[2] * C.shades.far } })
                     else

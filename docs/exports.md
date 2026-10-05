@@ -82,7 +82,8 @@ All are namespaced `tiamat_default_science:` by the engine.
   `atmosphere_processor`; `fold_key`, `strange_matter`, `recall_beacon`,
   `unified_field_engine`. The blocks `wormhole` (passable, transparent, light
   6, 4, 12; placed and taken away by this mod alone) and `horizon_glass`.
-  The models `core_ring` and `shade`, worn by entities.
+  The models `core_ring` and `shade`, worn by entities. The sound
+  `core_hum`, looped round a turning Core.
 - **Domains:** the templates `body_ice`, `body_rust`, `body_regolith`,
   `body_basalt` and `body_glass`, each instanced as `<template>/<star>_<size>`
   at its star's place, with a sky of its own; and `deep`, the misfold.

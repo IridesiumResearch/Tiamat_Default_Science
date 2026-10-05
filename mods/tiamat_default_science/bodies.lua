@@ -197,6 +197,9 @@ for _, kind in ipairs(C.bodies.kinds) do
     end
 end
 
+local ICE = U.material(U.id(C.terraform.ice))
+local SNOW = U.material(U.id(C.terraform.snow))
+
 local cursor = {}           -- frame key -> the column it greens next
 
 local function green_key(domain) return "green:" .. domain end
@@ -226,10 +229,20 @@ function BO.green_one(pos)
         if top and BARREN[top.material] then
             cursor[key] = n
             local at = { x = x, y = top.y, z = z, domain = pos.domain }
-            game.set_block(at, GREEN[#GREEN])
-            game.set_block({ x = x, y = top.y - 1, z = z, domain = pos.domain }, GREEN[1])
-            if n % C.terraform.plant_every == 0 then
-                game.set_block({ x = x, y = top.y + 1, z = z, domain = pos.domain }, PLANTS[n % #PLANTS + 1])
+            local under = { x = x, y = top.y - 1, z = z, domain = pos.domain }
+            local below = game.get_block(under)
+            if top.material == SNOW and below and below.material == ICE and n % C.terraform.melt_every == 0 then
+                -- The snow blown off, and the ice under it melted where it lies:
+                -- a block of ice, a block of water.
+                game.set_block(at, "engine:air")
+                game.set_block(under, "engine:air")
+                game.set_fluid(under, { fluid = C.terraform.water, volume = 27 })
+            else
+                game.set_block(at, GREEN[#GREEN])
+                game.set_block(under, GREEN[1])
+                if n % C.terraform.plant_every == 0 then
+                    game.set_block({ x = x, y = top.y + 1, z = z, domain = pos.domain }, PLANTS[n % #PLANTS + 1])
+                end
             end
             local done = (game.storage.get(green_key(pos.domain)) or 0) + 1
             game.storage.set(green_key(pos.domain), done)

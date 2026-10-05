@@ -72,6 +72,7 @@ fn main() {
     worlds_generated();
     wells_and_stasis();
     terraforming();
+    ice_melts();
     determinism();
     println!("science native check: all passed");
 }
@@ -1651,12 +1652,15 @@ fn the_core_and_the_fold() {
     assert!(block_is(&r, 810, 70, 800, &format!("{MOD}:wormhole")), "the throat opens");
     let rings = r.entities.0.lock().unwrap().values().filter(|e| e.model.as_deref() == Some("tiamat_default_science:core_ring")).count();
     assert_eq!(rings, 3, "three rings turn");
+    let hums = r.sounds.loops.lock().unwrap().clone();
+    assert!(hums.iter().any(|l| l.ends_with(" tiamat_default_science:core_hum")), "the Core hums: {hums:?}");
 
     // Look at a star, near the Core, and use the key at the sky.
     r.stand_at(810.5, 64.0, 805.5);
     let star = r.look_at_star(40);
     assert!(r.use_at_nothing(PLAYER));
     assert_eq!(r.heard(PLAYER).last().map(String::as_str), Some("The rings stop dead, and the stars turn over."));
+    assert!(r.sounds.loops.lock().unwrap().last().is_some_and(|l| l.starts_with("stop ")), "and falls silent");
     let (_, domain, _) = rig::TRANSFERS.lock().unwrap().last().cloned().expect("a transfer");
     assert!(domain.starts_with("tiamat_default_science:body_") && domain.contains(&format!("/{star}_")), "{domain}");
     assert!(r.places.0.lock().unwrap().contains(&domain), "the body was made");
@@ -1687,6 +1691,17 @@ fn the_core_and_the_fold() {
     r.tick(45);
     let shades = r.entities.0.lock().unwrap().values().filter(|e| e.model.as_deref() == Some("tiamat_default_science:shade")).count();
     assert_eq!(shades, 3, "the shades stand off");
+    let me = r.entities.0.lock().unwrap().get(&1).unwrap().transform.to_world();
+    {
+        // One of them, at your shoulder.
+        let mut map = r.entities.0.lock().unwrap();
+        let shade = map.values_mut().find(|e| e.model.as_deref() == Some("tiamat_default_science:shade")).unwrap();
+        shade.transform = rig_transform(me[0] + 1.0, me[1], me[2]);
+    }
+    let moves = rig::MOVES.lock().unwrap().len();
+    r.tick(40);
+    let pushed = rig::MOVES.lock().unwrap()[moves..].iter().any(|(p, to)| *p == PLAYER && to[0] <= me[0] - 7.0);
+    assert!(pushed, "a shade that reaches you pushes you away from it");
     r.put_block(3, 0, 0, "tiamat_default_world:morphic_rock");
     r.give(PLAYER, "chrome_pick", 27);
     r.hold(PLAYER, "chrome_pick");
@@ -1745,6 +1760,12 @@ fn gates_and_recall() {
     r.move_to(PLAYER, 900, 65, 900, "overworld");
     assert_eq!(rig::MOVES.lock().unwrap().last().map(|m| m.1), Some([920.5, 65.0, 901.5]), "out of the twin");
     assert_eq!(insight(&mut r) - before, 50, "through a wormhole");
+
+    // A stack dropped in the throat comes out of the twin.
+    let id: u64 = r.ask("t drop 900 65 900").parse().expect("a drop");
+    r.tick(20);
+    let at = r.entities.0.lock().unwrap().get(&id).map(|e| e.transform.to_world()).expect("the stack");
+    assert!((at[0] - 920.5).abs() < 0.01 && (at[2] - 901.5).abs() < 0.01, "out of the twin: {at:?}");
 
     // The recall beacon: to the nearest of your own gates.
     r.give(PLAYER, "recall_beacon", 27);
@@ -1889,6 +1910,57 @@ fn terraforming() {
     assert_eq!(insight(&mut r) - before, 100, "and a sky remade");
     assert_eq!(r.stored(&format!("sky:{body}")).as_deref(), Some("Flag(true)"), "once, kept with the world");
     println!("terraforming: ok");
+}
+
+/// On an ice world the terraformer melts every fourth column's ice into the
+/// world's water, and greens the rest.
+fn ice_melts() {
+    use tiamat_core::storage::{Access as _, Value};
+    let mut r = Rig::new(Setup::default());
+    tier7_scientist(&mut r);
+    r.open_world(11);
+    let body = format!("{MOD}:body_ice/7_1");
+    r.places.0.lock().unwrap().push(body.clone());
+    r.move_to(PLAYER, 1200, 31, 1200, &body);
+    for x in 1192..=1207 {
+        for z in 1192..=1207 {
+            r.put_block(x, 29, z, "tiamat_default_world:ice");
+            r.put_block(x, 30, z, "tiamat_default_world:snow");
+        }
+    }
+    let on_body = |x: i32, y: i32, z: i32| format!("tiamat_default_craft:{MOD}:frame:{body}@{x},{y},{z}");
+    for x in [1200, 1201, 1202, 1203] {
+        assert!(r.place(PLAYER, x, 31, 1200, "frame", FULL));
+        let name = on_body(x, 31, 1200);
+        tiamat_core::inventory::Containers::ensure(&*r.boxes, &name, 9);
+        r.storage.set("tiamat_default_craft", &format!("placer:{name}"), Some(Value::Text(rig::hex(PLAYER))));
+    }
+    // The terraformer, and enough aether cells beside it to carry 128.
+    r.put_in(&on_body(1200, 31, 1200), 1, "terraformer", 27);
+    for x in [1201, 1202, 1203] {
+        r.put_in(&on_body(x, 31, 1200), 1, "aether_cell", 27);
+    }
+    for x in 1200..=1203 {
+        for z in 1201..=1205 {
+            assert!(r.place(PLAYER, x, 31, z, "frame", FULL));
+            let name = on_body(x, 31, z);
+            tiamat_core::inventory::Containers::ensure(&*r.boxes, &name, 9);
+            r.storage.set("tiamat_default_craft", &format!("placer:{name}"), Some(Value::Text(rig::hex(PLAYER))));
+            r.put_in(&name, 1, "aether_cell", 27);
+        }
+        assert!(r.place(PLAYER, x, 32, 1200, COPPER, ROD));
+    }
+    for z in 1201..=1205 {
+        for x in 1200..=1203 {
+            let _ = r.place(PLAYER, x, 32, z, COPPER, ROD);
+        }
+    }
+    r.tick(400);
+    let water = r.world.fluids.lock().unwrap().keys().filter(|k| k.1 == 29).count();
+    let grass = r.material("tiamat_default_world:grass");
+    let green = r.world.blocks.lock().unwrap().iter().filter(|(k, b)| k.1 == 30 && b.0 == grass).count();
+    assert!(water > 0 && green > water, "pools among the green: {water} water, {green} grass");
+    println!("ice melts: ok");
 }
 
 /// The solid blocks in one generated chunk of `domain`.

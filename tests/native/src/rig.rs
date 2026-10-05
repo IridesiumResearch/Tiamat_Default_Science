@@ -396,6 +396,8 @@ impl uihost::Access for Dialogs {
 pub struct Sounds {
     pub plays: Mutex<Vec<String>>,
     pub time: Mutex<f32>,
+    /// Loops started, as `<id> <sound>`, and stopped, as `stop <id>`, in order.
+    pub loops: Mutex<Vec<String>>,
 }
 
 impl sound::Access for Sounds {
@@ -403,13 +405,15 @@ impl sound::Access for Sounds {
         self.plays.lock().unwrap().push(request.sound.clone());
         1
     }
-    fn start_loop(&self, _: &LoopRequest) -> u32 {
+    fn start_loop(&self, request: &LoopRequest) -> u32 {
+        self.loops.lock().unwrap().push(format!("{} {}", request.id, request.sound));
         1
     }
     fn time_of_day(&self) -> f32 {
         *self.time.lock().unwrap()
     }
-    fn stop_loop(&self, _: &sound::StopRequest) -> u32 {
+    fn stop_loop(&self, request: &sound::StopRequest) -> u32 {
+        self.loops.lock().unwrap().push(format!("stop {}", request.id));
         0
     }
     fn set_time_of_day(&self, fraction: f32) -> bool {

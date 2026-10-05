@@ -1119,10 +1119,12 @@ C.gravity_engine = { charge = 512 }
 -- four live Tesla coils near, and a gravity engine within reach. The key is
 -- used on the ring block under the throat.
 C.core = { coils = 4, coil_reach = 8, engine_reach = 16, spin_ticks = 1200, dark_radius = 64,
-    fold_reach = 16, alignment = 0.9998, model = "core_ring" }
+    fold_reach = 16, alignment = 0.9998, model = "core_ring",
+    hum = { sound = "core_hum", radius = 64, gain = 0.8, fade_ticks = 60 } }
 -- A wormhole gate: an upright 3 × 3 ring of cavorite ring blocks, the key used
 -- on the ring's bottom middle block. Open while a live Tesla coil is near.
-C.gate = { pairs = 8, coil_reach = 16, period = 20 }
+C.gate = { pairs = 8, coil_reach = 16, period = 20,
+    carries = 0.75 }   -- dropped things within the throat block go through; the twin's front is a block out, so nothing comes back
 
 -- The bodies (§6.8): a star's warmth chooses its kind, its magnitude its size
 -- and gravity. Materials are the world's.
@@ -1147,13 +1149,17 @@ C.bodies = {
 }
 
 C.terraform = { period = 10, half = 8, region = 64, living_share = 60,
-    green = { "W:dirt", "W:grass" }, plants = { "W:tall_grass", "W:fern" }, plant_every = 5 }
+    green = { "W:dirt", "W:grass" }, plants = { "W:tall_grass", "W:fern" }, plant_every = 5,
+    -- On an ice world every fourth column's ice melts instead: a block of ice
+    -- under the snow becomes a block of the world's water.
+    melt_every = 4, ice = "W:ice", snow = "W:snow", water = "tiamat_default_world:water" }
 
 -- The Deep (§6.8): a misfold. Fragments in a void; fall off and you come back.
 C.deep = { fall = -64, arrive = { x = 0.5, y = 4, z = 0.5 }, platform = 6,
     rock = { "W:dark_basalt", "W:obsidian", "W:morphic_rock" }, strange = "W:morphic_rock",
     sky = { 0.06, 0.0, 0.02 }, sun = { 0.35, 0.05, 0.05 } }
-C.shades = { count = 3, far = 24, near = 2, period = 40, push = 8, model = "shade" }
+C.shades = { count = 3, far = 24, near = 2, period = 40, push = 8, model = "shade",
+    flicker = { ticks = 8, intensity = 0.15 } }      -- the light dips when one reaches you
 
 C.recall = { cooldown = 72000 }           -- an hour of ticks
 C.unified = { cost = 256 }
