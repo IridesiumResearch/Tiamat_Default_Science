@@ -10,7 +10,7 @@ marked, as the record; the open ones are copied, without the history, to the
 engine's `docs/engine-asks/tiamat_default_science.md`, so the engine side
 finds every mod's open asks in one place.
 
-## E-S5, a mod's world options under its own entry on the Mods tab — open, asked 2026-10-07
+## E-S5, a mod's world options under its own entry on the Mods tab — landed 2026-10-07 (engine befe1921)
 
 *Wanted:* the start screen draws a mod's `[[world_option]]`s under that
 mod's own entry on the Mods tab (`listing_row` in `front.rs`), folded as
@@ -26,6 +26,13 @@ they read on their own. *Smallest change:* in `mods_tab`, give each
 enabled listing with world options a closed `CollapsingHeader` holding the
 rows `world_option_rows` draws for it today, and draw nothing under the
 seed box; the choices stay in `world_options`, keyed as now.
+
+*Landed (engine `befe1921`, with UI ask 20):* each enabled mod's world
+options fold under its own row on the Mods tab, and nothing is drawn under
+the seed box. Science's two, `blasting` and `the_deep`, sit under Science
+with nothing changed here. A mod that wants per-player settings there too
+declares `[[setting]]` in `mod.toml` (`c65269b7`), with the fields a world
+option takes, instead of `register_setting`; this mod has none.
 
 ## E-S4, the domain on place and dig events — landed 2026-10-05 (engine e1becf0a)
 

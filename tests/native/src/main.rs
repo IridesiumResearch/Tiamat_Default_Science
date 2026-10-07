@@ -296,8 +296,8 @@ fn sunfire() {
     assert!(r.use_at(PLAYER, 7, 64, 7));
     let heard = r.heard(PLAYER);
     assert!(heard.iter().any(|l| l == "The sun through the glass sets it alight!"), "{heard:?}");
-    // With Life loaded, a burning campfire is Life's block (Craft, `fire.lua`).
-    let lit = r.material("tiamat_default_life:campfire");
+    // A burning campfire is Craft's own block, drawn as its model (Craft 30f01b2).
+    let lit = r.material("tiamat_default_craft:campfire_lit");
     assert_eq!(r.world.blocks.lock().unwrap().get(&(7, 64, 7)).map(|b| b.0), Some(lit), "Craft lit it");
     // Ours for sunshine, and Progress's own for a first fire lit (Craft's `fire:lit`).
     assert_eq!(insight(&mut r), 10, "a fire lit by sunshine, and a first fire");
