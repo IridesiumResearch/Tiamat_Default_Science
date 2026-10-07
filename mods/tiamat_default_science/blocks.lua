@@ -58,7 +58,7 @@ B.furnace = block(C.furnace, shaped(C.furnace))
 B.furnace_lit = block({
     id = C.furnace.lit, name = C.furnace.name .. " (burning)", description = C.furnace.description,
     hardness = C.furnace.hardness, tags = C.furnace.tags,
-}, { light_emit = C.furnace.light, whole = C.furnace.whole })
+}, { light_emit = C.furnace.light, whole = C.furnace.whole, model = C.furnace.lit_model })
 -- The arc lamp, dark and lit: the charge network swaps one for the other.
 B.lamp = block({ id = C.lamp.id, name = C.lamp.name, description = C.lamp.description,
     hardness = C.lamp.hardness, tags = C.lamp.tags }, shaped(C.lamp))

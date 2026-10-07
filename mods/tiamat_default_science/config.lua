@@ -288,7 +288,9 @@ C.furnace = {
     id = "furnace", name = "Furnace", lit = "furnace_lit",
     description = "A brick furnace. With a blowing engine and a turning shaft, a blast furnace.",
     hardness = 2.5, tags = { "stone" }, light = { r = 13, g = 7, b = 2 },
-    whole = true,                   -- a brick cube to look at, and a station: dug in one piece, never carved
+    -- A model block: drawn as a brick furnace with a fire mouth, dark and lit;
+    -- its cells the whole block. Whole, as every model block is.
+    model = "furnace", lit_model = "furnace_lit", whole = true,
     blast_heat = 5, blast_need = 8,          -- the blowing engine blasts at heat 5 while its network turns 8
 }
 
@@ -708,7 +710,7 @@ C.lamp = {
 
 -- The models model blocks are drawn as (`tools/make_models.py`). In cells,
 -- three to the block; a PNG beside each.
-C.models = { "antikythera", "frame", "lamp", "lamp_lit", "core_ring", "shade" }
+C.models = { "antikythera", "frame", "lamp", "lamp_lit", "furnace", "furnace_lit", "core_ring", "shade" }
 
 -- The charge network (brief §6.2): copper stock, any carving of it, carries
 -- charge between frames and lamps. Units a second.

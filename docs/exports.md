@@ -64,11 +64,11 @@ All are namespaced `tiamat_default_science:` by the engine.
   `gravimeter`, `dynamite`, `soda`, `hydrogen`, `cell` (charge in its detail,
   `e=<0..1000>`), `electromagnet`, `carbon_rod`, `difference_engine`,
   `automaton_spring`, `automaton_key`. The blocks `lamp` and `lamp_lit`.
-- **Models:** `antikythera`, `frame`, `lamp` and `lamp_lit`
-  (`models/<id>.glb`, a PNG beside each), which the blocks of the same names
-  are drawn as. Those blocks and the furnace are `whole` — dug in one piece
-  by any tool, never carved — where the engine knows the field; the copper
-  and steel stock are not, being made to be carved.
+- **Models:** `antikythera`, `frame`, `lamp`, `lamp_lit`, `furnace` and
+  `furnace_lit` (`models/<id>.glb`, a PNG beside each), which the blocks of
+  the same names are drawn as. Those blocks are `whole` — dug in one piece
+  by any tool, never carved; the copper and steel stock are not, being made
+  to be carved.
 - **Tier 6 items:** the movements `radio`, `receiver`, `tesla_coil`,
   `arc_electrodes`, `resonator`, `radium_cell` and `aether_cell`;
   `crookes_tube`, `xray_viewer`, `oscillator`, `radium_grain`, `helium`,

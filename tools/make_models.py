@@ -154,6 +154,28 @@ def lamp(lit):
     return boxes, halves(IRON, GLASS_LIT if lit else GLASS_DARK)
 
 
+BRICK = (150, 72, 56)
+SOOT = (40, 34, 32)
+EMBER = (255, 150, 60)
+
+
+def furnace(lit):
+    """A brick furnace: a body nearly the block, a fire mouth in its face (+Z),
+    and a chimney. Lit, the mouth glows."""
+    mouth = RIGHT if lit else (0.5, 0.0, 0.75, 1.0)
+    boxes = [
+        ((-1.5, 0.0, -1.5), (1.5, 2.2, 1.5), LEFT),            # the body
+        ((-0.7, 0.3, 1.5), (0.7, 1.3, 1.58), mouth),           # the fire mouth
+        ((-1.3, 2.2, -1.3), (1.3, 2.45, 1.3), LEFT),           # the crown
+        ((0.3, 2.45, -1.0), (1.1, 3.0, -0.2), LEFT),           # the chimney
+    ]
+    canvas = halves(BRICK, EMBER if lit else SOOT)
+    for y in range(0, 16, 4):                                  # mortar courses
+        for x in range(0, 8):
+            canvas.dot(x, y, (120, 110, 100))
+    return boxes, canvas
+
+
 CAVORITE = (70, 50, 110)
 VOID = (12, 10, 16)
 
@@ -179,7 +201,8 @@ def shade():
 
 
 MODELS = {"antikythera": antikythera, "frame": frame, "lamp": lambda: lamp(False), "lamp_lit": lambda: lamp(True),
-          "core_ring": core_ring, "shade": shade}
+          "core_ring": core_ring, "shade": shade,
+          "furnace": lambda: furnace(False), "furnace_lit": lambda: furnace(True)}
 
 
 def main():

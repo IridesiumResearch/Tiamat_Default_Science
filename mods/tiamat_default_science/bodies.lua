@@ -94,7 +94,9 @@ for _, kind in ipairs(C.bodies.kinds) do
         domain = BO.TEMPLATE[kind.id],
         day_length_ticks = 24000,
         keyframes = {
-            { time = 0.0, sky = { 0.0, 0.0, 0.02 }, sun = { 0.0, 0.0, 0.0 }, intensity = 0.05, stars = 1.0 },
+            -- Night: no moon, so the night light (the engine lights the night
+            -- from opposite the sun, in this colour) is starlight, faint and cold.
+            { time = 0.0, sky = { 0.0, 0.0, 0.02 }, sun = { 0.10, 0.11, 0.16 }, intensity = 0.05, stars = 1.0 },
             { time = 0.25, sky = kind.sky, sun = kind.sun, intensity = 0.6, stars = 0.4 },
             { time = 0.5, sky = kind.sky, sun = kind.sun, intensity = 1.0, stars = 0.2 },
             { time = 0.75, sky = kind.sky, sun = kind.sun, intensity = 0.6, stars = 0.4 },
@@ -104,7 +106,7 @@ end
 
 -- The sky a living body is given.
 BO.LIVING_SKY = { keyframes = {
-    { time = 0.0, sky = { 0.02, 0.03, 0.08 }, sun = { 0.0, 0.0, 0.0 }, intensity = 0.08, stars = 1.0 },
+    { time = 0.0, sky = { 0.02, 0.03, 0.08 }, sun = { 0.14, 0.15, 0.22 }, intensity = 0.08, stars = 1.0 },
     { time = 0.25, sky = { 0.9, 0.6, 0.45 }, sun = { 1.0, 0.75, 0.5 }, intensity = 0.7 },
     { time = 0.5, sky = { 0.45, 0.65, 0.95 }, sun = { 1.0, 0.97, 0.9 }, intensity = 1.0 },
     { time = 0.75, sky = { 0.9, 0.55, 0.4 }, sun = { 1.0, 0.7, 0.45 }, intensity = 0.7 },
