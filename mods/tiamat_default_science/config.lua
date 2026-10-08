@@ -1090,6 +1090,18 @@ C.tier7_recipes = {
         outputs = { { "unified_field_engine", count = 1 } } },
 }
 
+-- Strange matter where there is no Deep. In a world made with the Deep off,
+-- the resonator, by a live Tesla coil, condenses the overworld's own abyss
+-- rock (World's morphic rock, below 4 km) into it, so the horizon glass, the
+-- strange matter study and the Unified Field Engine can still be made.
+-- Registered only in such a world: where the Deep is, the Deep is the source.
+C.tier7_without_deep = {
+    { id = "strange_matter_condensed", station = "frame", node = "science.strange_matter", ticks = 2400,
+        tools = { { "resonator", wear = 0 } },
+        inputs = { { "W:morphic_rock", units = 27 * 3 }, { "aetherium_ingot", count = 1 } },
+        outputs = { { "strange_matter", count = 1 } } },
+}
+
 C.tier7_studies = {
     { id = "study_strange_matter", name = "Strange matter", inputs = { { "strange_matter", count = 1 } }, ticks = 12000, insight = 800 },
     { id = "study_fold_key", name = "The fold key", inputs = { { "fold_key", count = 1 } }, ticks = 18000, insight = 1200 },

@@ -70,6 +70,7 @@ fn main() {
     the_diamond_drill();
     gravitic_drones();
     worlds_generated();
+    strange_matter_without_the_deep();
     wells_and_stasis();
     terraforming();
     ice_melts();
@@ -1949,6 +1950,40 @@ fn ice_melts() {
     let green = r.world.blocks.lock().unwrap().iter().filter(|(k, b)| k.1 == 30 && b.0 == grass).count();
     assert!(water > 0 && green > water, "pools among the green: {water} water, {green} grass");
     println!("ice melts: ok");
+}
+
+/// A world made without the Deep still has strange matter: the resonator,
+/// by a live Tesla coil, condenses the abyss's morphic rock into it. A world
+/// with the Deep has no such recipe; there the Deep is the source.
+fn strange_matter_without_the_deep() {
+    let with = Rig::new(Setup::default());
+    assert!(!with.materials.is_empty());
+    let mut with = with;
+    with.join(PLAYER);
+    with.tick(1);
+    assert_eq!(with.ask("t ours"), "167", "with the Deep, no condensing");
+
+    let mut r = Rig::new(Setup { deep: false, ..Setup::default() });
+    tier7_scientist(&mut r);
+    assert_eq!(r.ask("t ours"), "168", "without it, one more recipe");
+    // A resonator by a live coil, aether cells for both.
+    movement_at(&mut r, 1300, 64, 1300, "aether_cell");
+    movement_at(&mut r, 1300, 64, 1302, "aether_cell");
+    for z in 1300..=1302 {
+        let _ = r.place(PLAYER, 1301, 64, z, COPPER, ROD);
+    }
+    movement_at(&mut r, 1302, 64, 1302, "tesla_coil");
+    for y in 65..=67 {
+        assert!(r.place(PLAYER, 1302, y, 1302, COPPER, COIL));
+    }
+    assert!(r.place(PLAYER, 1302, 68, 1302, STEEL, RING));
+    movement_at(&mut r, 1302, 64, 1300, "resonator");
+    let frame = frame_at(1302, 64, 1300);
+    r.put_in(&frame, 2, "tiamat_default_world:morphic_rock", 27 * 3);
+    r.put_in(&frame, 3, "aetherium_ingot", 27);
+    r.tick(2600);
+    assert_eq!(r.units_in(&frame, 6, 9, &format!("{MOD}:strange_matter")), 27, "strange matter, condensed");
+    println!("strange matter without the Deep: ok");
 }
 
 /// The solid blocks in one generated chunk of `domain`.

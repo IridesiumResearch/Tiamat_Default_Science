@@ -332,6 +332,7 @@ Tier 7 is built (step 8 of §17), and with it the whole tree: 102 of 102 nodes s
 | The recall beacon: once an hour | Once an hour of ticks, counted since the server started | A cooldown that survives a restart is bookkeeping for a toy |
 | Gravitic automata: scouts and carriers | An automaton wound by a maker who knows the node has no body to fall with: it follows flying, three blocks over its maker's head, and works frames and chests within 16 rather than 6 | A scout is a follower that flies; a carrier is one that reaches |
 | The Unified Field Engine: a pocket wormhole to any gate or body you know | A dialog of your own gates and the bodies you have visited; 256 charge from a carried cell per fold | As written |
+| Strange matter: from the Deep | In a world made with the Deep off (the world option), the aether resonator, by a live Tesla coil, condenses three blocks of the overworld's own abyss rock (World's morphic rock, below 4 km) and an aetherium ingot into strange matter. The recipe exists only in such a world | Without it, the horizon glass, the strange matter study and the Unified Field Engine could never be made; with the Deep on, the Deep stays the only source |
 | The fold key: strange matter or aetherium ×9 | Two recipes at the jig, one for each | Craft makes the recipe whose inputs are there |
 
 ---

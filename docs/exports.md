@@ -134,6 +134,8 @@ All are namespaced `tiamat_default_science:` by the engine.
 - **Into Progress, tier 6:** the studies `study_radium`, `study_aetherium`,
   `study_cavorite`; the inventions `.radio`, `.tesla`, `.xray`, `.quake`,
   `.aether`, `.wardenclyffe`.
+- **Only in a world without the Deep:** the frame recipe
+  `strange_matter_condensed` (the resonator; morphic rock and aetherium).
 - **Into Progress, tier 7:** the studies `study_strange_matter`,
   `study_fold_key`; the discovery family `tiamat_default_science.body:*`
   (group `bodies`, 100 each); the inventions `.plating`, `.levitate`,

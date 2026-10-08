@@ -768,11 +768,13 @@ pub struct Setup {
     pub weather: bool,
     /// Life's world option, "Default", "Creative" or "Adventure".
     pub mode: Option<String>,
+    /// This mod's own world option: whether a Core may fold blind.
+    pub deep: bool,
 }
 
 impl Default for Setup {
     fn default() -> Self {
-        Setup { ui: true, weather: true, mode: None }
+        Setup { ui: true, weather: true, mode: None, deep: true }
     }
 }
 
@@ -832,8 +834,15 @@ impl Rig {
         vm.set_world_edit(world.clone());
         vm.set_plan_access(Arc::new(Plans { world: world.clone(), saved: Mutex::new(HashMap::new()) }));
 
+        let mut options = Vec::new();
         if let Some(mode) = &setup.mode {
-            vm.set_world_options(&[("tiamat_default_life:mode".to_owned(), WorldOptionValue::Choice(mode.clone()))]);
+            options.push(("tiamat_default_life:mode".to_owned(), WorldOptionValue::Choice(mode.clone())));
+        }
+        if !setup.deep {
+            options.push((format!("{MOD}:the_deep"), WorldOptionValue::Toggle(false)));
+        }
+        if !options.is_empty() {
+            vm.set_world_options(&options);
         }
 
         let mut loaded: Vec<String> = Vec::new();
@@ -1046,6 +1055,8 @@ impl Rig {
             occupancy,
             units: occupancy.count_ones(),
             cells: None,
+            // Placed into empty air: nothing the placement does not write over is cleared.
+            swept: false,
         });
         assert!(out.faults.is_empty(), "faulted in place: {:?}", out.faults);
         if out.allowed {

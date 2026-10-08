@@ -18,8 +18,14 @@ local progress = U.exports("tiamat_default_progress")
 
 T7.recipes = {}     -- node id -> its recipes, for the Theatrum
 
+--- Whether this world was made with the Deep (a world option, fixed for the
+--- world's life, and the same in every VM from init.lua's first line).
+T7.DEEP = game.world_option(game.mod_id .. ":the_deep") ~= false
+
 if craft then
     U.register_recipes(craft, C.tier7_recipes, T7.recipes)
+    -- Without the Deep, strange matter is condensed from the abyss instead.
+    if not T7.DEEP then U.register_recipes(craft, C.tier7_without_deep, T7.recipes) end
 end
 
 if progress then
