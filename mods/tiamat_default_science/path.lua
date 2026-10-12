@@ -3,21 +3,23 @@
 --
 -- The science path: the door (brief §3) and the tree (§5), into Progress.
 --
--- Progress owns the graph, the insight and the lock: this file registers
--- into it and keeps no second copy of who chose what. A path node is `false`
--- to every player of the other path, and "lies beyond the Fork" to a player
--- with none, whatever this mod does.
+-- Progress owns the graph, the insight, the price and the lock: this file
+-- registers into it and keeps no second copy of who chose what. By default
+-- both paths are open to everybody (Progress 8f24c1d): a player pursues the
+-- path they are deepest in, and a node of the other costs more and fades from
+-- their Research tab. In a world made with `exclusive_paths` the Fork binds,
+-- and this path's `sentence` and `refusal` are what the door says.
 --
 -- Only the tiers whose content is built are registered (`config.lua`'s
 -- `shipped_tier`): a node that unlocks nothing yet is not for sale. The
 -- rest of the tree stays data, which `tools/check_tree.py` proves sound.
 --
--- Choosing the Antikythera Mechanism gives Natural Philosophy, free, and the
--- notebook and the Theatrum to a player who has none. `on_choose` also runs
--- when a player repaths INTO science, which is right: the root went with the
--- old path and comes back. Repathing away needs nothing from this mod yet —
--- Progress takes the path's nodes itself, and nothing built so far belongs
--- to a player.
+-- `on_choose` runs the first time a player takes up natural philosophy —
+-- at the door, or by learning a science node on the Research tab beside
+-- another path — and gives Natural Philosophy, free, and the notebook and the
+-- Theatrum to a player who has none; each is a no-op for one who already
+-- holds it. In a binding world it also runs on a repath INTO science, which
+-- is right: the root went with the old path and comes back.
 
 local C = tds.config
 local U = tds.util

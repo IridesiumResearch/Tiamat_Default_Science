@@ -770,11 +770,13 @@ pub struct Setup {
     pub mode: Option<String>,
     /// This mod's own world option: whether a Core may fold blind.
     pub deep: bool,
+    /// Progress's world option: one path per player, the binding Fork.
+    pub exclusive: bool,
 }
 
 impl Default for Setup {
     fn default() -> Self {
-        Setup { ui: true, weather: true, mode: None, deep: true }
+        Setup { ui: true, weather: true, mode: None, deep: true, exclusive: false }
     }
 }
 
@@ -837,6 +839,9 @@ impl Rig {
         let mut options = Vec::new();
         if let Some(mode) = &setup.mode {
             options.push(("tiamat_default_life:mode".to_owned(), WorldOptionValue::Choice(mode.clone())));
+        }
+        if setup.exclusive {
+            options.push(("tiamat_default_progress:exclusive_paths".to_owned(), WorldOptionValue::Toggle(true)));
         }
         if !setup.deep {
             options.push((format!("{MOD}:the_deep"), WorldOptionValue::Toggle(false)));

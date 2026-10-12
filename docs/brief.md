@@ -335,6 +335,10 @@ Tier 7 is built (step 8 of §17), and with it the whole tree: 102 of 102 nodes s
 | Strange matter: from the Deep | In a world made with the Deep off (the world option), the aether resonator, by a live Tesla coil, condenses three blocks of the overworld's own abyss rock (World's morphic rock, below 4 km) and an aetherium ingot into strange matter. The recipe exists only in such a world | Without it, the horizon glass, the strange matter study and the Unified Field Engine could never be made; with the Deep on, the Deep stays the only source |
 | The fold key: strange matter or aetherium ×9 | Two recipes at the jig, one for each | Craft makes the recipe whose inputs are there |
 
+
+### 2.9 Both paths side by side (Progress `8f24c1d`, 2026-10-12)
+
+The designer changed the Fork after this text was written. By default every player may learn both paths: the path they pursue is the one they are deepest in, a node of the other costs half again for every tier the pursued path is ahead, and fades from their Research tab. The binding Fork this brief describes (§0, §3) is now the world option `exclusive_paths`, off by default. Nothing in this mod had to change: the door asks Progress's question ("If you research this, you are pursuing Natural Philosophy.") by default and this path's binding `sentence` only in a world of one path each; `on_choose` gives the root, the notebook and the Theatrum the first time a player takes up natural philosophy, by the door or the Research tab, and each is a no-op for one who has it. An instrument already worked for whoever held it, so a scientist's compass serves a mage as it always did. The door is tested both ways.
 ---
 
 ## 3. The door: the Antikythera Mechanism

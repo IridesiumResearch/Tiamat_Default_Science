@@ -288,6 +288,7 @@ C.furnace = {
     id = "furnace", name = "Furnace", lit = "furnace_lit",
     description = "A brick furnace. With a blowing engine and a turning shaft, a blast furnace.",
     hardness = 2.5, tags = { "stone" }, light = { r = 13, g = 7, b = 2 },
+    flicker = { depth = 0.25, rate = 6 },   -- a fire's light breathes; the arc lamps' does not
     -- A model block: drawn as a brick furnace with a fire mouth, dark and lit;
     -- its cells the whole block. Whole, as every model block is.
     model = "furnace", lit_model = "furnace_lit", whole = true,

@@ -422,16 +422,26 @@ fn the_tree() {
     // A node that says no `reveal` of its own takes the path's, "near".
     assert_eq!(r.ask("t branch science.water_wheel"), "MECH/nil", "a branch, and the path's reveal");
     let answer = r.ask("t learn science.machine_frame");
-    assert!(answer.starts_with("nil") && answer.contains("lies beyond the Fork"), "{answer}");
+    // Both paths are open to everybody (Progress 8f24c1d): a path node is
+    // closed only by what it requires, here the path's root.
+    assert!(answer.starts_with("nil") && answer.contains("needs Natural Philosophy first"), "{answer}");
     assert_eq!(insight(&mut r), 5000, "nothing was spent");
     println!("the tree: ok");
 }
 
-/// The Antikythera Mechanism: its recipe waits for the Keystone; choosing it
-/// binds the player, gives Natural Philosophy free and the notebook and the
-/// Theatrum once, and opens the tree, whose effects Progress then sums.
+/// The Antikythera Mechanism: its recipe waits for the Keystone; taking it
+/// gives Natural Philosophy free and the notebook and the Theatrum once, and
+/// opens the tree, whose effects Progress then sums. Both paths are open to
+/// everybody (Progress 8f24c1d), so the door asks Progress's own question;
+/// in a world of one path each it asks this mod's binding sentence.
 fn the_door() {
-    let mut r = Rig::new(Setup::default());
+    door_in(false);
+    door_in(true);
+    println!("the door: ok");
+}
+
+fn door_in(exclusive: bool) {
+    let mut r = Rig::new(Setup { exclusive, ..Setup::default() });
     ready(&mut r, 600);
     let answer = r.ask("t can tiamat_default_progress:door_science");
     assert!(answer.starts_with("nil") && !answer.contains("no such"), "the door's recipe, gated: {answer}");
@@ -444,7 +454,11 @@ fn the_door() {
     assert!(r.use_at(PLAYER, 20, 64, 20));
     let (form, tree) = r.last_dialog().expect("the Fork's question");
     assert_eq!(form, "tiamat_default_progress:fork");
-    assert!(tree.contains("The dials turn once, for you alone."), "{tree}");
+    if exclusive {
+        assert!(tree.contains("The dials turn once, for you alone."), "the binding sentence: {tree}");
+    } else {
+        assert!(tree.contains("If you research this, you are pursuing Natural Philosophy."), "{tree}");
+    }
     r.heard(PLAYER);
     r.press(PLAYER, "tiamat_default_progress", "fork", "yes");
     let heard = r.heard(PLAYER);
@@ -465,9 +479,13 @@ fn the_door() {
     assert_eq!(insight(&mut r), 600 - 100 - 80 - 100 - 120 - 120);
 
     assert!(r.use_at(PLAYER, 20, 64, 20));
-    assert_eq!(r.said(), "You are already of Natural Philosophy.");
+    let again = r.said();
+    if exclusive {
+        assert_eq!(again, "You are already of Natural Philosophy.");
+    } else {
+        assert!(!again.is_empty(), "the door says something to one who pursues it");
+    }
     assert_eq!(r.units(PLAYER, "notebook"), 27, "no second notebook");
-    println!("the door: ok");
 }
 
 /// A player on the science path, holding `nodes` (granted by an operator).
