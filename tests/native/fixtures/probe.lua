@@ -25,6 +25,9 @@
 --   t progress <ticks> <container>  Craft's add_progress on a container
 --   t drop <x> <y> <z>   Life drops a block of stone there, as a dug block falls
 --   t cost <node>        what a node costs the speaker now (Progress's `cost`)
+--   t dump               every material, recipe and group, a line each, for
+--                        tools/reach.py (M|name, R|id|station|requires|ins|tools|outs,
+--                        G|#group|member,...)
 --
 -- It also registers a small rival path, `rival`, of two nodes, so a test can
 -- make a player pursue something other than science: both paths are open to
@@ -128,6 +131,41 @@ game.register_on_chat(function(e)
         local id = life and life.drop({ x = tonumber(x) + 0.5, y = tonumber(y) + 0.5, z = tonumber(z) + 0.5 },
             { material = "tiamat_default_world:stone", count = 1 })
         say = tostring(id)
+    elseif word == "dump" then
+        local names, groups = {}, {}
+        for id = 1, 4096 do
+            local name = game.block_of(id)
+            if name then names[#names + 1] = name; game.chat_to(e.player, "M|" .. name) end
+        end
+        local function list(entries, key)
+            local out = {}
+            for i, x in ipairs(entries or {}) do
+                out[i] = x.name .. "*" .. tostring(x[key] or "")
+                if string.sub(x.name, 1, 1) == "#" then groups[x.name] = true end
+            end
+            return table.concat(out, ";")
+        end
+        for _, r in ipairs(c.recipes()) do
+            local ins, tools, outs = list(r.inputs, "units"), list(r.tools, "wear"), list(r.outputs, "units")
+            if r.pattern then
+                local keyed = {}
+                for _, k in pairs(r.pattern.key) do
+                    local name = k.tool or k.name
+                    if string.sub(name, 1, 1) == "#" then groups[name] = true end
+                    keyed[#keyed + 1] = (k.tool and "T:" or "") .. name
+                end
+                ins = ins .. (ins ~= "" and ";" or "") .. "P:" .. table.concat(keyed, ",")
+            end
+            game.chat_to(e.player, table.concat({ "R", r.id, r.station or "", tostring(r.requires or ""), ins, tools, outs }, "|"))
+        end
+        for group in pairs(groups) do
+            local members = {}
+            for _, name in ipairs(names) do
+                if c.in_group(group, name) then members[#members + 1] = name end
+            end
+            game.chat_to(e.player, "G|" .. group .. "|" .. table.concat(members, ","))
+        end
+        say = "done"
     elseif word == "cost" then
         say = tostring(p.cost(e.player, rest))
     elseif word == "glyph_of" then

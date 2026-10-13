@@ -91,6 +91,7 @@ Engine. Its departures from the brief are §2.8.
 | `tools/make_models.py`, `tools/make_sounds.py` | Build the placeholder models and the Core's hum, the same way. |
 | `tools/check_tree.py` | Proves the tree sound from `tree.lua`, prints the pacing table (brief §13), and with `--write` writes `docs/history.md`. |
 | `tools/glyphs.py` | Proves the glyph table sound, and that no glyph meets magic's or the interface's shapes. |
+| `tools/reach.py` | Runs the rig, lists every recipe of every mod, and proves each of this mod's can be made from the world's own blocks, and each node's with only the nodes it requires. |
 | `tools/pacing.py` | Writes `docs/pacing.md`: the tree's cost per tier against §13's targets, and with `--log <server log>` a real session's insight hour by hour against them, with the `config.lua` numbers that pay each source. Step 9 of the build. |
 | `tests/native/` | The mod run in the engine's real script VM, beside the REAL sibling mods, with a fake server around it. |
 | `docs/brief.md` | The design, and §2.1: what was checked and what changed. |

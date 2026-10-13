@@ -339,6 +339,11 @@ Tier 7 is built (step 8 of §17), and with it the whole tree: 102 of 102 nodes s
 ### 2.9 Both paths side by side (Progress `8f24c1d`, 2026-10-12)
 
 The designer changed the Fork after this text was written. By default every player may learn both paths: the path they pursue is the one they are deepest in, a node of the other costs half again for every tier the pursued path is ahead, and fades from their Research tab. The binding Fork this brief describes (§0, §3) is now the world option `exclusive_paths`, off by default. Nothing in this mod had to change: the door asks Progress's question ("If you research this, you are pursuing Natural Philosophy.") by default and this path's binding `sentence` only in a world of one path each; `on_choose` gives the root, the notebook and the Theatrum the first time a player takes up natural philosophy, by the door or the Research tab, and each is a no-op for one who has it. An instrument already worked for whoever held it, so a scientist's compass serves a mage as it always did. The door is tested both ways.
+
+### 2.10 Prerequisites the recipes need (2026-10-13)
+
+`tools/reach.py` follows every recipe of every mod down to the world's own blocks, and asks of each node whether its recipes can be made with only the nodes it requires. Thirteen could not: their recipes wanted copper wire, steel, coke, a spring, carbon rods or bakelite that only a node outside their requirements makes, so a player could buy one and find it useless. Each now requires what it uses (§5's tables are the design; `tree.lua` is the build): the Atmospheric Engine, Electrolysis and the Automaton require Wire Drawing; the Arc Lamp requires Coke; the Dynamo requires Crucible Steel; Punched Cards require the Trip Hammer; the Safety Elevator, the Aether Cell and the Earthquake Machine require the Screw-Cutting Lathe; the Arc Furnace requires Crucible Steel and the Arc Lamp; the Aether Drift requires the Escapement and Crucible Steel; Wardenclyffe requires Bakelite. The steam hammer's punched-card variants (nails, chain, hinges) are the Steam Hammer's own, not Punched Cards': they need its movement, and Punched Cards need not need it. No cost changed; the spine is 41,650 insight, from 40,050.
+
 ---
 
 ## 3. The door: the Antikythera Mechanism

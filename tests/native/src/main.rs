@@ -20,6 +20,17 @@ const CAIRN: u32 = 1_912_327;
 const STONE: &str = "tiamat_default_world:stone";
 
 fn main() {
+    // `tools/reach.py` asks for the recipe dump alone.
+    if std::env::var_os("SCIENCE_DUMP").is_some() {
+        let mut r = Rig::new(Setup::default());
+        r.join(PLAYER);
+        r.tick(1);
+        r.say("t dump");
+        for line in r.heard(PLAYER) {
+            println!("{line}");
+        }
+        return;
+    }
     loads();
     loads_without_the_optional_mods();
     the_bench();
