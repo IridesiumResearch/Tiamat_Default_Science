@@ -511,12 +511,10 @@ fn the_book_prices_for_the_reader() {
     let (_, tree) = r.last_dialog().expect("the book");
     assert!(tree.contains("Learn it at the research table for 100 insight."), "pursuing science, the tree's price: {tree}");
     // The rival, two tiers deep: now science is the path not pursued.
-    // Learned as a player learns, with insight: Progress's operator `grant`
-    // still answers "take that path first" for a second path.
-    r.ask("t award 2000");
+    // An operator's grant follows coexisting paths (Progress 1df022c).
     for node in ["rival.first", "rival.second"] {
-        let said = r.ask(&format!("t learn {node}"));
-        assert_eq!(said, "true", "{node}");
+        let said = r.ask(&format!("progress grant {node}"));
+        assert!(said.starts_with("Learned"), "{node}: {said}");
     }
     assert_eq!(r.ask("t path"), "rival", "pursuing what they are deepest in");
     let dearer = r.ask("t cost science.machine_frame");
