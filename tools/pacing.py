@@ -105,7 +105,10 @@ def tier_at(spent, whole):
     """The tier a player is climbing once they have spent `spent` on the tree:
     every tier below it bought whole. An estimate — a player who skips nodes
     climbs further for the same spend — and the shared tree's spending
-    counts too, which only makes the estimate cautious."""
+    counts too, which only makes the estimate cautious. Since both paths
+    are open to everybody (Progress 8f24c1d), a node of the path a player
+    does not pursue costs more, so a player who studies the other path
+    beside this one reads a tier ahead of where they are."""
     paid = 0
     for tier in sorted(TARGET):
         paid += whole[tier]

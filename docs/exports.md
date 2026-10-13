@@ -190,7 +190,7 @@ the word is chat.
 ## What it reads from other mods
 
 Not exports, listed so the direction is clear: Progress's `register_node`,
-`register_discovery`, `discover`, `register_study`, `effects_of` and `has`; Craft's `register`,
+`register_discovery`, `discover`, `register_study`, `effects_of`, `has` and `cost` (the Theatrum's price for the reader); Craft's `register`,
 `register_station`, `register_group`, `register_tool`, `on_crafted`, `on_first`, `in_group`,
 `register_glyph`, `glyph_of` and `ignite` (the burning glass, which listens
 for uses at Craft's `unlit_campfire`, `unfired_kiln`, `kiln` and `bloomery`

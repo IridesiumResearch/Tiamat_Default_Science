@@ -380,6 +380,10 @@ pub struct Dialogs {
 }
 
 impl uihost::Access for Dialogs {
+    /// Hover names for materials: the client's to draw, nothing here reads them.
+    fn set_hover(&self, _: &str, _: Vec<(MaterialId, String)>) -> bool {
+        true
+    }
     fn show(&self, request: &ShowRequest) -> bool {
         tiamat_core::ui::check(&request.tree, tiamat_core::ui::Limits::default())
             .expect("every tree the mod sends passes the engine's checker");
@@ -1030,6 +1034,7 @@ impl Rig {
             mod_id: mod_id.into(),
             form: format!("{mod_id}:{form}"),
             event: proto::DialogEvent::Pressed { name: name.into(), click: proto::Press::Left },
+            dropped: None,
         });
         self.assert_healthy("a press");
     }

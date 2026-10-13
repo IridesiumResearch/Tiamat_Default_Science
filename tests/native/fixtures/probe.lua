@@ -24,11 +24,22 @@
 --   t ignite <x> <y> <z> Craft lights the station there, for the speaker
 --   t progress <ticks> <container>  Craft's add_progress on a container
 --   t drop <x> <y> <z>   Life drops a block of stone there, as a dug block falls
+--   t cost <node>        what a node costs the speaker now (Progress's `cost`)
+--
+-- It also registers a small rival path, `rival`, of two nodes, so a test can
+-- make a player pursue something other than science: both paths are open to
+-- everybody (Progress 8f24c1d), and the one not pursued is dearer.
 
 local p = game.exports("tiamat_default_progress")
 local c = game.exports("tiamat_default_craft")
 local s = game.exports("tiamat_default_science")
 assert(p and c and s, "the probe sees Progress, Craft and Science")
+
+game.register_block{ id = "rival_stone" }
+assert(p.register_path{ id = "rival", label = "The Rival", door = "probe:rival_stone",
+    recipe = { inputs = { { "tiamat_default_craft:plank", count = 1 } } } } == true, "the rival path")
+assert(p.register_node{ id = "rival.first", tier = 3, requires = { "shared.fork" }, label = "First" } == true)
+assert(p.register_node{ id = "rival.second", tier = 4, requires = { "rival.first" }, label = "Second" } == true)
 
 local BENCH = {
     ["shared.theatrum"] = true, ["shared.sundial"] = true, ["shared.burning_glass"] = true,
@@ -117,6 +128,8 @@ game.register_on_chat(function(e)
         local id = life and life.drop({ x = tonumber(x) + 0.5, y = tonumber(y) + 0.5, z = tonumber(z) + 0.5 },
             { material = "tiamat_default_world:stone", count = 1 })
         say = tostring(id)
+    elseif word == "cost" then
+        say = tostring(p.cost(e.player, rest))
     elseif word == "glyph_of" then
         say = tostring(c.glyph_of(math.tointeger(tonumber(rest))))
     end

@@ -16,6 +16,7 @@
 local C = tds.config
 local U = tds.util
 local A = tds.apprentice
+local progress = tds.util.exports("tiamat_default_progress")
 
 local P = {}
 
@@ -218,6 +219,14 @@ local function recipes_of(id)
     return list
 end
 
+--- What a node costs this player now. Both paths are open to everybody
+--- (Progress 8f24c1d), and a node of a path the player does not pursue is
+--- dearer, so the price is the player's, not the tree's.
+local function price(uuid, node)
+    local cost = progress and progress.cost and progress.cost(uuid, node.id)
+    return math.tointeger(cost) or node.cost
+end
+
 --- The book's pages for a player, as one dialog tree.
 function P.build(uuid)
     local pages = { label("Theatrum Machinarum", 22) }
@@ -233,7 +242,7 @@ function P.build(uuid)
                 end
                 if HOW[node.id] then page[#page + 1] = hint(HOW[node.id]) end
             else
-                page[#page + 1] = hint(string.format("Learn it at the research table for %d insight.", node.cost))
+                page[#page + 1] = hint(string.format("Learn it at the research table for %d insight.", price(uuid, node)))
             end
             pages[#pages + 1] = column(page, 4)
         end

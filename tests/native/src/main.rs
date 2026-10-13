@@ -31,6 +31,7 @@ fn main() {
     the_book();
     the_tree();
     the_door();
+    the_book_prices_for_the_reader();
     tier3_loads();
     the_crank();
     the_water_wheel();
@@ -486,6 +487,34 @@ fn door_in(exclusive: bool) {
         assert!(!again.is_empty(), "the door says something to one who pursues it");
     }
     assert_eq!(r.units(PLAYER, "notebook"), 27, "no second notebook");
+}
+
+/// Both paths are open to everybody, and the one a player does not pursue is
+/// dearer: the Theatrum names the reader's own price for the next page, the
+/// one Progress will charge them.
+fn the_book_prices_for_the_reader() {
+    let mut r = Rig::new(Setup::default());
+    scientist(&mut r, &[]);
+    r.give(PLAYER, "theatrum", 27);
+    r.ask("science book");
+    let (_, tree) = r.last_dialog().expect("the book");
+    assert!(tree.contains("Learn it at the research table for 100 insight."), "pursuing science, the tree's price: {tree}");
+    // The rival, two tiers deep: now science is the path not pursued.
+    // Learned as a player learns, with insight: Progress's operator `grant`
+    // still answers "take that path first" for a second path.
+    r.ask("t award 2000");
+    for node in ["rival.first", "rival.second"] {
+        let said = r.ask(&format!("t learn {node}"));
+        assert_eq!(said, "true", "{node}");
+    }
+    assert_eq!(r.ask("t path"), "rival", "pursuing what they are deepest in");
+    let dearer = r.ask("t cost science.machine_frame");
+    assert_ne!(dearer, "100", "science is dearer now");
+    r.ask("science book");
+    let (_, tree) = r.last_dialog().expect("the book");
+    assert!(tree.contains(&format!("Learn it at the research table for {dearer} insight.")),
+        "the reader's price, {dearer}: {tree}");
+    println!("the book prices for the reader: ok");
 }
 
 /// A player on the science path, holding `nodes` (granted by an operator).
