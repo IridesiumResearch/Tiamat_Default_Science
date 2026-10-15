@@ -34,6 +34,21 @@
 --
 -- This file describes what exists. `scripts/check-stubs.sh` fails CI if the
 -- engine registers something this file does not document.
+--
+-- =========================================================================
+-- API version: 1.0
+-- =========================================================================
+--
+-- The version of the API this file describes, which `game.api_version`
+-- reports at run time; CI fails if the two differ. `1.0` is the API as frozen
+-- at engine 0.5.0. Within a major version nothing a mod can call goes away or
+-- changes its meaning without a deprecation first: a
+-- `---@deprecated Since API 1.x, goes in 1.y: use ...` line on the stub (your
+-- editor strikes it through), an entry in AGENTS.md's "What changed" list,
+-- and at least one minor release in which it still works as it did.
+-- Additions raise the minor. Re-vendor this file from the engine's `main`
+-- when you move to a new engine release: what it says is what that engine
+-- does.
 
 ---@meta
 
@@ -600,6 +615,7 @@ function Stream:next_bool() end
 ---@field ITEMS_PER_STACK integer How many of a thing one inventory slot holds. 90. Anything over it spills into the next slot rather than being refused, so this is what a recipe means by "a stack" and never a limit on what a player may own.
 ---@field AIR integer The numeric id of air. Always 0.
 ---@field mod_id string Your mod's id, and your registration namespace.
+---@field api_version string The version of the mod API this engine speaks, `"major.minor"`; `"1.0"` is the API frozen at engine 0.5.0. The header of this file names the version it describes, and the engine's CI keeps the two equal. A mod written against a later minor may refuse an older engine here (`error` during registration disables the mod with a reason in the log); one written against an earlier minor needs nothing. The rule behind the number is in AGENTS.md, "The API's version".
 ---@field world_seed integer? The world's seed — the same number a generator's `pos.seed` carries — for sampling a density or a map outside a generator (`density:at(x, y, z, game.world_seed)` to aim a spawn at the ground). `nil` during registration, which runs before the world opens; set in every VM, the generation workers' included, by the time anything else runs.
 game = {}
 
@@ -1543,7 +1559,7 @@ function game.line_of_sight(from, to) end
 ---    end
 ---end)
 ---```
----@param callback fun(event: { player: string, name: string })
+---@param callback fun(event: { player: string, name: string, skin: string|nil })
 function game.register_on_player_join(callback) end
 
 ---Called when a player's feet cross into another block.
@@ -2509,6 +2525,15 @@ function game.is_operator(player) end
 ---  While the player rides a mount the MOUNT's physics govern and this does not
 ---  apply to the pair. Mobs and other entities are untouched; it is yours to
 ---  say per player (gravity plating, cavorite soles, a low-gravity body).
+---- `crawl` (default `false`) — Life ask 23: this player lies down to go
+---  under something too low to stand in. Sneaking at a one-block gap, or a
+---  ceiling closing over them, takes the low box (2.4 cells tall, the eye 2.0
+---  up, the sneak's pace, no jump); they stand where there is room, and never
+---  into a ceiling. The client predicts the same posture, so nobody
+---  rubber-bands at the mouth of a tunnel. The figure is tagged `CRAWL` (6),
+---  a clip named `crawl` on a model (the engine's humanoid has none and stands
+---  idle); `game.entity(body).crawling` reads it. Off, a one-block gap stops
+---  a body as it always did.
 ---
 ---The client is told and predicts with the same numbers, so a slowed or light
 ---player does not rubber-band. An unknown field is an error, so a typo is not a
@@ -2532,9 +2557,51 @@ function game.is_operator(player) end
 ---})
 ---```
 ---@param player string The player's UUID, in hex.
----@param abilities { fly: boolean?, operator_fly: boolean?, speed: number?, sprint: boolean?, wind_sky: boolean?, gravity: number? }|nil
+---@param abilities { fly: boolean?, operator_fly: boolean?, speed: number?, sprint: boolean?, wind_sky: boolean?, gravity: number?, crawl: boolean? }|nil
 ---@return boolean told
 function game.set_player_abilities(player, abilities) end
+
+---Dresses a player in one of the bodies a mod registered with
+---`game.register_player_model` (Life ask 23); `nil` is the first registered,
+---which is what everybody wears until you say otherwise. Everybody sees it,
+---the player too in third person. Changing body takes the skin off: a skin
+---is painted for one body. Read the player's choice from your own
+---`[[setting]]` on join and say it here; nothing is persisted by the engine.
+---
+---An id nobody registered is an error, so a typo is not a body you think you
+---gave. Returns `false` for a player who is not here.
+---
+---```lua
+---game.register_on_player_join(function(event)
+---    game.set_player_model(event.player, game.setting(event.player, "body"))
+---end)
+---```
+---@param player string The player's UUID, in hex.
+---@param id string|nil The body's id, as registered.
+---@return boolean told
+function game.set_player_model(player, id) end
+
+---Puts a skin on a player's body: a PNG the body they wear declared in
+---`skins` on `game.register_player_model`, by that path, or `nil` for the
+---model's own texture (Life ask 23). Everybody who sees the player fetches it
+---by hash and draws it in place of the model's texture, with its UVs. A file
+---the body did not declare is an error. Returns `false` for a player who is
+---not here.
+---@param player string The player's UUID, in hex.
+---@param file string|nil A path from the body's `skins`, or `nil`.
+---@return boolean told
+function game.set_player_skin(player, file) end
+
+---Whether this host takes a skin a player chose for their own body (Life
+---ask 23): `allow_custom_skins` in the server's `server.toml`, off by
+---default. On, a client that has one offers it at join, the engine checks it
+---is a PNG the size of the template of the body they wear, and everybody who
+---sees the player wears it in their place — until you say otherwise with
+---`game.set_player_skin`. The join event's `skin` carries its hash, or nil.
+---Off, nothing is taken from any client and every player wears what you give
+---them. For saying so to a player, or offering a skin of yours instead.
+---@return boolean allowed
+function game.custom_skins_allowed() end
 
 ---Sends one line of chat to one player. Returns whether it was delivered.
 ---
@@ -2701,7 +2768,7 @@ function game.register_hud_script(file) end
 ---a texture, so a client that already has it downloads nothing.
 ---
 ---**Clips are matched to the engine's animation tags by NAME**: `idle`,
----`walk`, `run`, `swing`, `swim`, `sneak`. A tag with no clip falls back to
+---`walk`, `run`, `swing`, `swim`, `sneak`, `crawl`. A tag with no clip falls back to
 ---`idle`; a model with no clips at all is drawn rigid, which is right for a
 ---crate. `scale` multiplies the model's own size, for art exported at one
 ---unit to the yard rather than to the engine's cell.
@@ -2723,6 +2790,41 @@ function game.register_model(spec) end
 ---@field file string Required. A self-contained `.glb` inside your mod directory.
 ---@field scale number? Multiplies the model's size. Default 1, from 0.01 to 64.
 ---@field texture string? A PNG beside the model, drawn on it using the model's own UVs — `"models/cow.png"`. Without one a model is matte white, which is what every model was. Pushed to clients by hash like a block's texture, decoded through the same caps (charter rule 14), and a skin that will not decode leaves the model white with a warning rather than painting it magenta. Your `.glb` must NOT embed the image: the reader refuses embedded images, and this is the separate file it refuses them in favour of.
+
+---Offers players a body to be drawn as (Life ask 23). Registration window
+---only.
+---
+---**Until this existed every player was the engine's white humanoid.** Once a
+---mod registers any body, every player is drawn as one of them, by everybody
+---and by themselves in third person: the first registered until
+---`game.set_player_model` says otherwise. The collider, the eye height and
+---the first-person hand are the player's own whatever the body — this is the
+---look, not the body — so a model should be the collider's size, 5.4 cells
+---tall and 1.8 wide, feet at `y = 0`, `+Z` forward, with clips `idle`,
+---`walk`, `run`, `swing`, `swim`, `sneak` and `crawl` matched by name.
+---
+---```lua
+---game.register_model{ id = "male", file = "models/male.glb", texture = "models/male.png" }
+---game.register_player_model{ id = "male", model = "male", skins = { "skins/male_pale.png", "skins/male_dark.png" } }
+---```
+---
+---`model` is a model you registered with `game.register_model` (unqualified
+---means your own), checked once every mod has loaded: a body naming no model
+---is dropped with an error and players fall back to the humanoid. `skins`
+---are PNGs beside your mod that `game.set_player_skin` may put on the body,
+---using the model's own UVs, at most 32; one whose file is missing cannot be
+---worn. **A world's bodies all come from one mod**, the last in load order to
+---register any, as a theme. Two bodies spend two of the server's 64 models,
+---however many skins they carry.
+---
+---@param spec Tiamat.PlayerModelSpec
+function game.register_player_model(spec) end
+
+---Fields accepted by `game.register_player_model`.
+---@class Tiamat.PlayerModelSpec
+---@field id string Required. A short name you pick the body by in `set_player_model`: `"male"`.
+---@field model string Required. The id of a model you registered with `register_model`; unqualified is your own mod's.
+---@field skins string[]? PNGs inside your mod directory, each a skin `set_player_skin` may put on this body. Pushed to clients by hash like a texture, and decoded through the same caps.
 
 ---Declares this world's cloud deck. Registration window only.
 ---
@@ -4570,7 +4672,7 @@ function game.transfer_entity(id, domain, position) end
 ---a fall of four hundred land at exactly the same number, and a body dropping
 ---through water is slowed by the water before it touches down. Walking down a
 ---step raises nothing: a body that never left the ground never fell.
----@return { pos: { x: number, y: number, z: number }, yaw: number, pitch: number, facing: { x: number, y: number, z: number }, velocity: { x: number, y: number, z: number }, on_ground: boolean, submerged: number, fell: number, source: string, model: string|nil, item: table|nil, anim: integer, health: integer|nil, max_health: integer|nil, owner: string|nil, nametag: string|nil, nametag_player: string|nil, tint: { r: number, g: number, b: number } }|nil
+---@return { pos: { x: number, y: number, z: number }, yaw: number, pitch: number, facing: { x: number, y: number, z: number }, velocity: { x: number, y: number, z: number }, on_ground: boolean, crawling: boolean, submerged: number, fell: number, source: string, model: string|nil, item: table|nil, anim: integer, health: integer|nil, max_health: integer|nil, owner: string|nil, nametag: string|nil, nametag_player: string|nil, tint: { r: number, g: number, b: number } }|nil
 function game.entity(id) end
 
 ---Changes an entity. Returns whether anything changed.
