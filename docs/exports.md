@@ -117,6 +117,13 @@ All are namespaced `tiamat_default_science:` by the engine.
   workbench, the frame, the furnace, Craft's kiln and bloomery, and by
   hand), each qualified `tiamat_default_science:<id>`; the twelve glyphs,
   each in every orientation (81 masks).
+- **Into Structures, when it is loaded (`places.lua`):** eight places,
+  `wreck`, `study`, `engine_house`, `watermill`, `windmill`, `mine_adit`,
+  `observatory` and `fallen_tower`, each tagged `science` and its own id;
+  loot under `tiamat_default_science:wreck`, `:study`, `:engine_house`,
+  `:mill`, `:mine`, `:observatory` and `:tower`, and under Structures' own
+  `study`. Into Progress with them, the discoveries
+  `tiamat_default_science.found:<place>` (group `places`).
 - **Into Progress, tier 3:** the studies `study_pig_iron`, `study_lens`,
   `study_clockwork` and `study_steel`; the discovery families
   `tiamat_default_science.invention:*` (group `inventions`) and
@@ -198,4 +205,6 @@ by name, so it is asked before a fire's box opens); the interface's `add_preset`
 `widgets`; Weather's `wind`, `weather_at`, `weather_for`, `warmth`,
 `on_lightning`, `fires_near`, `extinguish` and `add_overlay`; World's
 `biome_under` and its blocks by name; Life's `add_food`, `set_ability`,
-`pull_drops`, `set_alight`, `push`, `freeze` and its `worn` view.
+`pull_drops`, `set_alight`, `push`, `freeze` and its `worn` view;
+Structures' `register`, `add_loot` and `on_found` (places.lua, its ST-S1),
+when Structures is loaded.

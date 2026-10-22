@@ -10,7 +10,7 @@ smallest change that would answer it. Newest first within each mod. The
 design reasons are in `docs/brief.md` §14 and §2.1; where magic wants the
 same thing, its ask is named beside ours so the two are answered once.
 
-Where they stand on 2026-10-05. Struck through is answered or withdrawn;
+Where they stand on 2026-10-22. Struck through is answered or withdrawn;
 the answer is under each.
 
 | Mod | Answered | Open |
@@ -21,6 +21,7 @@ the answer is under each.
 | The interface (`ae8954a`) | U-S1 | — |
 | Progress (`ef6014b`) | P-S1, P-S2 | — |
 | Weather (`2f437fe`) | Wx-S1, Wx-S2, Wx-S3, Wx-S4 | — |
+| Structures (contract only, brief draft 1) | — | STR-S1 |
 
 ## Tiamat Default Craft
 
@@ -204,3 +205,28 @@ darkening and the atmosphere processor. *Stands in:* this mod never calls
 (`climate.lua`); a strength beside it, if Weather will. For windmills and
 kites. *Stands in:* weather kind and intensity alone.
 *Answered (Weather `2f437fe`):* `wind(x, z)` → `x, z, strength`: the climate's direction, and 0..1 from the weather there, 0.2 clear to 1 in a blizzard. The kite uses it (0.1.0).
+
+## Tiamat Default Structures
+
+Structures asks this mod for its places (its ST-S1, 2026-10-22), and this
+mod has answered: `tiamat_default_structures` is in `optional_depends`, and
+`places.lua` registers eight places against Structures' brief §4, guarded on
+the export being `nil` — which it is until Structures builds the contract.
+The native check loads a stand-in of that contract
+(`tests/native/fixtures/structures.lua`) and proves the places are whole,
+their blocks and loot are registered ids, and finding one pays. The
+derelicts on the Fold's worlds and in the Deep (`structures.generate` in
+`bodies.lua`'s generators) and Blueprints from `structures.plan(id)` wait
+for Structures to exist; each is a few lines once it does.
+
+**STR-S1, the builder and the words of `where`.** *Wanted:* three things
+Structures' brief leaves open, settled so this mod's call matches. (1) What
+`build(B)` is handed: this mod calls `B.set(dx, dy, dz, id)` and also passes
+the same list as `blocks = { { dx, dy, dz, id }, ... }`, so Structures may
+take either and drop the other. (2) The values of `where.water`: this mod
+uses `"dry"`, `"under"` (the wreck, on a sea floor) and `"shore"` (the
+watermill, on a bank). (3) The rarity class of a small underground place:
+this mod uses `"small"` for the mine adit, after §5's table. Also: an
+underground place needs its rooms cleared, and a list of blocks cannot say
+"air here"; the adit is props and lintels only until Structures says how.
+*Stands in:* the stand-in accepts all of it. Asked 2026-10-22.

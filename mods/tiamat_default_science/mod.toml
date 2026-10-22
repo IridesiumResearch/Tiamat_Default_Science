@@ -29,8 +29,9 @@ depends = [
 ]
 # Loaded after these when they are here, so `game.exports` finds them from
 # init.lua's first line. Without the interface the Theatrum is a plain
-# dialog; without the weather, a kite flies at one height in every sky.
-optional_depends = ["tiamat_default_ui", "tiamat_weather"]
+# dialog; without the weather, a kite flies at one height in every sky;
+# without Structures, there are no ruins of this path's to find.
+optional_depends = ["tiamat_default_ui", "tiamat_weather", "tiamat_default_structures"]
 
 # NO `[theme]` HERE, ON PURPOSE. The engine wears the LAST theme in load
 # order, and the interface mod owns the look.

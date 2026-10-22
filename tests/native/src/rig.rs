@@ -761,6 +761,11 @@ const SIBLINGS: [(&str, &str); 6] = [
 /// in chat (tests/native/fixtures/probe.lua).
 pub const PROBE: &str = include_str!("../fixtures/probe.lua");
 
+/// A stand-in for Structures, which has a contract and no code yet: what it
+/// is asked to keep, checked, and a way to say a site was found
+/// (tests/native/fixtures/structures.lua).
+pub const STRUCTURES: &str = include_str!("../fixtures/structures.lua");
+
 // --- The rig -----------------------------------------------------------------
 
 /// Which of the world around the mod to load.
@@ -776,11 +781,13 @@ pub struct Setup {
     pub deep: bool,
     /// Progress's world option: one path per player, the binding Fork.
     pub exclusive: bool,
+    /// The stand-in for Structures, loaded before this mod.
+    pub structures: bool,
 }
 
 impl Default for Setup {
     fn default() -> Self {
-        Setup { ui: true, weather: true, mode: None, deep: true, exclusive: false }
+        Setup { ui: true, weather: true, mode: None, deep: true, exclusive: false, structures: false }
     }
 }
 
@@ -866,6 +873,12 @@ impl Rig {
             vm.load_mod(id, &init, &sibling).unwrap_or_else(|err| panic!("sibling `{id}` failed to load: {err:?}"));
             loaded.push(id.to_owned());
         }
+        if setup.structures {
+            vm.note_dependencies("tiamat_default_structures", &loaded);
+            vm.load_mod("tiamat_default_structures", STRUCTURES, &dir)
+                .unwrap_or_else(|err| panic!("the Structures stand-in failed to load: {err:?}"));
+            loaded.push("tiamat_default_structures".to_owned());
+        }
         vm.note_dependencies(MOD, &loaded);
         let init = std::fs::read_to_string(dir.join("init.lua")).unwrap();
         vm.load_mod(MOD, &init, &dir).expect("the mod loads");
@@ -920,7 +933,7 @@ impl Rig {
     }
 
     pub fn join(&mut self, player: [u8; 32]) {
-        let _ = self.vm.player_join(&JoinEvent { player, name: "someone".into() });
+        let _ = self.vm.player_join(&JoinEvent { player, name: "someone".into(), skin: None });
         self.assert_healthy("join");
     }
 

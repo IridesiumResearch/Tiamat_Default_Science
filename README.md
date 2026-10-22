@@ -82,6 +82,14 @@ atmosphere processor gives it a sky. The Deep, where a blind fold goes;
 strange matter, the recall beacon, flying automata, and the Unified Field
 Engine. Its departures from the brief are §2.8.
 
+Places in the world: with Tiamat Default Structures loaded, an
+optional dependency, the path registers its own ruins for Structures to
+place — the Antikythera wreck, a natural philosopher's study, a Cornish
+engine house, a watermill and a windmill, a mine adit, an observatory and a
+fallen tower — stocks their chests, and pays insight for finding them
+(`places.lua`, Structures' ST-S1). Structures has a contract and no code
+yet, so today this is tested against a stand-in of it.
+
 ## What is here
 
 | File | What |

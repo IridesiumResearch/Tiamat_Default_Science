@@ -1189,4 +1189,42 @@ C.toybox = {
     water = 5,                      -- the first water lifted by a pump
 }
 
+-- Places in the world, registered with Structures when it is loaded
+-- (Structures' ST-S1; places.lua draws them). `rarity` and `layer` are
+-- Structures' classes (its brief §5), `decay` the share of a place lost to
+-- ruin (its D11), `insight` what finding one pays, once a player. An `open`
+-- place pays anyone, as the Tinker's Bench does; the rest pay a player who
+-- has taken up natural philosophy. Loot is `{ item, min, max, weight }`,
+-- in whole items, drawn under the tag the place's chest names.
+C.places = {
+    wreck = { name = "The wreck of a Greek ship", layer = "surface", rarity = "rare", decay = 0.45,
+        where = { water = "under" }, insight = 25, open = true,
+        loot = { { "C:bronze_gear", 1, 3, 5 }, { "C:bronze_ingot", 1, 2, 3 }, { "lens", 1, 1, 1 } } },
+    study = { name = "A natural philosopher's study", layer = "surface", rarity = "uncommon", decay = 0.35,
+        where = { water = "dry" }, insight = 10, open = true,
+        loot = { { "lens", 1, 1, 2 }, { "treatise", 1, 1, 2 }, { "clockwork", 1, 1, 1 } } },
+    engine_house = { name = "A ruined engine house", layer = "surface", rarity = "uncommon", decay = 0.3,
+        where = { water = "dry" }, insight = 15,
+        loot = { { "cast_cylinder", 1, 1, 2 }, { "cast_pipe", 1, 2, 3 }, { "coke", 2, 6, 4 }, { "pig_iron", 1, 3, 3 } } },
+    watermill = { name = "A broken watermill", layer = "surface", rarity = "uncommon", decay = 0.4,
+        where = { water = "shore" }, insight = 10,
+        loot = { { "crushed_copper", 2, 5, 3 }, { "crushed_tin", 2, 5, 3 }, { "C:bronze_gear", 1, 2, 2 } } },
+    windmill = { name = "A broken windmill", layer = "surface", rarity = "uncommon", decay = 0.4,
+        where = { water = "dry" }, insight = 10,
+        loot = { { "crushed_iron", 2, 5, 3 }, { "C:bronze_gear", 1, 2, 2 }, { "clockwork", 1, 1, 1 } } },
+    mine_adit = { name = "An old mine adit", layer = "underground", rarity = "small", decay = 0.3,
+        where = {}, insight = 5,
+        loot = { { "saltpeter", 1, 3, 4 }, { "black_powder", 1, 2, 2 }, { "mining_charge", 1, 1, 1 },
+            { "crushed_copper", 2, 5, 3 } } },
+    observatory = { name = "A fallen observatory", layer = "surface", rarity = "rare", decay = 0.35,
+        where = { water = "dry" }, insight = 25,
+        loot = { { "lens", 1, 2, 3 }, { "glass_tube", 1, 2, 2 }, { "chronometer", 1, 1, 1 } } },
+    fallen_tower = { name = "A fallen tower", layer = "surface", rarity = "rare", decay = 0.25,
+        where = { water = "dry" }, insight = 25,
+        loot = { { "copper_stock", 2, 6, 4 }, { "carbon_rod", 1, 2, 2 }, { "glass_bulb", 1, 2, 2 } } },
+}
+
+-- The order they are registered in, so the log and the tests read the same.
+C.place_order = { "wreck", "study", "engine_house", "watermill", "windmill", "mine_adit", "observatory", "fallen_tower" }
+
 return C

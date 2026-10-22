@@ -33,6 +33,7 @@ fn main() {
     }
     loads();
     loads_without_the_optional_mods();
+    the_places();
     the_bench();
     the_sundial();
     the_burning_glass();
@@ -179,6 +180,37 @@ fn loads_without_the_optional_mods() {
     assert_eq!(at.len(), 2, "a kite and its tail");
     assert_eq!(at[0], [100.5, 72.0, 96.5], "with no weather: eight up, four behind a body facing north");
     println!("loads without the optional mods: ok");
+}
+
+/// With Structures here, every place is registered, whole and stocked, and
+/// finding one pays: the open ones anyone, the rest a natural philosopher.
+fn the_places() {
+    let mut r = Rig::new(Setup { structures: true, ..Setup::default() });
+    ready(&mut r, 0);
+    let kinds = r.ask("st kinds");
+    let expected: Vec<String> = ["wreck", "study", "engine_house", "watermill", "windmill", "mine_adit", "observatory", "fallen_tower"]
+        .iter().map(|k| format!("{MOD}:{k}")).collect();
+    assert_eq!(kinds, expected.join(" "));
+    assert_eq!(r.ask("st check"), "ok");
+    assert_eq!(r.ask("st loot study"), "3", "a lens, a treatise, clockwork in Structures' own studies");
+
+    let before = insight(&mut r);
+    r.say(&format!("st found {MOD}:wreck"));
+    let heard = r.heard(PLAYER);
+    assert!(heard.iter().any(|l| l.starts_with("Bronze wheels in the silt")), "{heard:?}");
+    assert_eq!(insight(&mut r), before + 25, "the wreck is open to anyone");
+    r.say(&format!("st found {MOD}:engine_house"));
+    assert_eq!(insight(&mut r), before + 25, "an engine house waits for the path");
+    r.say(&format!("st found {MOD}:wreck"));
+    assert_eq!(insight(&mut r), before + 25, "and is paid once");
+
+    assert_eq!(r.ask("progress grant science.natural_philosophy"), "Learned: Natural Philosophy");
+    let before = insight(&mut r);
+    r.say(&format!("st found {MOD}:engine_house"));
+    assert_eq!(insight(&mut r), before + 15, "found by a natural philosopher");
+    r.say("st found tiamat_default_magic:laboratory");
+    assert_eq!(insight(&mut r), before + 15, "and nothing for another mod's place");
+    println!("the places: ok");
 }
 
 /// The child's first hour: the book, the glass, the kite, the compass. Every

@@ -59,6 +59,7 @@ tds.primer = load("primer")             -- the Theatrum Machinarum
 tds.tree = load("tree")                 -- the science tree, tiers 3 to 7, as data
 tds.path = load("path")                 -- the Antikythera Mechanism's path, and the tree, into Progress
 load("commands")                        -- `science`, in chat
+tds.places = load("places")             -- the wreck, the engine house, the mills: into Structures, if it is here
 
 tds.hooks.install()
 
